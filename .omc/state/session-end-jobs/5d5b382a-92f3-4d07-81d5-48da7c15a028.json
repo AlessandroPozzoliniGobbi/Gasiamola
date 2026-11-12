@@ -1,0 +1,353 @@
+{
+  "version": 1,
+  "jobId": "2b3a2876-d9f8-4653-8715-a1ef0f7c3a84",
+  "sessionId": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+  "scopeKey": "652613e6ddca9c0e29580cef734e4734558d0ed459be415ce0b3489e50c1f6b2",
+  "revision": 67,
+  "createdAt": "2026-11-12T14:45:47.804Z",
+  "updatedAt": "2026-11-12T14:46:20.049Z",
+  "producerGraceExpiresAt": "2026-11-12T14:46:17.805Z",
+  "bestEffortDeadlineAt": "2026-11-12T14:47:10.805Z",
+  "producers": {
+    "core": {
+      "state": "sealed",
+      "intentKey": "34a62446e56c8ad05d265cef4630f6509c6b9b5a115a4ac5902d68ab18abab80",
+      "payloadDigest": "34a62446e56c8ad05d265cef4630f6509c6b9b5a115a4ac5902d68ab18abab80",
+      "sealedAt": "2026-11-12T14:46:18.345Z",
+      "sealedBy": "recovery"
+    },
+    "wiki": {
+      "state": "no-op",
+      "sealedAt": "2026-11-12T14:45:47.804Z",
+      "sealedBy": "wiki-producer"
+    }
+  },
+  "actions": {
+    "foreground-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "febf6dba2f2536433960a07f7cedce72e946b43ced0896570df80f017b8914d2",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "ended_at": "2026-11-12T14:46:18.107Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-12T14:46:17.943Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "2498109b-438d-4e58-bb90-91062fd81c04",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:18.332Z"
+    },
+    "wiki-capture": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "1719cd1ef5b51e0269b78c4cb8c9308c9c1f7b82fd1c067fc034c060f23863f5",
+      "payload": {},
+      "budgetMs": 9000,
+      "completedAt": "2026-11-12T14:45:47.804Z"
+    },
+    "team-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "cee6ac31df545408e1e822247ac249b3f8182a98a5fe8e448ae3b251e55bdee1",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "ended_at": "2026-11-12T14:46:18.107Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-12T14:46:18.371Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "618ac46f-5077-487a-ad58-019539924c95",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:18.556Z"
+    },
+    "python-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "1f1370c4ac056606059d517e2f106b602d8cbcb04587b3fcc5f3b9f89e649cd0",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "ended_at": "2026-11-12T14:46:18.107Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-12T14:46:18.581Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "804fe257-c5f2-42cf-a34d-1edc3b4aabb0",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:18.808Z"
+    },
+    "reply-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "0b3a8b47c28b26d56aca004d4f572b96c118f16819c0d35162418816f9a5420a",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-12T14:46:18.830Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "ee33f857-1659-4867-b1c8-23c7dc36a2ff",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:19.007Z"
+    },
+    "callback": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "d068ede2655bf89e0c0950e087d0603d7dcf45538e94f20a654d08c6f4841895",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "ended_at": "2026-11-12T14:46:18.107Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-12T14:46:19.032Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "9757716a-80f5-4d54-bc41-9177868db006",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:19.259Z"
+    },
+    "notification": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "89c0438ff63097ce04beb60efb87292ff68a7af350a0ee331f3de9dbf42d62fc",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "ended_at": "2026-11-12T14:46:18.107Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-12T14:46:19.290Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "31129ad8-19d1-42c3-ac15-bb4ba704aa9d",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:19.500Z"
+    },
+    "openclaw": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "31fe8f6e1cf204e27006de511df257326fdd98655122ca437013e8779ffc735b",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "ended_at": "2026-11-12T14:46:18.107Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-12T14:46:19.527Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "2a9bec9d-a69b-42cf-bfa4-829c658e5cd3",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:19.742Z"
+    },
+    "spawn-next": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "408951e1348d4a381fd7b22db242636c91151ee01597146cf28243ae3875d0be",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "5d5b382a-92f3-4d07-81d5-48da7c15a028",
+          "transcript_path": "/Users/matteodema77gmail.com/.claude/projects/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-matteodema77gmail-com-Desktop-Progetti-nasa/5d5b382a-92f3-4d07-81d5-48da7c15a028/scratchpad",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-12T14:46:19.771Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "6e4e3e25-c89b-4f94-9249-30fac0751f3f",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-12T14:46:27.806Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-12T14:46:19.964Z"
+    }
+  },
+  "owner": null,
+  "phase": "complete",
+  "recoverableFailure": {
+    "reason": "actions-settled",
+    "releasedAt": "2026-11-12T14:46:20.007Z",
+    "ownerNonce": "61c416c7-5058-4727-8ad8-2aa47e4bacf1"
+  },
+  "completion": {
+    "completedAt": "2026-11-12T14:46:20.007Z",
+    "terminalDigest": "9f9697fbd2cac8534764f5de86f8f14a58834f19081c8f9549d44e1c838ecec2",
+    "terminalRevision": 66
+  }
+}

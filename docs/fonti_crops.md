@@ -16,6 +16,7 @@ Data di accesso per tutte le fonti: 2026-11-11. "Letto" = pagina o PDF aperto e 
 
 3. **Raes D., Steduto P., Hsiao T.C., Fereres E. (2026). AquaCrop Reference Manual, Annex I — Crop parameters, Version 7.3 (luglio 2026). FAO, Roma.**
    https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf — lette le schede I.2 Maize, I.6 Soybean, I.10 Wheat (Tbase, Tupper, GDD a emergenza, fioritura, inizio senescenza, maturità, Zn, Zx, HIo, note sulla taratura del frumento invernale e sull'umidità della resa).
+   Riletta il 2026-11-12 per `gdd_emergenza` ("Time from sowing to emergence", sezione 1.2 di ogni scheda): mais 60–100, soia 150–300, frumento 100–250 GDD. Valori adottati: mais 100 (massimo, come la componente di emergenza di `gdd_maturita` = 100 + 1850); soia 190 e frumento 175 (derivati, stessa posizione relativa di `gdd_maturita` nel suo intervallo AquaCrop, come `gdd_fioritura`).
    Confronto con la v7.1 (agosto 2023), https://www.fao.org/3/BR244E/br244e.pdf: stesse righe identiche per Tbase, Tupper, ciclo, fioritura, senescenza, HIo.
 
 4. **Raes D. et al. (2026). AquaCrop Reference Manual, Chapter 3 — Calculation procedures, Version 7.3.**

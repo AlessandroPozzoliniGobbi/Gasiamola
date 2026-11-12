@@ -25,25 +25,34 @@ _meta:
          f_d = 1                                   se Teff_d <  Tcr
          f_d = 1 - (Teff_d - Tcr) / (Tlim - Tcr)    se Tcr <= Teff_d < Tlim
          f_d = 0                                   se Teff_d >= Tlim
-    3) Finestra sensibile (TSP): giorni d con  inizio <= phi_d <= fine,  dove
-         phi_d = GDD(semina -> d) / GDD(semina -> maturita'), GDD calcolati con la Tbase di crops.yaml,
-         inizio = finestra_inizio_frazione (0.45), fine = finestra_fine_frazione (0.70).
+    3) Finestra sensibile (TSP), definizione di DEFAULT fedele alla fonte (colture.<coltura>.finestra_definizione;
+       mais e soia 'giorni_emergenza_maturita', frumento 'gdd_semina_maturita'): giorni d con  inizio <= phi_d <= fine,  dove
+         phi_d = (d - d_emergenza) / (d_maturita - d_emergenza)   (frazione della GPL di Deryng, in giorni),
+         d_emergenza = giorno in cui GDD(semina) >= crops.<coltura>.gdd_emergenza, d_maturita = giorno con
+         GDD(semina) >= gdd_maturita; inizio = finestra_inizio_frazione (0.45), fine = finestra_fine_frazione (0.70).
+       Alternativa selezionabile (adattamento, 'gdd_semina_maturita'):
+         phi_d = GDD(semina -> d) / GDD(semina -> maturita'), stesse frazioni 0.45 e 0.70.
     4) Fattore stagionale (eq. A.7):  f_caldo = (1/N) * somma_{d in TSP} f_d ,  N = numero di giorni della TSP.
     5) Resa (eq. A.8, forma moltiplicativa):  Y = Y_senza_caldo * f_caldo.
   finestra_note: >-
     In Deryng la fioritura cade a 0.5 della durata del ciclo (GPL, da emergenza a maturita', in giorni,
-    determinata dai gradi-giorno) e la TSP va da 0.45 a 0.70 GPL. Qui le stesse frazioni si applicano alla
-    somma termica semina->maturita' (adattamento dichiarato): rende la finestra indipendente dalla
-    temperatura base solo in prima approssimazione e, per il frumento autunnale, evita che la pausa invernale
-    sposti la finestra in marzo come accadrebbe con le frazioni in giorni. Il motore deve verificare che la
-    fioritura calcolata con crops.yaml cada dentro [0.45, 0.70] e segnalarlo se non accade.
+    determinata dai gradi-giorno) e la TSP va da 0.45 a 0.70 GPL. Default del motore (decisione del
+    responsabile, 2026-11-12, data/CHECKS.md D3): la frazione dei GIORNI tra emergenza e maturita', fedele alla
+    fonte. La frazione della somma termica semina->maturita' resta selezionabile come adattamento dichiarato:
+    per il mais la differenza su f_caldo e' al massimo 0.018 (D3). Per il frumento autunnale la frazione in giorni
+    include la pausa invernale e sposta la finestra verso fine inverno - inizio primavera, prima dell'antesi
+    calcolata con crops.yaml: la variante in gradi-giorno e' giustificata soprattutto li'. Il motore verifica che
+    la fioritura calcolata con crops.yaml cada dentro la finestra e lo segnala se non accade.
   limiti: >-
-    NASA POWER fornisce medie su celle di circa 0.5 x 0.625 gradi (circa 50 km) di temperatura dell'aria a 2 m:
-    i massimi giornalieri sono smussati rispetto a una stazione e soprattutto rispetto alla temperatura della
-    chioma/pannocchia, quindi f_caldo tende a essere sovrastimato (stress sottostimato). Le soglie di Deryng
-    sono di un modello globale (PEGASUS 1.1) e la soglia del frumento e' quella del frumento primaverile.
-    Il requisito 'estate 2022 a Cremona: f_caldo basso per il mais' NON e' stato usato per scegliere o tarare
-    alcun parametro; se non risulta, va riportato come limite.
+    NASA POWER fornisce medie su celle di circa 0.5 x 0.625 gradi (circa 50 km) di temperatura dell'aria a 2 m,
+    non la temperatura della chioma/pannocchia. Rispetto alle stazioni ARPA (data/CHECKS.md, D2 e D3) lo scarto
+    della Tmax non ha segno costante: di solito POWER e' piu' fresco, ma nel giugno-luglio 2022 e' piu' caldo delle
+    stazioni di circa 1 degC (2022: +1.0; 2024: -3.6 e -2.8 degC), e gli estremi sono riprodotti male (giorni
+    sopra 35 degC: correlazione 0.46). Quindi f_caldo con POWER non sottostima sempre lo stress: nel 2022 lo
+    sovrastima rispetto alle stazioni (f_caldo mais 0.942 con POWER contro 0.99 con le stazioni, finestra in GDD).
+    Le soglie di Deryng sono di un modello globale (PEGASUS 1.1) e la soglia del frumento e' quella del frumento
+    primaverile. Il requisito 'estate 2022 a Cremona: f_caldo basso per il mais' NON e' stato usato per scegliere
+    o tarare alcun parametro e non e' soddisfatto dalla funzione pubblicata: e' dichiarato come limite.
 
 funzione:
   temperatura_efficace:
@@ -62,7 +71,6 @@ funzione:
     url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
     nota: "Equazioni trascritte in _meta.equazioni. Deryng segue la metodologia di Challinor et al. e di Teixeira et al."
     verificato: true
-
 colture:
   mais:
     t_critica:
@@ -87,20 +95,29 @@ colture:
       intervallo: [40.0, 45.0]
     finestra_inizio_frazione:
       valore: 0.45
-      unita: "frazione della somma termica semina-maturita'"
+      unita: "frazione della durata emergenza-maturita' (GPL, giorni); in gradi-giorno nella variante gdd_semina_maturita"
       fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
       riferimento: "Appendice A.3: 'TSP starts a few days before anthesis at 0.45 GPL and ends after anthesis at 0.7 GPL'"
       url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
-      nota: "In Deryng la frazione e' della durata emergenza-maturita' (GPL); qui applicata alla somma termica semina-maturita' (vedi _meta.finestra_note). Uguale per tutte le colture nella fonte."
+      nota: "Frazione della durata emergenza-maturita' (GPL) come in Deryng (default); la stessa frazione si applica alla somma termica semina-maturita' nella variante gdd_semina_maturita (vedi _meta.finestra_note). Uguale per tutte le colture nella fonte."
       verificato: true
       sensibilita: true
     finestra_fine_frazione:
       valore: 0.70
-      unita: "frazione della somma termica semina-maturita'"
+      unita: "frazione della durata emergenza-maturita' (GPL, giorni); in gradi-giorno nella variante gdd_semina_maturita"
       fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
       riferimento: "Appendice A.3 (TSP fino a 0.7 GPL; antesi a 0.5 GPL)"
       url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
       nota: "Vedi finestra_inizio_frazione."
+      verificato: true
+      sensibilita: true
+    finestra_definizione:
+      valore: "giorni_emergenza_maturita"
+      unita: "-"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3: 'TSP starts a few days before anthesis at 0.45 GPL and ends after anthesis at 0.7 GPL' (GPL = da emergenza a maturita')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Default fedele alla fonte (frazione dei giorni tra emergenza e maturita'; emergenza da crops.<coltura>.gdd_emergenza), decisione del responsabile 2026-11-12. Alternativa selezionabile: 'gdd_semina_maturita'."
       verificato: true
       sensibilita: true
   soia:
@@ -125,7 +142,7 @@ colture:
       sensibilita: true
     finestra_inizio_frazione:
       valore: 0.45
-      unita: "frazione della somma termica semina-maturita'"
+      unita: "frazione della durata emergenza-maturita' (GPL, giorni); in gradi-giorno nella variante gdd_semina_maturita"
       fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
       riferimento: "Appendice A.3 (TSP da 0.45 GPL)"
       url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
@@ -134,11 +151,20 @@ colture:
       sensibilita: true
     finestra_fine_frazione:
       valore: 0.70
-      unita: "frazione della somma termica semina-maturita'"
+      unita: "frazione della durata emergenza-maturita' (GPL, giorni); in gradi-giorno nella variante gdd_semina_maturita"
       fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
       riferimento: "Appendice A.3 (TSP fino a 0.7 GPL)"
       url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
       nota: ""
+      verificato: true
+      sensibilita: true
+    finestra_definizione:
+      valore: "giorni_emergenza_maturita"
+      unita: "-"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3: 'TSP starts a few days before anthesis at 0.45 GPL and ends after anthesis at 0.7 GPL' (GPL = da emergenza a maturita')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Default fedele alla fonte (frazione dei giorni tra emergenza e maturita'; emergenza da crops.<coltura>.gdd_emergenza), decisione del responsabile 2026-11-12. Alternativa selezionabile: 'gdd_semina_maturita'."
       verificato: true
       sensibilita: true
   frumento:
@@ -164,16 +190,16 @@ colture:
       intervallo: [31.0, 40.0]
     finestra_inizio_frazione:
       valore: 0.45
-      unita: "frazione della somma termica semina-maturita'"
+      unita: "frazione della durata emergenza-maturita' (GPL, giorni); in gradi-giorno nella variante gdd_semina_maturita"
       fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
       riferimento: "Appendice A.3 (TSP da 0.45 GPL)"
       url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
-      nota: "Per il frumento autunnale la frazione in giorni porterebbe la finestra a fine inverno: per questo si usa la frazione della somma termica (vedi _meta.finestra_note)."
+      nota: "Per il frumento autunnale la frazione in giorni (default) porta la finestra prima dell'antesi calcolata, verso fine inverno - inizio primavera: la variante in gradi-giorno e' l'alternativa da confrontare (vedi _meta.finestra_note)."
       verificato: true
       sensibilita: true
     finestra_fine_frazione:
       valore: 0.70
-      unita: "frazione della somma termica semina-maturita'"
+      unita: "frazione della durata emergenza-maturita' (GPL, giorni); in gradi-giorno nella variante gdd_semina_maturita"
       fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
       riferimento: "Appendice A.3 (TSP fino a 0.7 GPL)"
       url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
@@ -181,6 +207,15 @@ colture:
       verificato: true
       sensibilita: true
 
+    finestra_definizione:
+      valore: "gdd_semina_maturita"
+      unita: "-"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3: 'TSP starts a few days before anthesis at 0.45 GPL and ends after anthesis at 0.7 GPL' (GPL = da emergenza a maturita')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Decisione del responsabile 2026-11-12: per il frumento autunnale il default e' la variante in gradi-giorno dalla semina (adattamento dichiarato). La frazione dei giorni include la pausa invernale e porta la finestra prima dell'antesi: con POWER 2000-2022 e semina 30/10 la fioritura calcolata con crops.yaml cade fuori dalla finestra in giorni in 22 annate su 22 e dentro la finestra in gradi-giorno in 22 su 22 (f_caldo in giorni sempre 1.000; in GDD media 0.995, minimo 0.963). Alternativa selezionabile: 'giorni_emergenza_maturita'."
+      verificato: true
+      sensibilita: true
 alternative:
   # Set alternativi per l'analisi di sensibilita': NON usati di default.
   aquacrop:

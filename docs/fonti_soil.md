@@ -118,3 +118,13 @@ In `soil.yaml` ho lasciato il valore SoilGrids, con l'alternativa ERSAF in `inte
 ## 5. Falda
 
 L'unica fonte aperta trovata con profondità vicino al punto è ERSAF (2024), tab. 1. Indica falda e/o orizzonti sabbiosi a 110–150 cm nella Bassa Pianura Centrale e falda a 85–170 cm nella Media Pianura. Il rapporto non pubblica le soggiacenze misurate nei piezometri. Le carte piezometriche di ARPA Lombardia e i PGT comunali non li ho consultati. Il motore non modella la falda: le conseguenze sono descritte in `soil.yaml` → `_meta.limiti`.
+
+## 6. Aggiornamento 2026-11-12 – decisione sulla sostanza organica 0–30 cm
+
+Il responsabile ha scelto il valore ERSAF (2024), tab. 19, Bassa Pianura Centrale: carbonio organico 13,5 g/kg, cioè
+2,327% di SO (× 1,724), al posto di SoilGrids (3,563%, ora in `intervallo` e in nota). Nessuna fonte nuova letta:
+il rapporto ERSAF è quello della sezione 3. Grandezze ricalcolate con `fieldwise.soil` (strato 0–30 e
+`profilo.strato_superficiale`): fc 0,3146, wp 0,1662, sat 0,4647, ksat 8,97 mm/h, acqua disponibile 44,5 mm;
+acqua disponibile 0–150 cm 213,6 mm; tau AquaCrop dello strato superficiale 0,568; gruppo idrologico invariato (C).
+`tests/test_soil.py::test_yaml_inputs_match_soilgrids_cache` è stato adattato: per lo strato 0–30 la SO non deve più
+coincidere con la cache SoilGrids, ma il valore SoilGrids deve stare nell'intervallo della voce.

@@ -1,0 +1,49 @@
+{
+  "file": "smap_2023.csv",
+  "source": "smap",
+  "product": "SPL3SMP_E",
+  "version": "006",
+  "url": "https://doi.org/10.5067/M20OXIZHY3RJ",
+  "params": {
+    "lat": 45.2,
+    "lon": 10.0,
+    "ease_row": 234,
+    "ease_col": 2035,
+    "pixel_center_lat": 45.243307,
+    "pixel_center_lon": 10.036307,
+    "grid": "EASE-Grid 2.0 Global 9 km (EPSG:6933), 1624 x 3856",
+    "pixel_size_m": 9008.055210146,
+    "variables": {
+      "am": [
+        "Soil_Moisture_Retrieval_Data_AM",
+        "soil_moisture",
+        "retrieval_qual_flag"
+      ],
+      "pm": [
+        "Soil_Moisture_Retrieval_Data_PM",
+        "soil_moisture_pm",
+        "retrieval_qual_flag_pm"
+      ]
+    },
+    "units": "m3/m3 (cm3/cm3)",
+    "fill_value_sm": -9999.0,
+    "fill_value_qual": 65534,
+    "good_flags": [
+      0,
+      8
+    ],
+    "access": "opendap",
+    "doi": "10.5067/M20OXIZHY3RJ",
+    "fill_policy": "valori di riempimento salvati come vuoto (NaN)",
+    "window_start": "2023-01-01",
+    "window_end": "2023-12-31",
+    "n_granules_cmr": 365,
+    "year": 2023,
+    "complete": true,
+    "n_rows": 365
+  },
+  "downloaded_at_utc": "2026-11-12T14:57:44+00:00",
+  "bytes": 14365,
+  "sha256": "bb2e4046448dcc5205ee67bfc9655d8e27797499d33a5a8861328e84435ffd0a",
+  "notes": "umidita' superficiale SMAP L3 enhanced 9 km, passaggi AM e PM"
+}

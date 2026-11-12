@@ -52,8 +52,26 @@ Passi di ogni giorno i:
     Kr = (TEW - De) / (TEW - REW) (eq. 74), TEW = 1000 (theta_FC - 0,5 theta_WP) Ze
     (eq. 73); E tolta allo strato evaporante (De, eq. 77) e quindi allo strato 1.
     Nei giorni di suolo nudo ETc = Kc_max ET0 (evaporazione potenziale) e Ks = 1.
+    E non supera l'acqua sopra il limite inferiore dello strato 1 (vedi sotto).
  6. Esaurimento dello strato evaporante: De diminuisce con l'acqua infiltrata
     (eq. 77, la pioggia bagna prima la superficie) e vale 0 quando W1 >= FC1.
+
+Coerenza tra De e W1 (limite inferiore dello strato 1)
+------------------------------------------------------
+Lo strato 1 e' diviso in due parti: i primi Ze m (strato evaporante) e i restanti
+z1 - Ze m. FAO-56 eq. 73 (TEW = 1000 (theta_FC - 0,5 theta_WP) Ze) ammette che lo
+strato evaporante si asciughi fino a 0,5 theta_WP; la parte sottostante perde acqua
+solo per traspirazione, che si ferma a theta_WP (eq. 82-84). Quindi:
+  W1_min = 1000 (theta_WP z1 - 0,5 theta_WP Ze)            [mm]  (eq. 73 + eq. 82)
+  De in [max(0, (FC1 - W1) - TAW_sotto), min(TEW, FC1 - W1)],
+  TAW_sotto = 1000 (theta_FC - theta_WP) (z1 - Ze)          (eq. 82 sulla parte sotto Ze)
+Il limite inferiore di De dice che l'esaurimento dello strato 1 non contenuto nella
+parte sotto Ze sta per forza nello strato evaporante: dopo una coltura che ha
+portato W1 a wp, De vale almeno l'esaurimento di Ze a wp e il suolo nudo puo'
+evaporare solo la quota 0,5 theta_WP Ze (eq. 73-74). Il limite e' imposto dopo
+l'infiltrazione e a fine giorno; con E <= W1 - W1_min lo strato 1 non scende mai
+sotto W1_min (che e' sotto wp1 di 500 theta_WP Ze mm). La traspirazione resta
+limitata a wp in entrambi gli strati.
 
 Limiti: falda e risalita capillare non modellate (CR = 0 in eq. 85, vedi
 soil.yaml _meta.limiti); acqua oltre fc drenata in un giorno (eq. 88).
@@ -147,6 +165,13 @@ class SoilWaterParams:
     def taw2(self) -> float:
         """TAW dello strato 2 [mm], FAO-56 eq. 82."""
         return 1000.0 * (self.fc2 - self.wp2) * self.z2
+
+    @property
+    def w1_min_mm(self) -> float:
+        """Limite inferiore dell'acqua nello strato 1 [mm]: i primi Ze m a 0,5 theta_WP
+        (FAO-56 eq. 73), il resto dello strato a theta_WP (eq. 82).
+        W1_min = 1000 (theta_WP z1 - 0,5 theta_WP Ze)."""
+        return 1000.0 * (self.wp1 * self.z1 - 0.5 * self.wp1 * self.ze)
 
     @property
     def depth(self) -> float:
@@ -338,6 +363,12 @@ def cover_daily_curves(p: dict, n_days: int, zr_ini: float, z_profile: float | N
     return kc, np.asarray(zr, float), ptab
 
 
+def cn_class_index(classe: str) -> int:
+    """Indice CN_* di una classe di soil.yaml ruscellamento ('colture_a_file',
+    'cereali_a_paglia', 'suolo_nudo')."""
+    return _CN_KEYS.index(classe)
+
+
 def cn_class(name: str) -> int:
     """Classe di Curve Number di soil.yaml per una coltura/superficie
     ('mais','soia' -> colture a file; 'frumento','cover' -> cereali a paglia;
@@ -363,6 +394,23 @@ def _scs_runoff(p_mm, cn):
 
 
 @njit(cache=True)
+def _de_consistent(de, w1, fc1mm, tew, taw_below):
+    """Riporta De nell'intervallo coerente con W1 (vedi docstring del modulo):
+    max(0, (FC1 - W1) - TAW_sotto) <= De <= min(TEW, FC1 - W1). FAO-56 eq. 73, 77, 82."""
+    hi = fc1mm - w1
+    if hi > tew:
+        hi = tew
+    lo = (fc1mm - w1) - taw_below
+    if de < lo:
+        de = lo
+    if de > hi:
+        de = hi
+    if de < 0.0:
+        de = 0.0
+    return de
+
+
+@njit(cache=True)
 def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
             cn_ii, cn_i, cn_iii, use_amc,
             z1, z2, fc1, wp1, fc2, wp2, ze, tew, rew, kc_max,
@@ -376,6 +424,8 @@ def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
     wp2mm = 1000.0 * wp2 * z2
     taw1 = fc1mm - wp1mm                     # eq. 82, strato 1
     taw2 = fc2mm - wp2mm                     # eq. 82, strato 2
+    taw_below = 1000.0 * (fc1 - wp1) * (z1 - ze)       # eq. 82, strato 1 sotto Ze
+    w1_min = 1000.0 * (wp1 * z1 - 0.5 * wp1 * ze)      # eq. 73: Ze fino a 0,5 theta_WP
     used = np.zeros(cap_seg.shape[0])
     w1 = w1_0
     w2 = w2_0
@@ -457,8 +507,7 @@ def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
                 dr = f1 * (fc1mm - w1) + f2 * (fc2mm - w2)
                 if dr < 0.0:
                     dr = 0.0
-        if de < 0.0:
-            de = 0.0
+        de = _de_consistent(de, w1, fc1mm, tew, taw_below)
         # ---- 5. evapotraspirazione
         ks = 1.0
         kr = 1.0
@@ -471,6 +520,8 @@ def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
             eta = kr * etc
             if eta > tew - de:
                 eta = tew - de
+            if eta > w1 - w1_min:            # limite inferiore dello strato 1 (eq. 73)
+                eta = w1 - w1_min
             if eta < 0.0:
                 eta = 0.0
             w1 -= eta
@@ -506,14 +557,8 @@ def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
             w1 -= e1
             w2 -= e2
             de += e1 * ze / z1               # prelievo uniforme nello strato 1
-        # ---- 6. coerenza dello strato evaporante
-        if de > tew:
-            de = tew
-        lim = fc1mm - w1
-        if de > lim:
-            de = lim
-        if de < 0.0:
-            de = 0.0
+        # ---- 6. coerenza dello strato evaporante con W1
+        de = _de_consistent(de, w1, fc1mm, tew, taw_below)
         o_etc[i] = etc
         o_eta[i] = eta
         o_ks[i] = ks
@@ -609,8 +654,12 @@ def run_water_balance(inp: DailyInputs, soil: SoilWaterParams, state0: WaterStat
     """Bilancio idrico giornaliero su tutta la serie, in un unico ciclo.
 
     irr_cap: tetto irriguo netto [mm] per segmento (scalare = stesso tetto per
-    tutti; 0 = solo pioggia; math.inf = irrigazione libera). use_amc: correzione
-    del CN con l'umidita' dello strato 1 (soil.yaml regola_umidita).
+    tutti; 0 = solo pioggia; math.inf = irrigazione libera). Il tetto e' contato
+    PER CHIAMATA: l'acqua gia' usata da un segmento riparte da zero a ogni
+    chiamata. Nell'architettura del motore una rotazione intera e' una sola
+    chiamata, quindi il tetto vale per segmento lungo tutta la rotazione; chiamate
+    separate per pezzi della stessa coltura raddoppierebbero il tetto.
+    use_amc: correzione del CN con l'umidita' dello strato 1 (soil.yaml regola_umidita).
     """
     n = len(inp.et0)
     seg = np.ascontiguousarray(inp.segment, dtype=np.int64)

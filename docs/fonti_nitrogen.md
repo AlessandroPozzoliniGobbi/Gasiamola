@@ -88,3 +88,28 @@ Data di accesso di tutte le fonti: 2026-11-11. I PDF sono stati scaricati e lett
   paglia): il deposito SLU rimanda altrove, non letto.
 - Materiale didattico dell'Università Mediterranea di Reggio Calabria sulla formula di Rémy: link non più attivo.
 - Disciplinare di produzione integrata della Lombardia (norme agronomiche): non trovato.
+
+## Aggiornamento 2026-11-12 (correzioni dopo `reports/params_review.md`)
+
+- **Salvagiotti et al. (2008)**, riletto (stesso URL): Tab. 1 completa (N residui 1,21%, NHI 0,73 con IQR 0,64-0,82,
+  fissazione % "No N" max 98 / 75% 74 / media 58); testo p. 4 (pendenza 12,7 kg granella/kg N, "5 Mg ha-1 accumulates
+  about 400 kg N ha-1"); testo p. 5 ("When less than 85 kg N ha-1 was applied ... N uptake levels were above 350 kg N
+  ha-1, the proportion of N derived from biological fixation ranged from 35 to 86%"); didascalie Fig. 2 (FIX = 0,66 U − 19)
+  e Fig. 3 (curva limite in funzione della dose di concime). Usato per `soia.n_assorbito` (78,7), `soia.nhi` (0,73),
+  `soia.n_asportato` (derivato 57,5), `soia.fissazione.quota_fissazione_max` (0,86) e per il nuovo uso di
+  `coeff_inibizione_n` (solo sulla dose di concime).
+- **Moretti B., Bertora C., Grignani C., Lerda C., Celi L., Sacco D. (2020).** Conversion from mineral fertilisation to MSW
+  compost use: nitrogen fertiliser value in continuous maize and test on crop rotation. *Science of the Total Environment*,
+  doi:10.1016/j.scitotenv.2019.135308. URL letto (manoscritto d'autore, archivio AperTO dell'Università di Torino):
+  https://iris.unito.it/bitstream/2318/1726469/1/STOTEN-D-19-08926.pdf
+  - Cosa ho letto: par. 2.2.1 (trattamenti, 198 kg N/ha/anno da urea), par. 2.2.3 eq. 1 (Nitrogen Apparent Recovery per
+    differenza), par. 3.1.2 (NAR mais M-Min 90, 85, 76%), par. 3.2 (R-Min 91, 88, 82%).
+  - Limiti: versione d'autore sottomessa, non quella dell'editore; una sola prova (pianura padana occidentale); NAR solo per il mais.
+  - Usato per `efficienza_concime.recupero_apparente.mais` (0,84).
+- **Ladha et al. (2005)**, *Adv. Agron.* 87: 85-156: cercato, non letto (copia CORE bloccata, 403). Il 57% del frumento
+  è preso da citazioni secondarie: `recupero_apparente.frumento` è un'assunzione.
+- **Cassman, Dobermann, Walters (2002)**, *Ambio* 31: 132-140: cercato su DigitalCommons UNL e CORE, download bloccato
+  (403) in due tentativi: non usato.
+- **ER Norme generali 2023, Tab. 1 p. 53**: non riletta; i k2 per C/N < 9 e > 12 (`suolo.k2.cn_basso`, `cn_alto`) sono
+  ricavati dai valori della tabella già trascritti in `n_mineralizzato_disciplinare` (confermati dal revisore) e marcati
+  `derivato: true`. Il tetto oltre il 3% di SO (`suolo.soglia_so_tetto`) è la frase della stessa tabella.

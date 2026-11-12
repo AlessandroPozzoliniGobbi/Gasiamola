@@ -967,3 +967,20 @@ precessione_favorevole:
     - 0.8
     - 0.87
     usato_dal_motore: false
+calendario_rotazione:
+  giorni_minimi_raccolta_semina:
+    valore: 10
+    unita: giorni
+    nota: 'Usato da fieldwise.rotation: la coltura successiva (o la cover) si semina non prima di raccolta + questo numero
+      di giorni; vale anche tra terminazione della cover e semina della coltura principale. Sotto i 30 giorni del requisito
+      SRA06 tra raccolta e semina della cover (cover_crop.requisiti_sra06.max_giorni_raccolta_semina).'
+    verificato: false
+    assunzione: true
+    motivazione: 'Nessuna fonte ufficiale lombarda fissa un intervallo minimo tra raccolta e semina per mais, soia e frumento
+      (i disciplinari regolano solo la successione). Il tempo serve per trinciatura dei residui, lavorazione principale (aratura
+      o minima lavorazione) e preparazione del letto di semina: con lavorazioni ridotte bastano pochi giorni, con aratura,
+      erpicatura e attesa di condizioni di tempera due o tre settimane. Dieci giorni e'' un valore centrale.'
+    sensibilita: true
+    intervallo:
+    - 3
+    - 21

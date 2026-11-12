@@ -35,6 +35,11 @@ Ultimo aggiornamento: 2026-11-11.
 | D11 | Dal 2026-11-12: al massimo due agent alla volta, in ordine di dipendenza; agent nuovo con brief stretto invece di riprendere agent con contesto molto grande; Opus solo per il giudizio scientifico; un'unica correzione dei parametri in un solo agent | richiesta dell'utente dopo quattro arresti per limite d'uso: ottimizzare i token nella finestra di 5 ore a parità di qualità |
 | D12 | Verifica delle fasi 3 e 4: dopo la fase 3 un agent Sonnet scrive ed esegue i test sui criteri di accettazione (bilanci chiusi, Ks, esempio FAO); la verifica scientifica Opus si fa una volta sola sulle fasi 3 e 4 insieme | la fase 4 riscrive il calendario su cui poggia la fase 3: una verifica unica evita di rivedere due volte lo stesso codice |
 | D13 | Sostanza organica 0–30 cm del punto pilota: valore ERSAF (2,33%) al posto di SoilGrids (3,56%), che resta come alternativa in sensibilità; tessitura e densità da SoilGrids | gerarchia delle fonti (ente pubblico italiano che misura in zona); proposta all'utente il 2026-11-12, nessuna obiezione; modificabile |
+| D14 | Il bilancio dell'azoto passa a passo giornaliero (la specifica della fase 3 diceva "a fine segmento come nella versione attuale") | con l'aggiornamento a fine segmento la cover crop aumentava la lisciviazione a regime e sotto il frumento la lisciviazione era zero: la lisciviazione dipende dai tempi tra disponibilità e drenaggio; coerente con il principio 3 |
+| D15 | Ogni rotazione si valuta sul secondo di due cicli consecutivi (un ciclo di avviamento) | senza avviamento concime e lisciviazione dipendono dallo stato iniziale arbitrario (concime −10% in mediana); costo: 17 annate di partenza invece di 20 |
+| D16 | Funzione del caldo: Deryng et al. 2014 senza taratura; finestra in giorni per mais e soia (fedele alla fonte), in gradi-giorno per il frumento autunnale; AquaCrop e Teixeira in sensibilità come incertezza strutturale. Il criterio "f_caldo chiaramente basso per il mais nel 2022" è dichiarato NON soddisfatto (0,958 con POWER, 0,99 con le stazioni) | nessuna taratura sul risultato; nel modello la perdita del 2022 viene dall'acqua |
+| D17 | Nessuna rotazione esclusa: i disciplinari 2026 non vietano successioni tra le tre colture, limitano i ristoppi; le rotazioni sono etichettate conforme / in deroga / non conforme | la rotazione attuale dell'utente va sempre mostrata |
+| D18 | Ricostruzione del grafo a fine fase con `graphify update .` (solo codice, senza costo); la ricostruzione completa `/graphify .` con l'estrazione semantica dei documenti si fa una volta prima della verifica finale | economia di token (D11) |
 | D8 | Esclusi dal grafo: `data/`, `reports/figure/`, `.venv/` (`.graphifyignore`) | dati e immagini non sono codice |
 
 ## Stato delle fasi
@@ -63,6 +68,33 @@ Il grafo si ricostruisce (`/graphify .`) alla fine delle fasi 3, 4, 5, 6, 7, 8 e
 
 ## Registro
 
+- 2026-11-12 sera — Credenziali Earthdata arrivate; SMAP provato, IMERG sbloccato dopo l'autorizzazione di
+  GES DISC; client IMERG esteso alle quattro celle (Sonnet); download completi rilanciati staccati dalla
+  sessione (log in `data/logs/`). Da fare a download finiti: `python -m fieldwise.qc` e confronto
+  IMERG/POWER/ARPA.
+  FASE 3: difetto dello strato evaporante corretto (limite inferiore da FAO-56 eq. 73); `nitrogen.py` e
+  `humus.py` consegnati; soia senza concime con deficit dichiarato; cover limitata. Test Sonnet: suite a
+  926 verdi (criteri di accettazione della fase 3 tutti coperti).
+  FASE 4: `phenology.py`, `yield_model.py`, `rotation.py`, `params/scenarios.yaml` consegnati. Mais: ciclo
+  125 giorni nel 2022 contro 164 nel 2014; frumento continuo penalizzato (0,82) e ultimo con l'irrigazione.
+  DIFETTO STRUTTURALE trovato dal modulo di rotazione: azoto a fine segmento → la cover aumentava la
+  lisciviazione. In corso (Opus): azoto a passo giornaliero (D14). Poi: adeguamento dei test (Sonnet),
+  test di `rotation.py`, verifica scientifica unica delle fasi 3–4 (Opus), ensemble.
+- 2026-11-12 16:30 — FASE 1 chiusa per i dati senza credenziali. Decisioni scritte in `data/CHECKS.md`
+  (sezione Decisioni, D1–D7) e tradotte in `src/fieldwise/weather.py`: pioggia POWER senza correzioni con
+  ensemble limitato alle annate 2000–2022 (cinque pluviometri ARPA confermano la sovrastima: 1,17 nel 2023,
+  1,38 nel 2024, 1,72 nel 2025); temperature POWER; ISTAT 2006–2022 sulle anomalie; NDVI sulla finestra;
+  IMERG da estendere alle quattro celle quando arriveranno le credenziali.
+  CALDO 2022: f_caldo del mais = 0,94 con POWER e 0,99 con le stazioni affidabili; AquaCrop dà 1,00,
+  Teixeira sulla massima 0,89 (articolo non letto). Decisione: resta Deryng (nessuna taratura sul risultato);
+  il criterio "2022 chiaramente basso" è dichiarato NON soddisfatto; le alternative entrano in sensibilità.
+  FASE 2 chiusa: le 16 correzioni della revisione applicate a `nitrogen.yaml`, `rotation_rules.yaml`,
+  `cover_crop.yaml`, `soil.yaml` (D13). Un test di `test_soil.py` adeguato alla decisione D13 (approvato).
+  Limite nuovo: tutte le rotazioni perdono humus (effluenti zootecnici non modellati).
+  FASE 3: `water.py` consegnato (chiusura < 1e-11 mm; 0,04 s per milione di passi) e provato da Sonnet
+  (74 test; suite a 384). Difetto trovato dai test: strato 0–30 cm sotto il punto di appassimento sul suolo
+  nudo dopo una coltura (contabilità dello strato evaporante). In corso (Opus): correzione + `nitrogen.py`
+  + `humus.py`. FASE 4 prima parte in corso (Opus): `phenology.py`, `yield_model.py`.
 - 2026-11-12 14:40 — Quarto arresto (11:15 circa) con quattro agent Opus in parallelo; nessuno aveva ancora
   scritto file. Nuova strategia (D11). Ripartiti solo due: motore limitato a `water.py`, e un agent nuovo
   che applica in una volta tutte le correzioni dei parametri decise dopo la revisione (compresa D13).

@@ -107,6 +107,30 @@ def random_inputs(n=20000, seed=20240607):
                np.arange(n) // 50, rng.integers(0, 3, n))
 
 
+def dry_rotation_inputs(soil, pars, seed=1):
+    """Rotazione realistica a blocchi (mais asciutto, nudo, cover, nudo) con pioggia sporadica."""
+    rng = np.random.default_rng(seed)
+    blocks = [("mais", 150), ("bare", 200), ("cover", 150), ("bare", 150)]
+    n = sum(b[1] for b in blocks)
+    et0 = np.clip(3.5 + 2.5 * np.sin(2 * np.pi * (np.arange(n) - 60) / 365.0), 0.3, None)
+    rain = np.where(rng.random(n) < 0.12, rng.exponential(8.0, n), 0.0)
+    kc, zr, pt, sf, sg, cn = ([] for _ in range(6))
+    for k, (kind, m) in enumerate(blocks):
+        if kind == "mais":
+            a, b, c = w.crop_daily_curves(pars, "mais", m, z_profile=soil.depth)
+            s, c_ = w.SURF_CROP, w.cn_class("mais")
+        elif kind == "cover":
+            a, b, c = w.cover_daily_curves(pars, m, 0.2, z_profile=soil.depth)
+            s, c_ = w.SURF_COVER, w.cn_class("cover")
+        else:
+            a, b, c = np.zeros(m), np.full(m, 0.1), np.full(m, 0.5)
+            s, c_ = w.SURF_BARE, w.cn_class("suolo_nudo")
+        kc.append(a); zr.append(b); pt.append(c)
+        sf.append(np.full(m, s)); sg.append(np.full(m, k)); cn.append(np.full(m, c_))
+    cat = np.concatenate
+    return _mk(et0, rain, cat(kc), cat(zr), cat(pt), cat(sf), 0, cat(sg), cat(cn))
+
+
 def _slice(inp, a, b):
     return w.DailyInputs(**{k: getattr(inp, k)[a:b] for k in
                             ("et0", "rain", "kc", "zr", "p_tab", "surface", "irrigable",
@@ -214,18 +238,22 @@ class TestStress:
 # 3. Fisica
 # =============================================================================
 
+def scenario(name, soil, pars):
+    if name == "mais":
+        return maize_inputs(soil, pars), w.initial_water_state(soil, 0.4)
+    if name == "tre_anni":
+        return three_year_inputs(soil, pars), w.initial_water_state(soil, 0.7)
+    if name == "casuale":
+        return random_inputs(5000), w.initial_water_state(soil, 0.2)
+    if name == "rotazione_secca":
+        return dry_rotation_inputs(soil, pars), w.initial_water_state(soil, 0.5)
+    raise KeyError(name)
+
+
 class TestFisica:
     @pytest.fixture(scope="class", params=["mais", "tre_anni", "casuale"])
     def run(self, request, soil, pars):
-        if request.param == "mais":
-            inp = maize_inputs(soil, pars)
-            st = w.initial_water_state(soil, 0.4)
-        elif request.param == "tre_anni":
-            inp = three_year_inputs(soil, pars)
-            st = w.initial_water_state(soil, 0.7)
-        else:
-            inp = random_inputs(5000)
-            st = w.initial_water_state(soil, 0.2)
+        inp, st = scenario(request.param, soil, pars)
         return inp, w.run_water_balance(inp, soil, st, irr_cap=90.0, use_amc=True)
 
     def test_eta_non_supera_etc(self, run):
@@ -235,10 +263,23 @@ class TestFisica:
 
     def test_strati_nei_limiti(self, run, soil):
         _, r = run
-        assert r.w1.min() >= soil.wp1_mm - EPS
-        assert r.w2.min() >= soil.wp2_mm - EPS
         assert r.w1.max() <= soil.fc1_mm + EPS
         assert r.w2.max() <= soil.fc2_mm + EPS
+        assert r.w2.min() >= soil.wp2_mm - EPS
+
+    @pytest.mark.parametrize("name", ["mais", "tre_anni", "casuale", "rotazione_secca"])
+    def test_strato1_non_sotto_appassimento(self, name, soil, pars):
+        inp, st = scenario(name, soil, pars)
+        r = w.run_water_balance(inp, soil, st, irr_cap=90.0, use_amc=True)
+        # Negli scenari con suolo nudo ('casuale', 'rotazione_secca') l'evaporazione puo'
+        # portare i primi Ze m fino a 0,5 theta_WP (FAO-56 cap. 7, eq. 73:
+        # TEW = 1000 (theta_FC - 0,5 theta_WP) Ze), mentre il resto dello strato 1 resta
+        # >= theta_WP (eq. 82). Il limite fisico e' quindi
+        # W1_min = 1000 (theta_WP z1 - 0,5 theta_WP Ze) = wp1_mm - 500 theta_WP Ze,
+        # non wp1_mm. Gli scenari solo colturali restano sopra wp1_mm.
+        lim = soil.w1_min_mm if name in ("casuale", "rotazione_secca") else soil.wp1_mm
+        assert r.w1.min() >= lim - EPS, (
+            f"w1 scende {lim - r.w1.min():.2f} mm sotto il limite inferiore dello strato 1")
 
     def test_flussi_non_negativi(self, run):
         _, r = run

@@ -1,12 +1,12 @@
 {
   "lat": 45.2,
   "lon": 10.0,
-  "generated": "2026-11-12 14:46",
+  "generated": "2026-11-12 23:17",
   "counts": {
-    "OK": 24,
-    "ATTENZIONE": 9,
+    "OK": 31,
+    "ATTENZIONE": 11,
     "ERRORE": 0,
-    "NON DISPONIBILE": 11
+    "NON DISPONIBILE": 0
   },
   "checks": [
     {
@@ -107,51 +107,45 @@
     },
     {
       "dataset": "IMERG",
-      "name": "Disponibilita'",
-      "status": "NON DISPONIBILE",
-      "detail": "imerg_daily.csv assente (non in cache)"
-    },
-    {
-      "dataset": "IMERG",
       "name": "Completezza giornaliera",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: imerg_daily.csv assente (non in cache)"
+      "status": "OK",
+      "detail": "9253 giorni con valore su 9253 attesi (2000-06-01..2025-09-30); mancanti 0"
     },
     {
       "dataset": "IMERG",
       "name": "Intervallo valori",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: imerg_daily.csv assente (non in cache)"
+      "status": "OK",
+      "detail": "min 0.00, max 88.89 mm/g; attesi [0, 400]; fuori: 0"
     },
     {
       "dataset": "IMERG",
       "name": "Ultimo giorno disponibile",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: imerg_daily.csv assente (non in cache)"
+      "status": "ATTENZIONE",
+      "detail": "ultimo giorno 2025-09-30 (fine periodo meteo 2025-12-31)"
     },
     {
       "dataset": "POWER vs IMERG",
       "name": "Pioggia annua",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: imerg_daily.csv assente (non in cache)"
+      "status": "ATTENZIONE",
+      "detail": "24 anni confrontabili (>= 80% giorni completi), 2 non confrontabili; scarto relativo (POWER-IMERG)/IMERG sui giorni comuni: mediano -16.5%, min -28.7%, max +23.1%; anni oltre +-25%: 2016 -28%, 2017 -26%, 2023 -29%; non confrontabili: 2000 (58.5%), 2025 (74.8%)"
     },
     {
       "dataset": "POWER vs IMERG",
       "name": "Correlazione dei totali mensili",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: imerg_daily.csv assente (non in cache)"
+      "status": "OK",
+      "detail": "r di Pearson tra totali mensili POWER e IMERG = 0.865 su 288 mesi (anni confrontabili, mesi con >= 80% di giorni completi); informativo, nessuna soglia"
     },
     {
       "dataset": "POWER vs IMERG",
       "name": "Giorni piovosi (>= 1 mm)",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: imerg_daily.csv assente (non in cache)"
+      "status": "OK",
+      "detail": "frequenza media POWER 30.4% contro IMERG 25.9% dei giorni comuni (differenza +4.6 punti); per anno nella tabella; informativo"
     },
     {
       "dataset": "POWER vs IMERG",
       "name": "Rapporto annuo nel tempo",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: imerg_daily.csv assente (non in cache)"
+      "status": "OK",
+      "detail": "rapporto POWER/IMERG medio: fino al 2022 0.84 (22 anni), dopo 0.97 (2 anni); variazione +16% (ATTENZIONE oltre +-25%)"
     },
     {
       "dataset": "POWER ET0",
@@ -257,21 +251,15 @@
     },
     {
       "dataset": "SMAP",
-      "name": "Disponibilita'",
-      "status": "NON DISPONIBILE",
-      "detail": "smap_daily.csv assente (non in cache)"
-    },
-    {
-      "dataset": "SMAP",
       "name": "Giorni con passaggio di qualita' raccomandata",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: smap_daily.csv assente (non in cache)"
+      "status": "OK",
+      "detail": "2323 giorni su 3845 (60.4%) con almeno un passaggio con flag [0, 8]; informativo"
     },
     {
       "dataset": "SMAP",
       "name": "Intervallo valori",
-      "status": "NON DISPONIBILE",
-      "detail": "saltato: smap_daily.csv assente (non in cache)"
+      "status": "OK",
+      "detail": "3620 valori di qualita' raccomandata: min 0.038, max 0.468 m3/m3; attesi [0.02, 0.6]; fuori: 0"
     }
   ]
 }

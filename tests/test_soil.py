@@ -204,8 +204,14 @@ def test_yaml_inputs_match_soilgrids_cache():
         cached = soil.horizons_from_aggregated(sg.load_aggregated(45.2, 10.0))
     except Exception as exc:  # cache assente
         pytest.skip(f"cache SoilGrids non disponibile: {exc}")
-    for h, c in zip(_horizons_from_yaml(_yaml()), cached):
+    y = _yaml()
+    for i, (h, c) in enumerate(zip(_horizons_from_yaml(y), cached)):
         for k in ("sand", "clay", "om", "bdod", "cfvo"):
+            if i == 0 and k == "om":
+                # 0-30 cm: SO da ERSAF per decisione del responsabile; il valore SoilGrids sta nell'intervallo
+                lo, hi = y["strati_soilgrids"]["s0_30"]["sostanza_organica"]["intervallo"]
+                assert lo <= c[k] <= hi
+                continue
             assert h[k] == pytest.approx(c[k], abs=0.006), k
 
 

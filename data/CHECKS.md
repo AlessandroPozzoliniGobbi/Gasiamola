@@ -4,7 +4,7 @@
 
 ## Controlli automatici di qualita' dei dati
 
-Eseguito il 2026-11-12 14:46 con `python -m fieldwise.qc --lat 45.2 --lon 10`. 44 controlli: 24 OK, 9 ATTENZIONE, 0 ERRORE, 11 NON DISPONIBILE. Questa parte e' rigenerata a ogni esecuzione: non modificarla a mano (le decisioni vanno nella sezione Decisioni, in fondo al file).
+Eseguito il 2026-11-12 23:17 con `python -m fieldwise.qc --lat 45.2 --lon 10`. 42 controlli: 31 OK, 11 ATTENZIONE, 0 ERRORE, 0 NON DISPONIBILE. Questa parte e' rigenerata a ogni esecuzione: non modificarla a mano (le decisioni vanno nella sezione Decisioni, in fondo al file).
 
 ### Esiti
 
@@ -26,14 +26,13 @@ Eseguito il 2026-11-12 14:46 con `python -m fieldwise.qc --lat 45.2 --lon 10`. 4
 | POWER vs ARPA pioggia | Correlazione dei totali mensili | OK | r di Pearson tra totali mensili POWER e ARPA = 0.769 su 271 mesi (anni confrontabili, mesi con >= 80% di giorni completi); informativo, nessuna soglia |
 | POWER vs ARPA pioggia | Giorni piovosi (>= 1 mm) | OK | frequenza media POWER 31.0% contro ARPA 21.2% dei giorni comuni (differenza +9.9 punti); per anno nella tabella; informativo |
 | POWER vs ARPA pioggia | Rapporto annuo nel tempo | ATTENZIONE | rapporto POWER/ARPA medio: fino al 2022 1.02 (21 anni), dopo 1.46 (3 anni); variazione +43% (ATTENZIONE oltre +-25%) |
-| IMERG | Disponibilita' | NON DISPONIBILE | imerg_daily.csv assente (non in cache) |
-| IMERG | Completezza giornaliera | NON DISPONIBILE | saltato: imerg_daily.csv assente (non in cache) |
-| IMERG | Intervallo valori | NON DISPONIBILE | saltato: imerg_daily.csv assente (non in cache) |
-| IMERG | Ultimo giorno disponibile | NON DISPONIBILE | saltato: imerg_daily.csv assente (non in cache) |
-| POWER vs IMERG | Pioggia annua | NON DISPONIBILE | saltato: imerg_daily.csv assente (non in cache) |
-| POWER vs IMERG | Correlazione dei totali mensili | NON DISPONIBILE | saltato: imerg_daily.csv assente (non in cache) |
-| POWER vs IMERG | Giorni piovosi (>= 1 mm) | NON DISPONIBILE | saltato: imerg_daily.csv assente (non in cache) |
-| POWER vs IMERG | Rapporto annuo nel tempo | NON DISPONIBILE | saltato: imerg_daily.csv assente (non in cache) |
+| IMERG | Completezza giornaliera | OK | 9253 giorni con valore su 9253 attesi (2000-06-01..2025-09-30); mancanti 0 |
+| IMERG | Intervallo valori | OK | min 0.00, max 88.89 mm/g; attesi [0, 400]; fuori: 0 |
+| IMERG | Ultimo giorno disponibile | ATTENZIONE | ultimo giorno 2025-09-30 (fine periodo meteo 2025-12-31) |
+| POWER vs IMERG | Pioggia annua | ATTENZIONE | 24 anni confrontabili (>= 80% giorni completi), 2 non confrontabili; scarto relativo (POWER-IMERG)/IMERG sui giorni comuni: mediano -16.5%, min -28.7%, max +23.1%; anni oltre +-25%: 2016 -28%, 2017 -26%, 2023 -29%; non confrontabili: 2000 (58.5%), 2025 (74.8%) |
+| POWER vs IMERG | Correlazione dei totali mensili | OK | r di Pearson tra totali mensili POWER e IMERG = 0.865 su 288 mesi (anni confrontabili, mesi con >= 80% di giorni completi); informativo, nessuna soglia |
+| POWER vs IMERG | Giorni piovosi (>= 1 mm) | OK | frequenza media POWER 30.4% contro IMERG 25.9% dei giorni comuni (differenza +4.6 punti); per anno nella tabella; informativo |
+| POWER vs IMERG | Rapporto annuo nel tempo | OK | rapporto POWER/IMERG medio: fino al 2022 0.84 (22 anni), dopo 0.97 (2 anni); variazione +16% (ATTENZIONE oltre +-25%) |
 | POWER ET0 | Penman-Monteith vs Hargreaves | OK | totali annui medi su 26 anni: Penman-Monteith 887 mm, Hargreaves 1036 mm; rapporto medio HG/PM 1.170 (annuo min 1.122, max 1.219); correlazione giornaliera 0.975; mese con lo scarto maggiore: dicembre (+65%, +7.0 mm); nessun anno con rapporto fuori [0.85, 1.30] |
 | ARPA temperature | Completezza per anno | ATTENZIONE | giorni completi per anno: min 72% (2010), media 94%, 9497 giorni, 8971 completi; anni sotto 90%: 2002 85%, 2003 75%, 2004 89%, 2008 89%, 2010 72%, 2016 84% |
 | POWER vs ARPA temperature | Differenza tmax/tmin | ATTENZIONE | POWER - ARPA su 8971 giorni completi: tmax -0.79 degC, tmin +0.70 degC (anno); giugno-agosto (2254 giorni): tmax -1.32, tmin +1.18 degC (ATTENZIONE se /tmax estiva/ > 1) |
@@ -51,9 +50,8 @@ Eseguito il 2026-11-12 14:46 con `python -m fieldwise.qc --lat 45.2 --lon 10`. 4
 | ISTAT | Rese in intervalli plausibili | OK | tutte le rese in intervallo (t/ha: mais 5-16; soia 1.5-6; frumento 3-9) |
 | ISTAT | Anni successivi all'ultimo anno di meteo | ATTENZIONE | anni oltre l'ultimo anno di meteo (2025) da escludere dalla validazione (stime provvisorie): frumento 2026, mais 2026, soia 2026 |
 | ISTAT | Salti annui > 30% | ATTENZIONE | 6 variazioni oltre +-30% rispetto all'anno precedente: frumento 2013 -38.5%, frumento 2014 +37.5%, frumento 2016 +30.0%, mais 2016 +47.4%, mais 2023 +36.8%, soia 2020 +50.0% |
-| SMAP | Disponibilita' | NON DISPONIBILE | smap_daily.csv assente (non in cache) |
-| SMAP | Giorni con passaggio di qualita' raccomandata | NON DISPONIBILE | saltato: smap_daily.csv assente (non in cache) |
-| SMAP | Intervallo valori | NON DISPONIBILE | saltato: smap_daily.csv assente (non in cache) |
+| SMAP | Giorni con passaggio di qualita' raccomandata | OK | 2323 giorni su 3845 (60.4%) con almeno un passaggio con flag [0, 8]; informativo |
+| SMAP | Intervallo valori | OK | 3620 valori di qualita' raccomandata: min 0.038, max 0.468 m3/m3; attesi [0.02, 0.6]; fuori: 0 |
 
 ### Pioggia annua: POWER contro riferimento
 
@@ -87,6 +85,32 @@ Totali `*_mm` sull'anno intero; colonne `*_common_mm`, scarto e rapporto ricalco
 | ARPA | 2023 | 660 | 496 | 100.0 | 660 | 496 | 365 | +33.1% | 1.33 | 31.8 | 19.2 | ATTENZIONE |
 | ARPA | 2024 | 1719 | 1241 | 96.2 | 1704 | 1241 | 352 | +37.3% | 1.37 | 36.1 | 25.6 | ATTENZIONE |
 | ARPA | 2025 | 1487 | 884 | 99.7 | 1485 | 883 | 364 | +68.2% | 1.68 | 38.7 | 22.8 | ATTENZIONE |
+| IMERG | 2000 | 967 | 890 | 58.5 | 742 | 890 | 214 | -16.6% | 0.83 | 36.4 | 39.3 | non confrontabile |
+| IMERG | 2001 | 793 | 891 | 100.0 | 793 | 891 | 365 | -11.1% | 0.89 | 32.1 | 29.0 | OK |
+| IMERG | 2002 | 1099 | 1233 | 100.0 | 1099 | 1233 | 365 | -10.9% | 0.89 | 34.8 | 33.7 | OK |
+| IMERG | 2003 | 587 | 655 | 100.0 | 587 | 655 | 365 | -10.4% | 0.90 | 24.9 | 21.6 | OK |
+| IMERG | 2004 | 795 | 790 | 100.0 | 795 | 790 | 366 | +0.6% | 1.01 | 31.7 | 26.5 | OK |
+| IMERG | 2005 | 702 | 761 | 100.0 | 702 | 761 | 365 | -7.8% | 0.92 | 27.4 | 24.7 | OK |
+| IMERG | 2006 | 618 | 659 | 100.0 | 618 | 659 | 365 | -6.3% | 0.94 | 29.0 | 21.6 | OK |
+| IMERG | 2007 | 654 | 762 | 100.0 | 654 | 762 | 365 | -14.2% | 0.86 | 21.6 | 22.5 | OK |
+| IMERG | 2008 | 904 | 1022 | 100.0 | 904 | 1022 | 366 | -11.6% | 0.88 | 35.0 | 32.0 | OK |
+| IMERG | 2009 | 862 | 1004 | 100.0 | 862 | 1004 | 365 | -14.2% | 0.86 | 32.1 | 25.8 | OK |
+| IMERG | 2010 | 1123 | 1338 | 100.0 | 1123 | 1338 | 365 | -16.0% | 0.84 | 34.0 | 32.6 | OK |
+| IMERG | 2011 | 661 | 829 | 100.0 | 661 | 829 | 365 | -20.3% | 0.80 | 25.2 | 23.0 | OK |
+| IMERG | 2012 | 749 | 921 | 100.0 | 749 | 921 | 366 | -18.7% | 0.81 | 26.0 | 25.1 | OK |
+| IMERG | 2013 | 944 | 1138 | 100.0 | 944 | 1138 | 365 | -17.0% | 0.83 | 37.3 | 30.4 | OK |
+| IMERG | 2014 | 1110 | 1365 | 100.0 | 1110 | 1365 | 365 | -18.7% | 0.81 | 44.1 | 36.7 | OK |
+| IMERG | 2015 | 586 | 770 | 100.0 | 586 | 770 | 365 | -24.0% | 0.76 | 23.6 | 20.5 | OK |
+| IMERG | 2016 | 724 | 1003 | 100.0 | 724 | 1003 | 366 | -27.8% | 0.72 | 32.5 | 23.2 | ATTENZIONE |
+| IMERG | 2017 | 526 | 710 | 100.0 | 526 | 710 | 365 | -25.9% | 0.74 | 24.7 | 18.1 | ATTENZIONE |
+| IMERG | 2018 | 810 | 1006 | 100.0 | 810 | 1006 | 365 | -19.5% | 0.81 | 35.3 | 27.7 | OK |
+| IMERG | 2019 | 931 | 1099 | 100.0 | 931 | 1099 | 365 | -15.3% | 0.85 | 31.5 | 25.8 | OK |
+| IMERG | 2020 | 784 | 1017 | 100.0 | 784 | 1017 | 366 | -22.9% | 0.77 | 29.2 | 24.0 | OK |
+| IMERG | 2021 | 682 | 885 | 100.0 | 682 | 885 | 365 | -22.9% | 0.77 | 24.7 | 23.0 | OK |
+| IMERG | 2022 | 529 | 663 | 100.0 | 529 | 663 | 365 | -20.2% | 0.80 | 26.3 | 18.9 | OK |
+| IMERG | 2023 | 660 | 927 | 100.0 | 660 | 927 | 365 | -28.7% | 0.71 | 31.8 | 23.0 | ATTENZIONE |
+| IMERG | 2024 | 1719 | 1397 | 100.0 | 1719 | 1397 | 366 | +23.1% | 1.23 | 35.8 | 31.7 | OK |
+| IMERG | 2025 | 1487 | 970 | 74.8 | 879 | 970 | 273 | -9.4% | 0.91 | 39.9 | 30.4 | non confrontabile |
 
 ### ET0: Penman-Monteith contro Hargreaves
 
@@ -318,3 +342,32 @@ Compilate il 2026-11-12. Codice: `src/fieldwise/weather.py` (D1, D2). Script di 
 7. L'NDVI della finestra da 2 km mescola colture; il pixel centrale non è legato alla coltura del campo.
 8. Senza credenziali Earthdata IMERG e SMAP mancano, quindi nessuna validazione dell'umidità del suolo.
 9. Il pluviometro di Persico Dosimo ha anni incompleti (2003, 2004, 2008, 2010, 2016) e il sensore di temperatura 2485 non è omogeneo.
+
+## Aggiornamento delle decisioni dopo l'arrivo di IMERG e SMAP (2026-11-12)
+
+Dati: GPM IMERG Final Daily V07, interpolazione bilineare delle quattro celle attorno al punto,
+2000-06-01 → 2025-09-30, 9253 giorni tutti validi. SMAP SPL3SMP_E V006, 2015-03-31 → 2025-12-31,
+3845 giorni, 2323 con almeno un passaggio di qualità raccomandata (umidità tra 0,038 e 0,458 m³/m³).
+
+Confronto delle piogge con il pluviometro ARPA di Persico Dosimo (solo giorni completi, anni con almeno
+l'80% di giorni completi, 22 anni dal 2001):
+
+| Misura | NASA POWER | IMERG |
+|---|---|---|
+| Rapporto medio dei totali annui con ARPA, 2001–2022 | 1,01 | 1,21 |
+| Errore assoluto medio annuo, 2001–2022 | 11% | 22% |
+| Rapporto medio con ARPA, 2023–2024 | 1,35 | 1,49 |
+| Correlazione dei totali mensili | 0,80 | 0,80 |
+| Correlazione giornaliera | 0,59 | 0,73 |
+| Giorni piovosi (≥ 1 mm; ARPA 21%) | 31% | 26% |
+
+D8. La decisione D1 è confermata: la pioggia del motore resta NASA POWER 2000–2022. IMERG non la
+sostituisce: sui totali annui sovrastima il pluviometro del 21% in media, contro l'1% di POWER, e il
+bilancio idrico stagionale dipende dai totali. IMERG è però migliore nel collocare la pioggia nel giorno
+giusto (correlazione giornaliera 0,73 contro 0,59) e ha meno giorni di pioviggine: resta disponibile
+come forzante alternativa (`rain_source="imerg"`) per l'analisi di sensibilità.
+D9. Anche IMERG è sopra il pluviometro nel 2023 (927 contro 496 mm) e nel 2024 (1386 contro 1241 mm):
+gli anni dal 2023 restano esclusi dall'ensemble; il confronto con una sola stazione in quegli anni va
+letto con cautela (la rete di cinque pluviometri dava per POWER 1,17 nel 2023).
+D10. La differenza tra interpolazione bilineare e cella più vicina è trascurabile (−0,02 mm/giorno).
+D11. SMAP è utilizzabile per la validazione dell'umidità (fase 6) sui 2323 giorni di qualità raccomandata.

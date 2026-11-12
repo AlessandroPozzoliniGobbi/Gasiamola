@@ -47,3 +47,16 @@ Le Linee guida nazionali di produzione integrata 2026 (sezione tecniche agronomi
 | C4 | Allen R.G., Pereira L.S., Raes D., Smith M. (1998). *FAO Irrigation and Drainage Paper 56* | Tab. 12: https://www.fao.org/4/x0490e/x0490e0b.htm ; Tab. 22: https://www.fao.org/4/x0490e/x0490e0e.htm | Tab. 12 cereali a paglia (Winter Wheat Kc ini 0.4/0.7); Tab. 22 Zr e p dei cereali a paglia e correzione di p | La segale non è tabulata: usata per analogia |
 
 Nessuna fonte aperta con un coefficiente isoumico per la biomassa di cover crop è stata trovata (ricerche sui documenti regionali ER e Lombardia, voci "isoumico", "umificazione"): il valore in `cover_crop.yaml` è un'assunzione ragionata da C1 e H1.
+
+## Aggiornamento 2026-11-12 (correzioni dopo `reports/params_review.md`)
+
+| # | Riferimento | URL | Cosa ho letto | Limiti |
+|---|---|---|---|---|
+| L8 | AHDB – Agriculture and Horticulture Development Board (UK). *Take-all disease in cereals: prevent, detect, control* (pagina web, senza data; consultata il 2026-11-12) | https://ahdb.org.uk/knowledge-library/take-all-in-winter-wheat | "yields of second wheat crops are frequently 10–15% less than those of first wheats"; "losses of 10–20% are common in second and third wheat crops"; in monosuccessione di cereali le rese "generally recover, to some extent" | Ente tecnico pubblico britannico, categoria "altro"; contesto UK. Usato per `f_rotazione.frumento_dopo_frumento.primo_ristoppio` (0,875) |
+| C1 | BENCO (Bechini et al. 2020), riletto | stesso URL | Scheda 8, Tab. 8.1 p. 82 (segale: semina settembre-ottobre, durata potenziale fino a giugno) e Tab. 8.2 (biomassa a fine novembre per epoca di semina) | Usato per `cover_crop.calendario_agronomico.semina_max` e per la durata minima derivata |
+| C5 | Duparque et al. (2007), *Mémento Sols et Matières Organiques* (Agro-Transfert), riletto | https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf | p. 19, Tableau 2: "Engrais vert" k1 HD 0,039, AMG 0,076; definizione base carbonio | Fonte francese, categoria "altro"; k1 generico dei sovesci. Usato per `cover_crop.humus.coefficiente_isoumico` |
+
+Seifert et al. (2017) e Marini et al. (2020) non sono stati riletti: le condizioni delle prove riportate nelle note
+(irriguo/asciutto, monocoltura pluridecennale contro rotazioni con medica) sono quelle confermate dal revisore.
+Nota: il coefficiente isoumico della cover non è più un'assunzione (frase finale della sezione "Cover crop" superata).
+Le voci di `successioni_vietate` sono 44 (11 successioni × 4 regimi), tutte marcate `derivato: true` con uno script usa-e-getta.

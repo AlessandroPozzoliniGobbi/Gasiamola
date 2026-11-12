@@ -5,18 +5,19 @@
 _meta:
   descrizione: "Azoto (bilancio di massa del suolo) e humus (Hénin-Dupuis) per mais da granella, soia e frumento tenero in Pianura Padana"
   compilato_il: "2026-11-11"
-  rivisto_il: "2026-11-12 (correzioni dopo reports/params_review.md: fissazione soia, coppia n_assorbito/NHI soia, efficienza del concime, cover crop nelle equazioni, strato dell'humus, k2 per C/N > 12, credito di precessione)"
+  rivisto_il: "2026-11-12 (decisioni del responsabile dopo l'implementazione di nitrogen.py: soia senza concime e deficit_n, tetto e biomassa della cover proporzionali all'N assorbito, passo 2 che chiude il bilancio); 2026-11-12 (correzioni dopo reports/params_review.md: fissazione soia, coppia n_assorbito/NHI soia, efficienza del concime, cover crop nelle equazioni, strato dell'humus, k2 per C/N > 12, credito di precessione)"
   convenzioni:
     resa: "Le rese (t/ha) a cui si applicano i coefficienti per tonnellata sono di granella all'umidità commerciale (mais 14%, soia e frumento 13%, come in crops.yaml). Le tabelle ER (Allegato 6) non dichiarano l'umidità; la tabella MAS della Lombardia dice 'granella = all'umidità commerciale'. La soia in Salvagiotti et al. (2008) è al 13% di umidità."
     humus: "H è lo stock di sostanza organica (SO) del suolo in t SO/ha nello STRATO DELL'HUMUS, unico per tutto il motore: spessore suolo.profondita_humus (0,20 m), con SO% e densità apparente presi da soil.yaml (strati_soilgrids.s0_30.sostanza_organica e .densita_apparente). H = SO% / 100 x profondita_humus x 10000 x densita_apparente (t/ha)."
     strato_humus_e_strato_0_30: "Lo spessore 0,20 m è quello su cui il disciplinare ER ha derivato i coefficienti di mineralizzazione (Tab. 1 e nota, p. 53): k2 e n_humus riproducono la tabella solo su 20 cm. SO% e densità sono misurati o stimati su 0-30 cm (ERSAF, SoilGrids) e si assumono uniformi nello strato lavorato: lo stesso SO% vale per 0-20. I 10 cm tra 20 e 30 cm (un terzo dello stock 0-30) restano fuori dal bilancio dell'humus: non mineralizzano e non ricevono humus dai residui (stima prudente della mineralizzazione). Il modello idrico usa lo strato 0-30 cm di soil.yaml con la SO iniziale fissa: la variazione di H non retroagisce su fc e wp. Per confronto con lo stock 0-30: H(0-30) = 1,5 x H(0-20)."
-    tempo: "anni_seg = giorni del segmento / 365. Azoto e humus si aggiornano a fine segmento (PLAN.md, D6)."
+    tempo: "anni_seg = giorni del segmento / 365. Azoto e humus si aggiornano a passo giornaliero (tassi annui / 365); le voci per segmento sono somme giornaliere."
     credito_precessione_e_resa: "Il credito di precessione (Tab. 4 ER) agisce SOLO sull'azoto (concime richiesto, N_min). NON va combinato con un fattore di resa per precessione favorevole (rotation_rules.precessione_favorevole), che misura in parte lo stesso effetto azoto: sarebbe un doppio conteggio."
   equazioni:
     stati: |
       N_min  [kg N/ha]  azoto minerale nel profilo radicale
       N_res  [kg N/ha]  azoto organico dei residui freschi (colture e cover) non ancora mineralizzati
       N_cov  [kg N/ha]  azoto nella biomassa della cover crop viva (solo durante l'intercoltura con cover)
+      N_pl   [kg N/ha]  azoto nella coltura in piedi tra semina e raccolta (serve alla chiusura giornaliera)
       H      [t SO/ha]  humus (sostanza organica stabile) nello strato dell'humus (0-0,20 m)
       N_hum  [kg N/ha]  = H x n_humus x 1000  (azoto contenuto nell'humus; non è uno stato indipendente)
     humus_henin_dupuis: |
@@ -33,7 +34,8 @@ _meta:
         H_res  = k1_residui(coltura) x C_res x fattore_so_c              [t SO/ha]
         (k1_residui è su base carbonio: kg C umificato per kg C del residuo)
       Humus formato dalla cover crop alla terminazione (cover_crop.yaml):
-        C_cov  = biomassa_e_azoto.biomassa_secca x biomassa_e_azoto.frazione_carbonio_sostanza_secca   [t C/ha]
+        C_cov  = SS_cov x biomassa_e_azoto.frazione_carbonio_sostanza_secca   [t C/ha]
+                 (SS_cov = biomassa_secca x U_cov / n_assorbito, vedi azoto_bilancio_segmento passo 3bis)
         H_cov  = humus.coefficiente_isoumico x C_cov x fattore_so_c      [t SO/ha]
       Variazione:
         H(fine) = H(inizio) - H_min + H_res + H_cov
@@ -55,66 +57,51 @@ _meta:
       Nota: i k2 ER sono tassi relativi (1/anno) e si applicano a H calcolato con la densità di soil.yaml; con
       densità 1,433 invece di 1,30 (franco ER) l'N mineralizzato per punto di SO è il 10% più alto della Tab. 1.
     azoto_bilancio_segmento: |
-      Ordine dei passi alla fine di ogni segmento (coltura o intercoltura):
-      1) Entrate al pool minerale
-         MIN   = H_min x n_humus x 1000                                  [kg N/ha]  (humus -> N_min)
-         DISP  = fattore_dispersione[tessitura][ossigeno] x MIN         [kg N/ha]  (perdita: immobilizzazione+volatilizzazione+denitrificazione)
-         DEP   = deposizione_atmosferica x anni_seg
-         CRED  = credito_precessione(coltura precedente, gestione residui)  applicato solo al primo segmento colturale dopo la raccolta:
-                   se CRED >= 0: trasferimento  N_res -> N_min  di min(CRED, N_res)
-                   se CRED <  0: immobilizzazione N_min -> N_res di min(|CRED|, N_min)
-         N_min = N_min + MIN - DISP + DEP + CRED_effettivo
-         N_disp = N_min dopo il passo 1 (azoto minerale disponibile per la coltura del segmento)
-      2) Solo segmento colturale: fabbisogno, presa dal suolo, fissazione, concime
-         U      = resa x n_assorbito(coltura)                             [kg N/ha]  azoto nella pianta (parte aerea)
-         Mais e frumento:
-           U_suolo = min(U, N_disp) ; FIX = 0
-         Soia (usa prima l'azoto minerale, poi fissa fino a una quota massima di U; Salvagiotti et al. 2008):
-           U_suolo = min(U, N_disp)
-           FIX     = min(U - U_suolo, quota_fissazione_max x U, fissazione_max_assoluta x exp(-coeff_inibizione_n x FERT))
-           (l'esponenziale si applica SOLO alla dose di concime FERT, la grandezza per cui è stato stimato;
-            con FERT = 0 il terzo termine vale 337 kg N/ha. Se N_disp è alto U_suolo cresce e FIX cala da solo.)
-         DEF    = U - U_suolo - FIX                                       [kg N/ha]  deficit da coprire con concime
-         FERT   = DEF / recupero_apparente(coltura)                       [kg N/ha]  dose di concime minerale
-                  (soia: si usa recupero_apparente.frumento; con DEF > 0 la soia è fuori dalla norma, vedi vincoli.mas.soia)
-         Controllo normativo: FERT x efficienza_concime.minerale_convenzione_normativa <= MAS(coltura, resa);
-                  se il limite taglia FERT, DEF non coperto riduce la resa (decisione del motore).
-         PERD_F = FERT x (1 - recupero_apparente(coltura))                [kg N/ha]  quota del concime non recuperata dalla
-                  coltura: volatilizzazione, denitrificazione e immobilizzazione, contabilizzata come perdita esplicita
-         N_min  = N_min + FERT - PERD_F - U_suolo
-      3) Lisciviazione (drenaggio D_seg [mm] sotto le radici nel segmento, dal bilancio idrico)
-         L      = N_min x (1 - exp( -D_seg / ((1 - anion_excl) x SAT_mm) ))
-         SAT_mm = contenuto idrico a saturazione dello strato radicale [mm] (dai parametri del suolo)
-         N_min  = N_min - L
-      3bis) Intercoltura con cover crop (segale, cover_crop.yaml), al posto del passo 2:
-         U_cov  = min(biomassa_e_azoto.n_assorbito, N_min prima della lisciviazione)   [kg N/ha]  azoto assorbito
-                  dalla segale e quindi sottratto alla lisciviazione: N_min = N_min - U_cov ; N_cov = N_cov + U_cov
-         la lisciviazione del passo 3 si calcola sul N_min rimasto (biomassa_e_azoto.riduzione_lisciviazione serve
-         solo da controllo: la riduzione di L rispetto al suolo nudo deve stare nell'intervallo 0,56-0,70)
-         Terminazione (calendario_agronomico.terminazione):
-           N_res  = N_res + N_cov ; N_cov = 0                                  (l'azoto della biomassa passa al pool organico)
-           IMM_cov = biomassa_e_azoto.npd_per_t_ss x biomassa_secca            [kg N/ha]  negativo per la segale (-10)
-                     se IMM_cov < 0: immobilizzazione N_min -> N_res di min(|IMM_cov|, N_min) per la coltura successiva
-                     se IMM_cov > 0 (cover leguminose): trasferimento N_res -> N_min di efficienza_campo x IMM_cov
-           N_umif_cov = H_cov x n_humus x 1000 , preso da N_res               (azoto restituito all'humus)
-           il resto di N_res segue la regola del passo 5.
-      4) Raccolta (solo segmento colturale)
-         EXP    = resa x n_asportato(coltura)                            [kg N/ha]  esce dal campo
-         R_N    = U - EXP                                                 azoto nei residui aerei lasciati in campo
-         N_umif = H_res x n_humus x 1000                                  azoto che passa nell'humus con H_res
-         N_res  = N_res + R_N - N_umif ; se N_res < 0 il deficit si prende da N_min (immobilizzazione per umificazione);
-                  se anche N_min non basta, H_res si riduce in proporzione.
-         Se i residui sono asportati: R_N si aggiunge a EXP, H_res = 0.
-      5) Residui non mineralizzati: alla fine del primo segmento colturale successivo alla raccolta (o alla
-         terminazione della cover) il residuo N_res rimasto passa a N_min (vedi suolo.residui.rilascio_completo_dopo_una_coltura, assunzione).
-      Chiusura (da verificare nel test di nitrogen.py, tolleranza 1e-6 kg/ha):
-        ENTRATE = DEP + FERT + FIX
-        USCITE  = EXP + L + DISP + PERD_F
-        DELTA   = Δ N_min + Δ N_res + Δ N_cov + Δ N_hum
-        ENTRATE - USCITE = DELTA
-        (U_suolo, U_cov, IMM_cov, CRED, N_umif, N_umif_cov e il rilascio del passo 5 sono trasferimenti interni
-         tra N_min, N_cov, N_res e N_hum e non compaiono in ENTRATE né in USCITE; Δ N_hum comprende
-         + (H_res + H_cov - H_min) x n_humus x 1000, mentre MIN entra in N_min e DISP esce.)
+      PASSO GIORNALIERO (dal 2026-11-12; fieldwise.nitrogen.run_daily, nucleo numba, una chiamata per
+      rotazione dopo il bilancio idrico). Le voci per segmento (coltura, nudo, cover) sono somme dei flussi
+      giornalieri. Stati: N_min, N_res (residui e immobilizzazioni in attesa di rilascio), N_cov (cover viva),
+      N_pl (azoto nella coltura in piedi, tra semina e raccolta), H. Ogni giorno, in questo ordine:
+      0) Primo giorno di una coltura: credito di precessione CRED della coltura precedente (Tab. 4 ER)
+         CRED < 0: immobilizzazione N_min -> N_res di min(|CRED|, N_min), poi rilasciata come al passo 1bis
+         CRED > 0: anticipo del rilascio N_res -> N_min di min(CRED, N_res)
+      1) MIN  = k2 x min(H, H_tetto) / 365 x n_humus x 1000 ;  H = H - k2 x min(H, H_tetto) / 365
+         DISP = fattore_dispersione x MIN ;  DEP = deposizione_atmosferica / 365
+         N_min = N_min + MIN - DISP + DEP
+      1bis) Rilascio programmato: ogni apporto a N_res (N fresco dei residui dopo l'umificazione, N della cover
+         alla terminazione, immobilizzazioni) torna a N_min in modo uniforme nei suolo.residui.giorni_rilascio
+         giorni successivi all'evento (assunzione); N_res = somma dei rilasci non ancora avvenuti.
+      2) Coltura: U = resa x n_assorbito(coltura) sul ciclo (resa nota dal bilancio idrico e dai fattori);
+         u_d = U x q_d con q_d = Tr_d / somma sul ciclo di Tr, Tr_d = Ks_d x Kcb_d x ET0_d: traspirazione
+         stimata con il coefficiente basale FAO-56 (Tab. 17, crops.<coltura>.kcb, stessa curva a quattro tratti
+         e stessi punti di passaggio di Kc, correzione climatica di mid/end come Kc) e Ks del bilancio idrico.
+         Regola dichiarata come ASSUNZIONE: la biomassa, e con essa l'azoto assorbito, cresce in proporzione
+         alla traspirazione (principio della produttivita' dell'acqua di FAO-33 e AquaCrop/FAO-66, ricordato,
+         non riletto per questa regola). Alternative per la sensibilita' (rotation.simulate, argomento
+         riparto): 'eta' (ETa) e 'eta_et0' (ETa/ET0).
+         u_suolo = min(u_d, N_min); N_min = N_min - u_suolo; N_pl = N_pl + u_suolo
+         Mais e frumento: def_d = u_d - u_suolo coperto dal concime del giorno (distribuzione frazionata che
+           segue la domanda): FERT_d = def_d / recupero_apparente ; PERD_F_d = FERT_d - def_d ; N_pl += def_d
+         Soia (nessun concime): FIX_d = min(u_d - u_suolo, quota_fissazione_max x U - FIX gia' fissato);
+           deficit_n_d = u_d - u_suolo - FIX_d (non coperto) ; N_pl += FIX_d
+         Controllo normativo sul ciclo: somma FERT x efficienza_concime.minerale_convenzione_normativa <= MAS.
+      2bis) Cover: u_cov_d = min(cover_crop.biomassa_e_azoto.n_assorbito x q_d, N_min), q_d = Tr / somma Tr
+         sul periodo della cover, Tr = Ks x Kcb x ET0 con Kcb = cover_crop.acqua.kcb.ini costante (come kc); N_min -> N_cov. Il tetto 0,70 x N_min del passo a fine segmento
+         non si usa piu': il limite nasce dal bilancio giornaliero (N_min presente ogni giorno).
+      3) Lisciviazione giornaliera: L_d = N_min x (1 - exp(-D_d / ((1 - anion_excl) x SAT_mm))), D_d =
+         percolazione profonda del giorno (SWAT eq. 4:2.1.2 e 4:2.1.8, formulata per il passo giornaliero;
+         qui con un solo strato = profilo del motore). N_min = N_min - L_d.
+      4) Ultimo giorno della coltura (raccolta): U_eff = N_pl ; EXP = resa x n_asportato x U_eff / U ;
+         R_N = U_eff - EXP (residui asportati: EXP += R_N, R_N = 0, H_res = 0) ; N_pl = 0
+         N_umif = H_res x n_humus x 1000 preso da R_N (deficit da N_min, poi H_res ridotto) ; H = H + H_res
+         R_N - N_umif -> N_res, rilasciato come al passo 1bis ; CRED della coltura per la coltura successiva.
+      4bis) Ultimo giorno della cover (terminazione): SS_cov = biomassa_secca x U_cov / n_assorbito ;
+         IMM_cov = npd_per_t_ss x SS_cov: se < 0 immobilizzazione da N_min di min(|IMM_cov|, N_min) che si
+         aggiunge all'N fresco; se > 0 efficienza_campo x IMM_cov passa subito a N_min. N_umif_cov =
+         H_cov x n_humus x 1000 dall'N fresco; il resto -> N_res con il rilascio del passo 1bis.
+      Chiusura giornaliera e sulla rotazione: DEP + FERT + FIX - (EXP + L + DISP + PERD_F) =
+         d(N_min + N_res + N_cov + N_pl + H x n_humus x 1000).
+      update_segment (involucro): un segmento solo, con D e assorbimento distribuiti uniformemente sui giorni;
+         l'N_res iniziale viene rilasciato in giorni_rilascio dall'inizio del segmento.
     disciplinare_controllo: |
       Per mostrare all'agricoltore la dose 'da disciplinare' (non usata nel bilancio di massa):
         N = A - B + C + D - E - F - G   (Regione Emilia-Romagna, Allegato 2)
@@ -129,12 +116,20 @@ _meta:
     - "recupero_apparente è misurato in prova come differenza di assorbimento tra parcella concimata e non concimata: la quota non recuperata comprende anche nitrato rimasto nel suolo e lisciviato. Il motore la toglie tutta come PERD_F e calcola a parte la lisciviazione del N_min residuo: c'è una possibile parziale sovrapposizione (perdite sovrastimate), da esplorare in sensibilità."
     - "Il fattore_dispersione del disciplinare ER si applica a B1+B2 (mineralizzazione + azoto pronto) una volta per coltura; qui si applica solo al flusso di mineralizzazione per non erodere N_min a ogni segmento."
     - "La soia prende dal suolo tutto l'N_disp fino al fabbisogno: in campo una parte del nitrato resta comunque nel suolo. La regola sovrastima la presa dal suolo quando N_disp è alto (e quindi sottostima la fissazione)."
-    - "La lisciviazione è calcolata a scala di segmento con un solo strato (SWAT eq. 4:2.1.2 applicata al profilo intero): sottostima il ritardo di trasporto e la stratificazione dei nitrati."
+    - "La lisciviazione è calcolata a passo giornaliero ma con un solo strato (SWAT eq. 4:2.1.2 applicata al profilo intero): sottostima il ritardo di trasporto e la stratificazione dei nitrati."
     - "Effluenti zootecnici e ammendanti: solo l'efficienza e il limite di 170 kg N/ha sono riportati; la loro mineralizzazione pluriennale (Tab. 5 e 6 ER) non è modellata."
     - "I coefficienti ER sono letti nelle Norme generali 2023; le modifiche 2025 e 2026 (BUR ER) sono state lette e non toccano queste voci; le modifiche 2024 non sono state lette."
     - "k1 HD per la soia non esiste nelle fonti lette: si usa il valore del pisello proteico (leguminosa da granella) come proxy."
     - "c_residui (frazione di carbonio nella sostanza secca dei residui) è letta solo per la paglia di frumento; per stocchi di mais e residui di soia è un'assunzione."
     - "Fosforo e potassio non sono modellati."
+    - "Soia senza concime: se N_disp + FIX < U il fabbisogno non coperto è riportato come deficit_n (con indicatore), ma la resa non viene ridotta; l'asportazione e l'N dei residui si calcolano sull'assorbimento coperto U_eff."
+    - "Concime: copre ogni giorno la parte di assorbimento che il suolo non copre (distribuzione frazionata ideale che segue la domanda). L'azoto del concime esposto tra distribuzione e assorbimento (dosi in blocco, lisciviazione dopo la concimazione) non è rappresentato, se non attraverso la perdita esplicita PERD_F = FERT x (1 - recupero_apparente)."
+    - "Ripartizione giornaliera dell'assorbimento proporzionale alla traspirazione stimata Ks x Kcb x ET0 (assunzione dichiarata). Kcb serve solo a questo riparto: il bilancio idrico resta a Kc singolo. La concentrazione di N nella biomassa e' trattata come costante nel ciclo (in campo e' piu' alta nelle prime fasi): l'assorbimento precoce e' sottostimato. Con ETa/ET0 (Kc singolo, evaporazione inclusa) il frumento assorbiva il 45% in nov-feb, con la traspirazione il 7%."
+    - "Cover: assorbimento proporzionale a Ks x Kcb x ET0 con Kcb costante, cioe' all'ET0 (alta a settembre-ottobre e a marzo, bassa d'inverno); la crescita della copertura nel tempo non e' rappresentata. A parita' di drenaggio la riduzione della lisciviazione (mediana 26%) resta sotto il 56-70% pubblicato: l'assorbimento non e' concentrato nell'autunno, quando drena di piu', e 51 kg N/ha sono una parte dell'N minerale presente a fine estate."
+    - "Rilascio dei residui e delle immobilizzazioni uniforme in giorni_rilascio (assunzione, senza dipendenza da temperatura e umidita')."
+    - "La frazione lisciviata usa SAT_mm dell'intero profilo del motore (1,5 m), non della sola zona radicale del segmento."
+    - "Il MAS non viene ridotto per rese sotto la resa di riferimento (la nota 112 regola solo il superamento)."
+    - "Cover: biomassa e humus proporzionali all'N assorbito (C/N costante) è un'assunzione; n_assorbito della segale è derivato, non misurato."
 
 # =============================================================================
 # COLTURE
@@ -275,7 +270,8 @@ soia:
       fonte: "Salvagiotti F., Cassman K.G., Specht J.E., Walters D.T., Weiss A., Dobermann A. (2008). Nitrogen uptake, fixation and response to fertilizer N in soybeans: A review. Field Crops Research 108(1): 1-13. doi:10.1016/j.fcr.2008.03.001"
       riferimento: "Fig. 3, curva limite y = 337 e^(-0,0098 x): 'the maximum level of N2 fixation as a function of fertilizer-N rate', x = concime N (kg/ha) in pre-semina o nei primi 20 cm; testo p. 6"
       url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
-      nota: "Usato come nella fonte: tetto assoluto della fissazione in funzione della DOSE DI CONCIME, FIX <= fissazione_max_assoluta x exp(-coeff_inibizione_n x FERT). Non si applica più all'N minerale del suolo né alla quota media (la versione precedente lo faceva: assunzione rimossa, vedi reports/params_review.md, voce 29). Con FERT = 30 kg/ha (MAS soia) il tetto scende a 251 kg N/ha."
+      usato_dal_motore: "no (2026-11-12): la soia non riceve concime nel motore, quindi il tetto in funzione della dose non si applica; con il concime la formula era circolare (FERT dipende da FIX e viceversa) e portava a dosi irrealistiche. Riportato come informazione."
+      nota: "Nella fonte: tetto assoluto della fissazione in funzione della DOSE DI CONCIME, FIX <= fissazione_max_assoluta x exp(-coeff_inibizione_n x FERT). Non si applica più all'N minerale del suolo né alla quota media (la versione precedente lo faceva: assunzione rimossa, vedi reports/params_review.md, voce 29). Con FERT = 30 kg/ha (MAS soia) il tetto scende a 251 kg N/ha."
       verificato: true
       sensibilita: true
     fissazione_max_assoluta:
@@ -284,6 +280,7 @@ soia:
       fonte: "Salvagiotti F., Cassman K.G., Specht J.E., Walters D.T., Weiss A., Dobermann A. (2008). Nitrogen uptake, fixation and response to fertilizer N in soybeans: A review. Field Crops Research 108(1): 1-13. doi:10.1016/j.fcr.2008.03.001"
       riferimento: "Tab. 1 'N2 fixation (kg ha-1)' massimo; testo p. 5 (Herridge 1982 come massimo affidabile)"
       url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
+      usato_dal_motore: "no (2026-11-12): con FERT = 0 il tetto (337 kg N/ha) non è mai attivo perché quota_fissazione_max x U è più basso per le rese simulate; resta come controllo."
       nota: "Tetto di controllo: FIX non deve superare questo valore."
       verificato: true
 
@@ -646,14 +643,15 @@ suolo:
       assunzione: true
       motivazione: "Per stocchi di mais e residui di soia non è stata letta una fonte; il contenuto di carbonio dei tessuti vegetali secchi varia poco tra specie, quindi si usa lo stesso valore della paglia e lo si mette in sensibilità."
       sensibilita: true
-    rilascio_completo_dopo_una_coltura:
-      valore: 1.0
-      unita: "frazione di N_res"
-      nota: "Alla fine del primo segmento colturale dopo la raccolta, l'azoto dei residui non ancora mineralizzato (N_res) passa a N_min. Serve a chiudere il bilancio con il credito di precessione del disciplinare, che riguarda solo la coltura successiva."
+    giorni_rilascio:
+      valore: 365
+      unita: "giorni"
+      nota: "Nucleo giornaliero (fieldwise.nitrogen.run_daily): l'N dei residui che non va in humus (alla raccolta o alla terminazione della cover) e l'N immobilizzato (credito di precessione negativo alla semina successiva, Npd negativo della cover alla terminazione) passano a N_min con un rilascio uniforme in questo numero di giorni dall'evento. Sostituisce rilascio_completo_dopo_una_coltura (rilascio in blocco alla raccolta successiva, che esponeva tutto quell'azoto al drenaggio autunnale)."
       verificato: false
       assunzione: true
-      motivazione: "Il disciplinare ER (Tab. 4) dà solo l'effetto sulla coltura successiva, non il destino dell'azoto restante. Rilasciarlo tutto entro un ciclo è la scelta più semplice che conserva la massa; l'umificazione è già contata a parte con k1."
+      motivazione: "Il disciplinare ER (Tab. 4) da' solo l'effetto netto sulla coltura successiva e nessuna durata; nessun coefficiente tempo e' nei parametri. Dodici mesi coprono la coltura successiva e il primo inverno, l'ordine di grandezza della decomposizione della frazione labile di stocchi e paglie in clima temperato; la forma uniforme e' la piu' semplice che conserva la massa."
       sensibilita: true
+      intervallo: [180, 730]
 
 # =============================================================================
 # LISCIVIAZIONE
@@ -666,7 +664,7 @@ lisciviazione:
     fonte: "Neitsch S.L., Arnold J.G., Kiniry J.R., Williams J.R. (2011). Soil and Water Assessment Tool Theoretical Documentation Version 2009. Texas Water Resources Institute TR-406; e Arnold J.G. et al. (2012) SWAT Input/Output File Documentation Version 2012"
     riferimento: "Theoretical Documentation, sez. 4:2.1 'Nitrate movement', eq. 4:2.1.2 e 4:2.1.8, p. 269; I/O Documentation, cap. 22 (.sol), variabile ANION_EXCL, p. 304: 'If no value for ANION_EXCL is entered, the model will set ANION_EXCL = 0.50'"
     url: "https://swat.tamu.edu/media/99192/swat2009-theory.pdf"
-    nota: "Formula: L = N_min x (1 - exp(-D_seg / ((1 - anion_excl) x SAT_mm))). SWAT la applica per strato e per giorno; qui al profilo radicale e al segmento (vedi _meta.limiti). Documento I/O: https://swat.tamu.edu/media/69296/swat-io-documentation-2012.pdf. Scelto al posto di Burns (1975), il cui articolo non è ad accesso aperto. Ente: USDA-ARS / Texas A&M (fonte 'altro', dichiarata)."
+    nota: "Formula: L = N_min x (1 - exp(-D_seg / ((1 - anion_excl) x SAT_mm))). SWAT la applica per strato e per giorno; qui per giorno (D = percolazione profonda del giorno) e su un solo strato, il profilo del motore (vedi _meta.limiti). Documento I/O: https://swat.tamu.edu/media/69296/swat-io-documentation-2012.pdf. Scelto al posto di Burns (1975), il cui articolo non è ad accesso aperto. Ente: USDA-ARS / Texas A&M (fonte 'altro', dichiarata)."
     verificato: true
     sensibilita: true
     intervallo: [0.01, 1.0]
@@ -728,7 +726,7 @@ efficienza_concime:
     frumento:
       valore: 0.57
       unita: "kg N assorbito in più / kg N di concime"
-      nota: "Usato anche per la soia se il motore la concima (caso fuori norma). Nessuna fonte aperta letta con il recupero apparente del concime nel frumento in Pianura Padana; la prova di Moretti et al. (2020) concima il frumento ma riporta il NAR solo per il mais."
+      nota: "Non usato per la soia: nel motore la soia non riceve concime. Nessuna fonte aperta letta con il recupero apparente del concime nel frumento in Pianura Padana; la prova di Moretti et al. (2020) concima il frumento ma riporta il NAR solo per il mais."
       verificato: false
       assunzione: true
       motivazione: "Valore medio delle prove sperimentali sul frumento attribuito a Ladha J.K., Pathak H., Krupnik T.J., Six J., van Kessel C. (2005), Efficiency of fertilizer nitrogen in cereal production: retrospects and prospects, Advances in Agronomy 87: 85-156 (recupero medio del primo anno 57% per il frumento), letto solo come citazione in rassegne successive: l'articolo non è ad accesso aperto e le copie trovate erano bloccate. È più basso del mais di Moretti et al. (2020), coerente con l'assorbimento del frumento concentrato in primavera, quando le piogge disperdono parte del concime."

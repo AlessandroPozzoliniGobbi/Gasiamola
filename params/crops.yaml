@@ -104,6 +104,35 @@ mais:
     url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
     nota: "Correzione per ETc diversa da 5 mm/giorno (nota 2 tab. 22): p = p_tab + 0.04 (5 - ETc), limitata a 0.1-0.8."
     verificato: true
+  kcb:
+    ini:
+      valore: 0.15
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Maize, Field (grain) (field corn)"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: "Usato per ripartire l'assorbimento di azoto in proporzione alla traspirazione (Tr = Ks Kcb ET0); stessa curva e stessi punti di passaggio di kc."
+      verificato: true
+      sensibilita: true
+    mid:
+      valore: 1.15
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Maize, Field (grain)"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: "Correzione climatica come kc.mid (eq. 70 = forma di eq. 62)."
+      verificato: true
+      sensibilita: true
+    end:
+      valore: 0.5
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Maize, Field (grain), Kcb end 0.50 / 0.15, nota 12"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: "Nota 12: il primo valore e' per raccolta a umidita' della granella alta; coerente con kc.end 0.60 (ciclo che termina alla maturita' fisiologica). 0.15 dopo essiccazione completa in campo."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.15, 0.5]
   ky:
     valore: 1.25
     unita: "-"
@@ -183,6 +212,16 @@ mais:
     nota: "Massimo dell'intervallo (100 + 900), coerente con la scelta della maturità al massimo. Inizio fioritura (emissione delle sete); con il clima tipico cade il 12/7 (88 gg)."
     verificato: true
     intervallo: [660, 1000]
+    sensibilita: true
+  gdd_emergenza:
+    valore: 100
+    unita: "°C·giorno"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.2 Maize, 1.2 Development of green canopy cover: time from sowing to emergence 60-100 growing degree day"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Massimo dell'intervallo AquaCrop, la stessa componente 'emergence' usata per gdd_maturita (100 + 1850) e gdd_fioritura (100 + 900). Letto ora nella fonte (2026-11-12). Usato dal motore per la finestra del caldo in giorni (heat.yaml, GPL di Deryng)."
+    verificato: true
+    intervallo: [60, 100]
     sensibilita: true
   semina:
     valore: "04-15"
@@ -315,6 +354,34 @@ soia:
     url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
     nota: "Correzione per ETc: p = p_tab + 0.04 (5 - ETc)."
     verificato: true
+  kcb:
+    ini:
+      valore: 0.15
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Soybeans"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: "Come mais."
+      verificato: true
+      sensibilita: true
+    mid:
+      valore: 1.1
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Soybeans"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: ""
+      verificato: true
+      sensibilita: true
+    end:
+      valore: 0.3
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Soybeans"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: ""
+      verificato: true
+      sensibilita: true
   ky:
     valore: 0.85
     unita: "-"
@@ -387,6 +454,17 @@ soia:
     nota: "Intervallo 1150-1800; preso nella stessa posizione relativa (28%) di gdd_maturita nel suo intervallo: 1150 + 0.28 x 650 = 1332 -> 1330. Con il clima tipico cade il 24/7 (80 gg), probabilmente tardi per gruppi 0+/I+ seminati a inizio maggio: AquaCrop non tiene conto del fotoperiodo. Vedi problemi aperti."
     verificato: false
     intervallo: [1150, 1800]
+    sensibilita: true
+  gdd_emergenza:
+    valore: 190
+    unita: "°C·giorno"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.6 Soybean, 1.2 Development of green canopy cover: time from sowing to emergence 150-300 growing degree day"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Intervallo letto ora nella fonte (2026-11-12). Valore preso nella stessa posizione relativa (28%) di gdd_maturita nel suo intervallo AquaCrop (2150-3300), come gdd_fioritura: 150 + 0.278 x 150 = 192 -> 190; resta 2280 GDD dopo l'emergenza, dentro 2000-3000. Minore di gdd_fine_ini (240)."
+    verificato: true
+    derivato: true
+    intervallo: [150, 300]
     sensibilita: true
   semina:
     valore: "05-05"
@@ -516,6 +594,36 @@ frumento:
     url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
     nota: "Correzione per ETc: p = p_tab + 0.04 (5 - ETc); in inverno ETc è bassa e p sale."
     verificato: true
+  kcb:
+    ini:
+      valore: 0.15
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Winter Wheat, Kcb ini 0.15-0.5, nota 11"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: "Nota 11: 0.15 con copertura del suolo inferiore al 10%, 0.5 nel periodo di dormienza invernale se la vegetazione copre tutto il suolo in condizioni non gelate. La tabella non distingue suolo gelato/non gelato per Kcb (lo fa la Tab. 12 per Kc). Seminato a fine ottobre in Pianura Padana, il frumento attraversa l'inverno con copertura scarsa: 0.15; 0.5 in intervallo."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.15, 0.5]
+    mid:
+      valore: 1.1
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Winter Wheat"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: ""
+      verificato: true
+      sensibilita: true
+    end:
+      valore: 0.15
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), riga Winter Wheat, Kcb end 0.15-0.3, nota 10"
+      url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+      nota: "Nota 10: il valore alto e' per raccolta a mano; raccolta meccanica -> 0.15."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.15, 0.3]
   ky:
     valore: 1.05
     unita: "-"
@@ -588,6 +696,17 @@ frumento:
     nota: "Intervallo 1100-1550; preso nella stessa posizione relativa (51%) di gdd_maturita: 1100 + 0.51 x 450 = 1331 -> 1330. Antesi con il clima tipico il 5/5 (186 gg)."
     verificato: false
     intervallo: [1100, 1550]
+    sensibilita: true
+  gdd_emergenza:
+    valore: 175
+    unita: "°C·giorno"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.10 Wheat, 1.2 Development of green canopy cover: time from sowing to emergence 100-250 growing degree day"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Intervallo letto ora nella fonte (2026-11-12). Valore nella stessa posizione relativa (51%) di gdd_maturita nel suo intervallo AquaCrop (1600-3150), come gdd_fioritura: 100 + 0.513 x 150 = 177 -> 175; restano 2220 GDD dopo l'emergenza, dentro 1500-2900. Minore di gdd_fine_ini (270)."
+    verificato: true
+    derivato: true
+    intervallo: [100, 250]
     sensibilita: true
   semina:
     valore: "10-30"

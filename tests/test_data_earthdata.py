@@ -134,61 +134,137 @@ def test_ease2_projection_reference_values():
 
 # ---------------------------------------------------------------- IMERG: file finti
 
-def _make_imerg_full(path, i_lon, i_lat, value):
+def _make_imerg_full(path, st, values):
     """Granulo IMERG finto con la struttura vera: precipitation(time=1, lon=3600, lat=1800)."""
+    i0, j0 = st["i_lon0"], st["i_lat0"]
     with h5py.File(path, "w") as f:
         d = f.create_dataset("precipitation", shape=(1, 3600, 1800), dtype="f4",
                              chunks=(1, 100, 100), compression="gzip", fillvalue=-9999.9)
-        d[0, i_lon, i_lat] = value
-        d[0, i_lon + 1, i_lat] = 99.0           # cella vicina diversa: l'ordine lon/lat conta
-        d[0, i_lon, i_lat + 1] = 77.0
+        for k, v in enumerate(values):
+            d[0, i0 + k // 2, j0 + k % 2] = v
+        d[0, i0 + 2, j0] = 99.0                 # celle vicine fuori blocco: l'ordine lon/lat conta
+        d[0, i0, j0 + 2] = 77.0
         f.create_dataset("lon", data=(-179.95 + 0.1 * np.arange(3600)).astype("f4"))
         f.create_dataset("lat", data=-89.95 + 0.1 * np.arange(1800))
 
 
-def _make_imerg_subset(path, i_lon, i_lat, value, lon_c, lat_c):
+def _make_imerg_subset(path, values, lons, lats):
+    """Sottoinsieme OPeNDAP finto: precipitation(1, 2, 2) in ordine (time, lon, lat)."""
     with h5py.File(path, "w") as f:
-        f.create_dataset("precipitation", data=np.full((1, 1, 1), value, dtype="f4"))
-        f.create_dataset("lon", data=np.array([lon_c], dtype="f4"))
-        f.create_dataset("lat", data=np.array([lat_c]))
+        f.create_dataset("precipitation", data=np.array(values, dtype="f4").reshape(1, 2, 2))
+        f.create_dataset("lon", data=np.array(lons, dtype="f4"))
+        f.create_dataset("lat", data=np.array(lats))
+
+
+def _centers(st):
+    return [st["cells"][0]["lon"], st["cells"][2]["lon"]], [st["cells"][0]["lat"], st["cells"][1]["lat"]]
+
+
+def test_imerg_stencil_on_vertex_four_equal_weights():
+    st = imerg.stencil(LAT, LON)
+    assert [(c["lat"], c["lon"]) for c in st["cells"]] == [
+        (45.15, 9.95), (45.25, 9.95), (45.15, 10.05), (45.25, 10.05)]
+    assert [c["weight"] for c in st["cells"]] == [0.25] * 4
+    assert (st["i_lon0"], st["i_lat0"]) == (1899, 1351)
+    assert st["nearest"] == imerg.cell_column(45.25, 10.05)       # parita': nord-est
+    assert st["nearest"] == "precip_lat45.250_lon10.050"
+
+
+def test_imerg_stencil_cell_centre_weight_one():
+    st = imerg.stencil(45.25, 10.05)
+    w = {c["column"]: c["weight"] for c in st["cells"]}
+    assert w[imerg.cell_column(45.25, 10.05)] == 1.0
+    assert sum(w.values()) == pytest.approx(1.0) and sorted(w.values()) == [0.0, 0.0, 0.0, 1.0]
+    assert st["nearest"] == imerg.cell_column(45.25, 10.05)
+
+
+def test_imerg_stencil_generic_point_and_edges():
+    st = imerg.stencil(45.17, 9.97)                 # cella contenente (45.15, 9.95): la piu' vicina
+    w = {c["column"]: c["weight"] for c in st["cells"]}
+    assert w[imerg.cell_column(45.15, 9.95)] == pytest.approx(0.64)
+    assert w[imerg.cell_column(45.25, 10.05)] == pytest.approx(0.04)
+    assert sum(w.values()) == pytest.approx(1.0)
+    assert st["nearest"] == imerg.cell_column(45.15, 9.95)
+    assert imerg.stencil(90.0, 180.0)["cells"][3]["weight"] == 1.0   # bordo della griglia
+    assert imerg.stencil(-90.0, -180.0)["cells"][0]["weight"] == 1.0
+    with pytest.raises(ValueError):
+        imerg.stencil(91, 0)
+    # con una sola richiesta: vincolo DAP4 sul blocco 2x2
+    assert imerg.constraint(1899, 1351) == (
+        "/precipitation[0][1899:1900][1351:1352];/lon[1899:1900];/lat[1351:1352]")
 
 
 def test_imerg_extract_from_full_granule(tmp_path):
-    i_lon, i_lat, clat, clon = imerg.cell_index(LAT, LON)
+    st = imerg.stencil(LAT, LON)
     p = tmp_path / "full.nc4"
-    _make_imerg_full(p, i_lon, i_lat, 12.5)
+    _make_imerg_full(p, st, [1.0, 2.0, 3.0, 4.0])
     with h5py.File(p, "r") as h5:
-        assert imerg.extract_point(h5, i_lon, i_lat, clat, clon) == pytest.approx(12.5)
+        got = imerg.extract_block(h5, st)
+    assert [got[c["column"]] for c in st["cells"]] == [1.0, 2.0, 3.0, 4.0]   # (lon0,lat0),(lon0,lat1),...
 
 
 def test_imerg_extract_fill_value_becomes_nan(tmp_path):
-    i_lon, i_lat, clat, clon = imerg.cell_index(LAT, LON)
+    st = imerg.stencil(LAT, LON)
     p = tmp_path / "fill.nc4"
-    _make_imerg_full(p, i_lon, i_lat, -9999.9)
+    _make_imerg_full(p, st, [5.0, -9999.9, 0.0, 2.0])
     with h5py.File(p, "r") as h5:
-        assert np.isnan(imerg.extract_point(h5, i_lon, i_lat, clat, clon))
+        got = imerg.extract_block(h5, st)
+    cols = [c["column"] for c in st["cells"]]
+    assert np.isnan(got[cols[1]]) and got[cols[2]] == 0.0 and got[cols[0]] == 5.0
     assert np.isnan(imerg.clean_precip(np.float32(-9999.9)))
     assert np.isnan(imerg.clean_precip(float("nan")))
     assert imerg.clean_precip(0.0) == 0.0          # zero e' pioggia zero, non dato mancante
 
 
 def test_imerg_extract_from_opendap_subset_and_center_check(tmp_path):
-    i_lon, i_lat, clat, clon = imerg.cell_index(LAT, LON)
+    st = imerg.stencil(LAT, LON)
+    lons, lats = _centers(st)
     ok = tmp_path / "sub.nc4"
-    _make_imerg_subset(ok, i_lon, i_lat, 3.25, clon, clat)
+    _make_imerg_subset(ok, [3.25, 1.0, 0.5, 2.0], lons, lats)
     with h5py.File(ok, "r") as h5:
-        assert imerg.extract_point(h5, i_lon, i_lat, clat, clon) == pytest.approx(3.25)
-    bad = tmp_path / "bad.nc4"                     # centro di un'altra cella -> si ferma
-    _make_imerg_subset(bad, i_lon, i_lat, 3.25, clon + 0.1, clat)
-    with h5py.File(bad, "r") as h5, pytest.raises(ValueError, match="centro cella"):
-        imerg.extract_point(h5, i_lon, i_lat, clat, clon)
+        got = imerg.extract_block(h5, st)
+    assert [got[c["column"]] for c in st["cells"]] == [3.25, 1.0, 0.5, 2.0]
+    bad = tmp_path / "bad.nc4"                     # centri di un altro blocco -> si ferma
+    _make_imerg_subset(bad, [3.25, 1.0, 0.5, 2.0], [x + 0.1 for x in lons], lats)
+    with h5py.File(bad, "r") as h5, pytest.raises(ValueError, match="centri cella"):
+        imerg.extract_block(h5, st)
+    swapped = tmp_path / "swapped.nc4"             # lon e lat scambiati
+    _make_imerg_subset(swapped, [3.25, 1.0, 0.5, 2.0], lats, lons)
+    with h5py.File(swapped, "r") as h5, pytest.raises(ValueError, match="centri cella"):
+        imerg.extract_block(h5, st)
 
 
-def test_imerg_constraint_and_dap4_url():
-    assert imerg.constraint(1900, 1352) == "/precipitation[0][1900][1352];/lon[1900];/lat[1352]"
+def test_imerg_dap4_url():
     url = earthdata.dap4_url("https://opendap.earthdata.nasa.gov/x/f.nc4", imerg.constraint(1, 2))
     assert url.startswith("https://opendap.earthdata.nasa.gov/x/f.nc4.dap4.ce=") or ".dap.nc4?dap4.ce=" in url
-    assert "[0][1][2]" in url
+    assert "[0][1:2][2:3]" in url
+
+
+def _frame(st, rows):
+    cols = [c["column"] for c in st["cells"]]
+    return pd.DataFrame([{"date": pd.Timestamp(d), **dict(zip(cols, v))} for d, v in rows])
+
+
+def test_imerg_combine_bilinear_nearest_and_missing_cell():
+    nan = float("nan")
+    st = imerg.stencil(LAT, LON)                    # vertice: 4 pesi da 0,25; nearest = NE (4o valore)
+    df = imerg.combine(_frame(st, [("2020-01-01", [1.0, 2.0, 3.0, 6.0]),
+                                   ("2020-01-02", [1.0, nan, 3.0, 6.0]),
+                                   ("2020-01-03", [nan, nan, nan, nan])]), st)
+    assert list(df.columns) == ["date", "rain_mm", "rain_mm_nearest", "n_cells_valid"]
+    assert df["rain_mm"].iloc[0] == pytest.approx(3.0)              # media delle quattro
+    assert df["rain_mm_nearest"].iloc[0] == 6.0
+    assert np.isnan(df["rain_mm"].iloc[1]) and df["rain_mm_nearest"].iloc[1] == 6.0
+    assert list(df["n_cells_valid"]) == [4, 3, 0]
+    assert np.isnan(df["rain_mm"].iloc[2]) and np.isnan(df["rain_mm_nearest"].iloc[2])
+    # al centro di una cella pesa solo quella: le altre mancanti non contano
+    st1 = imerg.stencil(45.25, 10.05)
+    d1 = imerg.combine(_frame(st1, [("2020-01-01", [4.0, nan, nan, nan])]), st1)
+    assert d1["rain_mm"].iloc[0] == 4.0 and d1["n_cells_valid"].iloc[0] == 1
+    # punto generico: pesi 0,64 / 0,16 / 0,16 / 0,04
+    st2 = imerg.stencil(45.17, 9.97)
+    d2 = imerg.combine(_frame(st2, [("2020-01-01", [10.0, 0.0, 0.0, 0.0])]), st2)
+    assert d2["rain_mm"].iloc[0] == pytest.approx(6.4) and d2["rain_mm_nearest"].iloc[0] == 10.0
 
 
 # ---------------------------------------------------------------- SMAP: file finti
@@ -295,17 +371,28 @@ def fake_net(monkeypatch):
     return calls
 
 
-def test_imerg_resume_from_partial_year(fake_net, monkeypatch):
-    fail = {"day": dt.date(2020, 1, 3)}
+def _fake_row(fake_net, fail):
+    st = imerg.stencil(LAT, LON)
+    cols = [c["column"] for c in st["cells"]]
 
-    def row(granule, i_lon, i_lat, clat, clon):
+    def row(granule, stencil):
         d = earthdata.granule_date(granule)
         fake_net["extract"].append(d)
         if d == fail["day"]:
             raise RuntimeError("rete caduta")
-        return {"date": d, "precipitation": float(d.day) if d.day != 2 else float("nan")}
+        v = float(d.day) if d.day != 2 else float("nan")
+        # quarta cella (nord-est) = d.day + 4; la prima mancante il 5
+        vals = [v, v, v, v + 4.0]
+        if d.day == 5:
+            vals[0] = float("nan")
+        return {"date": d, **dict(zip(cols, vals))}
 
-    monkeypatch.setattr(imerg, "_row_from_subset", row)
+    return row
+
+
+def test_imerg_resume_from_partial_year(fake_net, monkeypatch):
+    fail = {"day": dt.date(2020, 1, 3)}
+    monkeypatch.setattr(imerg, "_row_from_subset", _fake_row(fake_net, fail))
     s, e = dt.date(2020, 1, 1), dt.date(2020, 1, 5)
 
     out = imerg.fetch(LAT, LON, s, e)                    # 1a corsa: un granulo fallisce
@@ -314,9 +401,13 @@ def test_imerg_resume_from_partial_year(fake_net, monkeypatch):
     meta = cache.read_meta(raw)
     assert meta["params"]["complete"] is False and meta["params"]["n_rows"] == 4
     assert meta["product"] == "GPM_3IMERGDF" and meta["version"] == "07"
-    assert meta["params"]["cell_center_lat"] == 45.25 and meta["params"]["cell_center_lon"] == 10.05
-    assert meta["params"]["variable"] == "precipitation" and meta["params"]["units"] == "mm/day"
-    assert meta["params"]["doi"] == "10.5067/GPM/IMERGDF/DAY/07"
+    p = meta["params"]
+    assert [(c["lat"], c["lon"], c["weight"]) for c in p["cells"]] == [
+        (45.15, 9.95, 0.25), (45.25, 9.95, 0.25), (45.15, 10.05, 0.25), (45.25, 10.05, 0.25)]
+    assert p["nearest_column"] == "precip_lat45.250_lon10.050" and "bilineare" in p["interpolation"]
+    assert list(pd.read_csv(raw, nrows=0).columns) == ["date"] + [c["column"] for c in p["cells"]]
+    assert p["variable"] == "precipitation" and p["units"] == "mm/day"
+    assert p["doi"] == "10.5067/GPM/IMERGDF/DAY/07"
 
     fake_net["extract"].clear()
     fail["day"] = None
@@ -333,10 +424,32 @@ def test_imerg_resume_from_partial_year(fake_net, monkeypatch):
     assert len(fake_net["extract"]) == 5
 
     df = imerg.load(LAT, LON)
-    assert list(df.columns) == ["date", "rain_mm"] and len(df) == 5
+    assert list(df.columns) == ["date", "rain_mm", "rain_mm_nearest", "n_cells_valid"] and len(df) == 5
     assert out == cache.processed_dir(LAT, LON) / "imerg_daily.csv"
-    assert df.loc[df["date"] == "2020-01-02", "rain_mm"].isna().all()   # riempimento -> NaN
-    assert df.loc[df["date"] == "2020-01-04", "rain_mm"].iloc[0] == 4.0
+    d = df.set_index(df["date"].dt.strftime("%Y-%m-%d"))
+    assert np.isnan(d.loc["2020-01-02", "rain_mm"]) and d.loc["2020-01-02", "n_cells_valid"] == 0
+    assert d.loc["2020-01-04", "rain_mm"] == pytest.approx(5.0)       # (4+4+4+8)/4
+    assert d.loc["2020-01-04", "rain_mm_nearest"] == 8.0
+    assert np.isnan(d.loc["2020-01-05", "rain_mm"]) and d.loc["2020-01-05", "n_cells_valid"] == 3
+    assert d.loc["2020-01-05", "rain_mm_nearest"] == 9.0               # cella mancante, nearest intatta
+
+
+def test_imerg_old_single_cell_raw_is_rejected_and_redownloaded(fake_net, monkeypatch):
+    raw_dir = cache.raw_dir("imerg", LAT, LON)
+    old = raw_dir / "imerg_2020.csv"
+    pd.DataFrame({"date": ["2020-01-01", "2020-01-02", "2020-01-03"],
+                  "precipitation": [1.0, 2.0, 3.0]}).to_csv(old, index=False)
+    cache.write_meta(old, source="imerg", product="GPM_3IMERGDF", version="07", url="x",
+                     params={"complete": True, "window_start": "2020-01-01", "window_end": "2020-01-03",
+                             "cell_center_lat": 45.25, "cell_center_lon": 10.05, "year": 2020, "n_rows": 3})
+    with pytest.raises(cache.CacheMiss):                 # il vecchio file non basta a costruire l'elaborato
+        imerg.build_processed(LAT, LON)
+    monkeypatch.setattr(imerg, "_row_from_subset", _fake_row(fake_net, {"day": None}))
+    imerg.fetch(LAT, LON, dt.date(2020, 1, 1), dt.date(2020, 1, 3))
+    assert fake_net["extract"] == [dt.date(2020, 1, d) for d in (1, 2, 3)]   # riscaricato, non riusato
+    assert "precipitation" not in pd.read_csv(old, nrows=0).columns
+    assert cache.read_meta(old)["params"]["format"] == imerg.RAW_FORMAT
+    assert len(imerg.load(LAT, LON)) == 3
 
 
 def test_smap_fetch_builds_processed_columns(fake_net, monkeypatch):
