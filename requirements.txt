@@ -1,0 +1,21 @@
+# FIELDWISE - dipendenze (Python >= 3.11)
+numpy>=1.26
+pandas>=2.1
+scipy>=1.11
+pyyaml>=6.0
+requests>=2.31
+numba>=0.59
+matplotlib>=3.8
+pillow>=10.0
+# dati Earthdata (IMERG, SMAP)
+earthaccess>=0.9
+xarray>=2024.1
+netCDF4>=1.6
+h5py>=3.10
+# interfaccia
+streamlit>=1.32
+plotly>=5.18
+folium>=0.15
+streamlit-folium>=0.18
+# test
+pytest>=8.0

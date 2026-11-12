@@ -1,0 +1,236 @@
+{
+  "legacy/fieldwise_engine.py": {
+    "mtime": 1794406494.0527015,
+    "seen": 1794406754.9271839,
+    "ast_hash": "d069bbc3872675becb58440b684cd35f",
+    "semantic_hash": "d069bbc3872675becb58440b684cd35f"
+  },
+  "legacy/FIELDWISE_proposta_modello.pdf": {
+    "mtime": 1794406494.0533695,
+    "seen": 1794406754.927186,
+    "ast_hash": "4ce889f6c42f03886fa5cf3cb0ab25a0",
+    "semantic_hash": "4ce889f6c42f03886fa5cf3cb0ab25a0"
+  },
+  ".claude/settings.json": {
+    "mtime": 1794406755.1670148,
+    "seen": 1794431795.3859122,
+    "ast_hash": "e341426f227f88f7caef8ee24531a25f",
+    "semantic_hash": ""
+  },
+  ".codex/hooks.json": {
+    "mtime": 1794411988.2519085,
+    "seen": 1794431795.3859148,
+    "ast_hash": "c6bfaf2c9015b6212c367b51860e2ec4",
+    "semantic_hash": ""
+  },
+  "pyproject.toml": {
+    "mtime": 1794406710.6648526,
+    "seen": 1794431795.385919,
+    "ast_hash": "3f5e7a70a48530712aef5a1dd2052ff2",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/__init__.py": {
+    "mtime": 1794406711.54332,
+    "seen": 1794431795.38592,
+    "ast_hash": "d05cd0b8451f8ea7334f0d8f1037ced3",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/config.py": {
+    "mtime": 1794406712.4466612,
+    "seen": 1794431795.38592,
+    "ast_hash": "13a7404ad3ca8ae0fd360159b3f5c050",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/et0.py": {
+    "mtime": 1794431791.7481525,
+    "seen": 1794431795.385921,
+    "ast_hash": "0d5b4ba3056d928ec131066d0ce610f2",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/params.py": {
+    "mtime": 1794413787.6160219,
+    "seen": 1794431795.385922,
+    "ast_hash": "760b8605bb8edfcdcc9aea566bf2a25c",
+    "semantic_hash": ""
+  },
+  "tests/test_data_arpa.py": {
+    "mtime": 1794432286.8617196,
+    "seen": 1794471483.484739,
+    "ast_hash": "b0384947a31dc46f56597b440e36f401",
+    "semantic_hash": ""
+  },
+  "tests/test_data_earthdata.py": {
+    "mtime": 1794414153.9694643,
+    "seen": 1794431795.3859231,
+    "ast_hash": "91cbc9d0faa8fb5c9bd60b10cd7a29c3",
+    "semantic_hash": ""
+  },
+  "tests/test_data_istat.py": {
+    "mtime": 1794414149.555081,
+    "seen": 1794431795.3859231,
+    "ast_hash": "90f3c4d2dcb7c166914f571a2398d67f",
+    "semantic_hash": ""
+  },
+  "tests/test_data_modis.py": {
+    "mtime": 1794413869.3364575,
+    "seen": 1794431795.385924,
+    "ast_hash": "22d4fb662041b84fcc3b70b0e334f0fb",
+    "semantic_hash": ""
+  },
+  "tests/test_data_power.py": {
+    "mtime": 1794413766.5243704,
+    "seen": 1794431795.385924,
+    "ast_hash": "842b8bbfd48b86766500b37485f43c1f",
+    "semantic_hash": ""
+  },
+  "tests/test_data_soilgrids.py": {
+    "mtime": 1794414045.9703827,
+    "seen": 1794431795.385925,
+    "ast_hash": "4382c019e849a217322df7cfc75bb3fd",
+    "semantic_hash": ""
+  },
+  "tests/test_params.py": {
+    "mtime": 1794413818.9197469,
+    "seen": 1794431795.385925,
+    "ast_hash": "753123199d44a639bc3f5b4b25f2cb7d",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1794411988.2523115,
+    "seen": 1794431795.3859258,
+    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1794406755.1666,
+    "seen": 1794431795.3859258,
+    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
+    "semantic_hash": ""
+  },
+  "PLAN.md": {
+    "mtime": 1794490795.9268286,
+    "seen": 1794490988.338803,
+    "ast_hash": "6b28806c176a68f2a526081bd6c99195",
+    "semantic_hash": ""
+  },
+  "docs/fonti_crops.md": {
+    "mtime": 1794431647.232616,
+    "seen": 1794431795.385927,
+    "ast_hash": "a1e69a04232425bc381f0d9035143ccd",
+    "semantic_hash": ""
+  },
+  "docs/fonti_nitrogen.md": {
+    "mtime": 1794431653.6590054,
+    "seen": 1794431795.385928,
+    "ast_hash": "fb25cfa19201f168f25fc0df11784fc5",
+    "semantic_hash": ""
+  },
+  "params/SCHEMA.md": {
+    "mtime": 1794471953.9392133,
+    "seen": 1794490988.338806,
+    "ast_hash": "e340499c50863a471e86a66373c68025",
+    "semantic_hash": ""
+  },
+  "params/crops.yaml": {
+    "mtime": 1794414614.9255257,
+    "seen": 1794431795.3859289,
+    "ast_hash": "84ee51d28acc3591c0c304b53015a2f3",
+    "semantic_hash": ""
+  },
+  "params/nitrogen.yaml": {
+    "mtime": 1794431666.2958715,
+    "seen": 1794431795.3859289,
+    "ast_hash": "2b2f70fc6c0355a4ee64572dd773da9c",
+    "semantic_hash": ""
+  },
+  "requirements.txt": {
+    "mtime": 1794414434.566026,
+    "seen": 1794431795.38593,
+    "ast_hash": "020587b1407d1a8eb1bc23482eef1b44",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/qc.py": {
+    "mtime": 1794471456.5205724,
+    "seen": 1794471483.484736,
+    "ast_hash": "86e1066a344e8a4c21f0f918883bbaa4",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/soil.py": {
+    "mtime": 1794471457.3056352,
+    "seen": 1794471483.484738,
+    "ast_hash": "55e829772395a004c7e9204f6daf0505",
+    "semantic_hash": ""
+  },
+  "tests/test_et0.py": {
+    "mtime": 1794431960.3291285,
+    "seen": 1794471483.4847429,
+    "ast_hash": "44c713e8c3721d1e4a73c947c6a8279a",
+    "semantic_hash": ""
+  },
+  "tests/test_qc.py": {
+    "mtime": 1794471450.0979285,
+    "seen": 1794471483.484745,
+    "ast_hash": "52617a03f1097f3262cfc44561eb9982",
+    "semantic_hash": ""
+  },
+  "docs/fonti_rotation_heat_cover.md": {
+    "mtime": 1794432123.0923076,
+    "seen": 1794471483.4847481,
+    "ast_hash": "c778b891c66dccfbbef9a1a0a3ac8924",
+    "semantic_hash": ""
+  },
+  "params/cover_crop.yaml": {
+    "mtime": 1794432035.696815,
+    "seen": 1794471483.48475,
+    "ast_hash": "443e57ec8018e9c3f35795fe51ee99e6",
+    "semantic_hash": ""
+  },
+  "params/heat.yaml": {
+    "mtime": 1794432123.0877972,
+    "seen": 1794471483.484751,
+    "ast_hash": "911058784fe99adcaa326103d86fe959",
+    "semantic_hash": ""
+  },
+  "params/rotation_rules.yaml": {
+    "mtime": 1794431886.8790448,
+    "seen": 1794471483.484752,
+    "ast_hash": "54e24c7077409bb2ccbf9640deefe535",
+    "semantic_hash": ""
+  },
+  "reports/params_table.md": {
+    "mtime": 1794432205.9155624,
+    "seen": 1794471483.484753,
+    "ast_hash": "f19fa69fdd91986ff31561ad47bfc16b",
+    "semantic_hash": ""
+  },
+  "tests/test_soil.py": {
+    "mtime": 1794471683.8154511,
+    "seen": 1794471744.888745,
+    "ast_hash": "1a3fc824daa6f251db6bb664c125ba23",
+    "semantic_hash": ""
+  },
+  "params/soil.yaml": {
+    "mtime": 1794471683.8157454,
+    "seen": 1794471744.8887548,
+    "ast_hash": "2b613ace779e2ed262b61fd1a0cd4e44",
+    "semantic_hash": ""
+  },
+  "docs/fonti_soil.md": {
+    "mtime": 1794471743.2393723,
+    "seen": 1794471744.888757,
+    "ast_hash": "136a5d9d25e595967a6fcdeb0832ce1b",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/water.py": {
+    "mtime": 1794490946.7216573,
+    "seen": 1794490988.338794,
+    "ast_hash": "2eb4ffa3b4aac0675733cea2b349ec4e",
+    "semantic_hash": ""
+  },
+  "reports/params_review.md": {
+    "mtime": 1794471829.773271,
+    "seen": 1794490988.338811,
+    "ast_hash": "470ccb2e0e971bacc7ea469e07402b04",
+    "semantic_hash": ""
+  }
+}

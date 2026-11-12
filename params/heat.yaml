@@ -1,0 +1,285 @@
+# FIELDWISE - stress da caldo in fioritura (f_caldo)
+# Funzione scelta: Deryng et al. (2014), Environ. Res. Lett. 9, 034011, Appendice A.3, eq. A.6-A.8.
+# Fonti in dettaglio: docs/fonti_rotation_heat_cover.md
+
+_meta:
+  descrizione: "Fattore di resa f_caldo (0-1) per il caldo nel periodo sensibile attorno alla fioritura"
+  compilato_il: "2026-11-11"
+  funzione_scelta: "deryng_2014"
+  perche_questa_funzione: >-
+    Deryng et al. 2014 (open access, peer-reviewed) pubblica la forma completa: temperatura usata,
+    funzione giornaliera lineare tra temperatura critica e limite, finestra sensibile come frazione del
+    ciclo e aggregazione stagionale che moltiplica direttamente la resa (eq. A.8). Le soglie per coltura
+    sono una sintesi della letteratura (Tabella A.1, che riporta anche Teixeira et al., Porter e Gawith,
+    Lobell et al.). Il modulo di AquaCrop (FAO, gerarchicamente preferito) e' stato letto ma non adottato
+    come principale: le sue soglie sono marcate 'Estimate' nell'Annesso I e la riduzione agisce sui fiori
+    che impollinano giorno per giorno dentro il modello di indice di raccolta di AquaCrop (eq. 3.12i-j,
+    curva di fioritura ed eccesso di fiori), che il nostro motore non simula. I parametri di AquaCrop sono
+    riportati in 'alternative.aquacrop' per l'analisi di sensibilita'. Teixeira et al. 2013 (Agric. For.
+    Meteorol. 170:206-215) non e' stato leggibile (testo a pagamento): i suoi valori sono riportati solo
+    come citati nella Tabella A.1 di Deryng, con verificato false.
+  equazioni: |
+    Dati giornalieri: Tmax_d = T2M_MAX, Tmed_d = T2M (NASA POWER, aria a 2 m). Se T2M manca: Tmed_d = (Tmax_d + Tmin_d)/2.
+    1) Temperatura efficace (Deryng 2014, App. A.3):      Teff_d = (Tmed_d + Tmax_d) / 2
+    2) Fattore giornaliero (eq. A.6), con Tcr = t_critica e Tlim = t_limite della coltura:
+         f_d = 1                                   se Teff_d <  Tcr
+         f_d = 1 - (Teff_d - Tcr) / (Tlim - Tcr)    se Tcr <= Teff_d < Tlim
+         f_d = 0                                   se Teff_d >= Tlim
+    3) Finestra sensibile (TSP): giorni d con  inizio <= phi_d <= fine,  dove
+         phi_d = GDD(semina -> d) / GDD(semina -> maturita'), GDD calcolati con la Tbase di crops.yaml,
+         inizio = finestra_inizio_frazione (0.45), fine = finestra_fine_frazione (0.70).
+    4) Fattore stagionale (eq. A.7):  f_caldo = (1/N) * somma_{d in TSP} f_d ,  N = numero di giorni della TSP.
+    5) Resa (eq. A.8, forma moltiplicativa):  Y = Y_senza_caldo * f_caldo.
+  finestra_note: >-
+    In Deryng la fioritura cade a 0.5 della durata del ciclo (GPL, da emergenza a maturita', in giorni,
+    determinata dai gradi-giorno) e la TSP va da 0.45 a 0.70 GPL. Qui le stesse frazioni si applicano alla
+    somma termica semina->maturita' (adattamento dichiarato): rende la finestra indipendente dalla
+    temperatura base solo in prima approssimazione e, per il frumento autunnale, evita che la pausa invernale
+    sposti la finestra in marzo come accadrebbe con le frazioni in giorni. Il motore deve verificare che la
+    fioritura calcolata con crops.yaml cada dentro [0.45, 0.70] e segnalarlo se non accade.
+  limiti: >-
+    NASA POWER fornisce medie su celle di circa 0.5 x 0.625 gradi (circa 50 km) di temperatura dell'aria a 2 m:
+    i massimi giornalieri sono smussati rispetto a una stazione e soprattutto rispetto alla temperatura della
+    chioma/pannocchia, quindi f_caldo tende a essere sovrastimato (stress sottostimato). Le soglie di Deryng
+    sono di un modello globale (PEGASUS 1.1) e la soglia del frumento e' quella del frumento primaverile.
+    Il requisito 'estate 2022 a Cremona: f_caldo basso per il mais' NON e' stato usato per scegliere o tarare
+    alcun parametro; se non risulta, va riportato come limite.
+
+funzione:
+  temperatura_efficace:
+    valore: "(T2M + T2M_MAX) / 2"
+    unita: "degC"
+    fonte: "Deryng D., Conway D., Ramankutty N., Price J., Warren R. (2014). Global crop yield response to extreme heat stress under multiple climate change futures. Environmental Research Letters 9, 034011"
+    riferimento: "Appendice A.3 'Heat stress at anthesis', definizione di Teff sotto eq. A.6"
+    url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+    nota: "'Teff is defined as (Tmean + Tmax)/2, where Tmean is the daily mean temperature and Tmax is the daily maximum temperature'. DOI 10.1088/1748-9326/9/3/034011, open access."
+    verificato: true
+  forma:
+    valore: "lineare tra t_critica (f=1) e t_limite (f=0); media sui giorni della finestra"
+    unita: "-"
+    fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+    riferimento: "Appendice A.3, eq. A.6 (giornaliera), A.7 (media sulla TSP), A.8 (resa)"
+    url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+    nota: "Equazioni trascritte in _meta.equazioni. Deryng segue la metodologia di Challinor et al. e di Teixeira et al."
+    verificato: true
+
+colture:
+  mais:
+    t_critica:
+      valore: 32.0
+      unita: "degC"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Tabella A.1, riga PEGASUS 1.1, Maize Tcr; testo App. A.3 ('32 degC for maize')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Applicata a Teff. Altre fonti nella stessa tabella: Lobell et al. 2013 Tcr 30; Moriondo et al. 2011 31 (Tlim 40); Teixeira et al. 35 (Tlim 45). AquaCrop: soglia 40 degC su Tmax (vedi alternative)."
+      verificato: true
+      sensibilita: true
+      intervallo: [30.0, 35.0]
+    t_limite:
+      valore: 45.0
+      unita: "degC"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Tabella A.1, riga PEGASUS 1.1, Maize Tlim; testo App. A.3 ('45 degC for maize')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Temperatura a cui f_d = 0 (zero allegagione). Moriondo et al. 2011 (citato nella stessa tabella) usa 40."
+      verificato: true
+      sensibilita: true
+      intervallo: [40.0, 45.0]
+    finestra_inizio_frazione:
+      valore: 0.45
+      unita: "frazione della somma termica semina-maturita'"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3: 'TSP starts a few days before anthesis at 0.45 GPL and ends after anthesis at 0.7 GPL'"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "In Deryng la frazione e' della durata emergenza-maturita' (GPL); qui applicata alla somma termica semina-maturita' (vedi _meta.finestra_note). Uguale per tutte le colture nella fonte."
+      verificato: true
+      sensibilita: true
+    finestra_fine_frazione:
+      valore: 0.70
+      unita: "frazione della somma termica semina-maturita'"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3 (TSP fino a 0.7 GPL; antesi a 0.5 GPL)"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Vedi finestra_inizio_frazione."
+      verificato: true
+      sensibilita: true
+  soia:
+    t_critica:
+      valore: 35.0
+      unita: "degC"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Tabella A.1, riga PEGASUS 1.1, Soybean Tcr; testo App. A.3 ('35 degC for soybean')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Applicata a Teff. Thuzar et al. 2010 (citato in tabella) 34; Teixeira et al. 35."
+      verificato: true
+      sensibilita: true
+      intervallo: [34.0, 35.0]
+    t_limite:
+      valore: 40.0
+      unita: "degC"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Tabella A.1, riga PEGASUS 1.1, Soybean Tlim; testo App. A.3 ('40 degC for soybean')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Stesso valore riportato per Teixeira et al."
+      verificato: true
+      sensibilita: true
+    finestra_inizio_frazione:
+      valore: 0.45
+      unita: "frazione della somma termica semina-maturita'"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3 (TSP da 0.45 GPL)"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Vedi mais.finestra_inizio_frazione. Per la soia (fioritura lunga, indeterminata) la finestra unica e' una semplificazione della fonte."
+      verificato: true
+      sensibilita: true
+    finestra_fine_frazione:
+      valore: 0.70
+      unita: "frazione della somma termica semina-maturita'"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3 (TSP fino a 0.7 GPL)"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: ""
+      verificato: true
+      sensibilita: true
+  frumento:
+    t_critica:
+      valore: 25.0
+      unita: "degC"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Tabella A.1, riga PEGASUS 1.1, Wheat Tcr; testo App. A.3 ('25 degC for spring wheat')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "La fonte la riferisce al frumento primaverile; nessuna soglia distinta per il frumento autunnale. Valori nella stessa tabella: Porter e Gawith 1999 24 (Tlim 31); Ferris et al. 1998 25 (35); Spiertz et al. 2006 25; Semenov e Shewry 2011 27; Teixeira et al. 27 (40); Modhej et al. 2008 22."
+      verificato: true
+      sensibilita: true
+      intervallo: [22.0, 27.0]
+    t_limite:
+      valore: 35.0
+      unita: "degC"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Tabella A.1, riga PEGASUS 1.1, Wheat Tlim; testo App. A.3 ('35 degC for spring wheat')"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Porter e Gawith 1999 (come citato in tabella): 31; Teixeira et al.: 40."
+      verificato: true
+      sensibilita: true
+      intervallo: [31.0, 40.0]
+    finestra_inizio_frazione:
+      valore: 0.45
+      unita: "frazione della somma termica semina-maturita'"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3 (TSP da 0.45 GPL)"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: "Per il frumento autunnale la frazione in giorni porterebbe la finestra a fine inverno: per questo si usa la frazione della somma termica (vedi _meta.finestra_note)."
+      verificato: true
+      sensibilita: true
+    finestra_fine_frazione:
+      valore: 0.70
+      unita: "frazione della somma termica semina-maturita'"
+      fonte: "Deryng et al. (2014), Environ. Res. Lett. 9, 034011"
+      riferimento: "Appendice A.3 (TSP fino a 0.7 GPL)"
+      url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+      nota: ""
+      verificato: true
+      sensibilita: true
+
+alternative:
+  # Set alternativi per l'analisi di sensibilita': NON usati di default.
+  aquacrop:
+    forma:
+      valore: "Ks_pol,h logistico su Tmax: 1 sotto Tx_heat, 0 a Tx_heat + 5 degC; agisce sull'impollinazione giorno per giorno"
+      unita: "-"
+      fonte: "FAO. AquaCrop Reference Manual, Chapter 3 - Calculation procedures, Version 7.3 (July 2026)"
+      riferimento: "Sez. 3.2.1 eq. 3.2c (forma logistica), 3.2.3 'Air temperature stress', 3.12.5 'Failure of pollination due to cold and heat stress' (pp. 3-144 - 3-147)"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+      nota: "'Kspol,h becomes zero at the upper threshold which is set at 5 degrees above Tx,heat'. L'effetto sulla resa passa per HIadj (eq. 3.12j) con curva di fioritura (eq. 3.12i) ed eccesso di fiori: per usarlo come f_caldo serve un'approssimazione (es. media di Ks_pol,h nei giorni di fioritura), che non e' nella fonte."
+      verificato: true
+    delta_zero:
+      valore: 5.0
+      unita: "degC"
+      fonte: "AquaCrop Reference Manual, Chapter 3, Version 7.3 (FAO)"
+      riferimento: "Sez. 3.12.5, Failure of pollination due to heat stress (p. 3-147)"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+      nota: "Gradi oltre Tx_heat a cui Ks_pol,h = 0."
+      verificato: true
+      sensibilita: true
+    tx_heat_mais:
+      valore: 40.0
+      unita: "degC"
+      fonte: "AquaCrop Reference Manual, Annexes, Version 7.3 (FAO)"
+      riferimento: "Annex I.2 Maize, 'Maximum air temperature above which pollination starts to fail (heat stress)'"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+      nota: "Marcato '(Estimate)' nella fonte. Si applica a Tmax, non a Teff."
+      verificato: true
+      sensibilita: true
+    tx_heat_soia:
+      valore: 40.0
+      unita: "degC"
+      fonte: "AquaCrop Reference Manual, Annexes, Version 7.3 (FAO)"
+      riferimento: "Annex I.6 Soybean, 'Maximum air temperature above which pollination starts to fail (heat stress)'"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+      nota: "Marcato '(Estimate)'. Su Tmax."
+      verificato: true
+      sensibilita: true
+    tx_heat_frumento:
+      valore: 35.0
+      unita: "degC"
+      fonte: "AquaCrop Reference Manual, Annexes, Version 7.3 (FAO)"
+      riferimento: "Annex I.10 Wheat, 'Maximum air temperature above which pollination starts to fail (heat stress)'"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+      nota: "Marcato '(Estimate)'. La calibrazione AquaCrop vale per frumento primaverile o autunnale in latitudini temperate. Su Tmax."
+      verificato: true
+      sensibilita: true
+  teixeira_2013:
+    t_critica_mais:
+      valore: 35.0
+      unita: "degC"
+      fonte: "Teixeira E.I., Fischer G., van Velthuizen H., Walter C., Ewert F. (2013). Global hot-spots of heat stress on agricultural crops due to climate change. Agricultural and Forest Meteorology 170, 206-215"
+      riferimento: "come riportato in Deryng et al. 2014, Tabella A.1 (riga 'Teixeira et al (2011)')"
+      url: "https://doi.org/10.1016/j.agrformet.2011.09.002"
+      nota: "Articolo a pagamento, non letto: valore letto solo nella tabella di Deryng. Non verificato su quale temperatura (Tmax o Teff) Teixeira applichi le soglie."
+      verificato: false
+      sensibilita: true
+    t_limite_mais:
+      valore: 45.0
+      unita: "degC"
+      fonte: "Teixeira et al. (2013), Agric. For. Meteorol. 170, 206-215"
+      riferimento: "come riportato in Deryng et al. 2014, Tabella A.1"
+      url: "https://doi.org/10.1016/j.agrformet.2011.09.002"
+      nota: "Citazione indiretta."
+      verificato: false
+      sensibilita: true
+    t_critica_frumento:
+      valore: 27.0
+      unita: "degC"
+      fonte: "Teixeira et al. (2013), Agric. For. Meteorol. 170, 206-215"
+      riferimento: "come riportato in Deryng et al. 2014, Tabella A.1"
+      url: "https://doi.org/10.1016/j.agrformet.2011.09.002"
+      nota: "Citazione indiretta."
+      verificato: false
+      sensibilita: true
+    t_limite_frumento:
+      valore: 40.0
+      unita: "degC"
+      fonte: "Teixeira et al. (2013), Agric. For. Meteorol. 170, 206-215"
+      riferimento: "come riportato in Deryng et al. 2014, Tabella A.1"
+      url: "https://doi.org/10.1016/j.agrformet.2011.09.002"
+      nota: "Citazione indiretta."
+      verificato: false
+      sensibilita: true
+    t_critica_soia:
+      valore: 35.0
+      unita: "degC"
+      fonte: "Teixeira et al. (2013), Agric. For. Meteorol. 170, 206-215"
+      riferimento: "come riportato in Deryng et al. 2014, Tabella A.1"
+      url: "https://doi.org/10.1016/j.agrformet.2011.09.002"
+      nota: "Citazione indiretta."
+      verificato: false
+      sensibilita: true
+    t_limite_soia:
+      valore: 40.0
+      unita: "degC"
+      fonte: "Teixeira et al. (2013), Agric. For. Meteorol. 170, 206-215"
+      riferimento: "come riportato in Deryng et al. 2014, Tabella A.1"
+      url: "https://doi.org/10.1016/j.agrformet.2011.09.002"
+      nota: "Citazione indiretta."
+      verificato: false
+      sensibilita: true

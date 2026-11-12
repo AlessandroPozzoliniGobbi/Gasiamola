@@ -1,0 +1,749 @@
+# Parametri colturali FIELDWISE — mais da granella, soia, frumento tenero autunnale
+# Contratto: params/SCHEMA.md. Fonti dettagliate: docs/fonti_crops.md
+_meta:
+  descrizione: "Parametri colturali per mais da granella (FAO 600), soia (gruppi 0+/I+) e frumento tenero a semina autunnale, Pianura Padana (provincia di Cremona, lat 45.2 lon 10.0)"
+  compilato_il: "2026-11-11"
+  metodo_gdd: >-
+    GDD giornaliero = max(0, min(Tmedia, t_upper) - t_base), con Tmedia = media giornaliera (T2M di NASA POWER o (Tmax+Tmin)/2).
+    È il "Method 1" del manuale AquaCrop (Raes et al., Reference Manual Chapter 3, v7.3, par. 3.3.1): Tavg limitata a [Tbase, Tupper].
+    AquaCrop usa di default il "Method 3" (solo Tmax limitata a Tupper prima della media). Le due formule coincidono quando
+    Tmax <= Tupper e Tmedia >= Tbase; con il metodo 1 i giorni con Tmax > Tupper danno un poco più di GDD.
+    Le soglie t_base / t_upper sono quelle di AquaCrop (annesso I), quindi coerenti con questa formula.
+  metodo_soglie_fenologiche: >-
+    (1) gdd_maturita: durata totale della riga scelta di FAO-56 tab. 11 convertita in gradi-giorno con il clima di Cremona
+    (NASA POWER T2M, 2001-2023, semina alla data tipica), accettata se cade nell'intervallo AquaCrop (annesso I) per
+    "emergenza + lunghezza del ciclo"; altrimenti portata al limite dell'intervallo AquaCrop (solo il mais: 2055 -> 1950).
+    (2) gdd_fine_ini, gdd_fine_sviluppo, gdd_fine_mid: stesse proporzioni termiche della tab. 11 nello stesso clima
+    (frazione di GDD cumulati a fine fase sul totale del ciclo di tab. 11), moltiplicate per gdd_maturita.
+    Controllo: gdd_fine_mid cade nell'intervallo AquaCrop "inizio senescenza" per tutte e tre le colture.
+    (3) gdd_fioritura: intervallo AquaCrop "emergenza + semina-fioritura", preso nella stessa posizione relativa che
+    gdd_maturita occupa nell'intervallo AquaCrop della maturità.
+    Script di calcolo e serie meteo usate solo come supporto alla conversione (non sono la fonte dei valori).
+  controllo_plausibilita: >-
+    Con POWER 2001-2023 a Cremona (Tmedia mensile gen 3.0, apr 12.7, lug 25.7, ott 14.7 °C): mais seminato 15/4 ->
+    maturità fisiologica in media a 144 gg (125-164), mediana 7/9, fioritura 88 gg (12/7); soia 5/5 -> 142 gg (122-160),
+    mediana 23/9; frumento 30/10 -> 240 gg (225-255), mediana 25/6, antesi 186 gg (5/5).
+  frumento_inverno: >-
+    Il motore non modella vernalizzazione né fotoperiodo. Con t_base 0 °C il frumento accumula GDD anche in inverno
+    (dic-feb circa 3-5 GDD/giorno). Le soglie sono ricavate dal calendario reale (tab. 11, riga Mediterranean, 240 gg con
+    la lunga fase di sviluppo invernale di 140 gg), quindi i GDD invernali sono già inclusi nelle somme: nelle annate tipiche
+    il calendario torna. Limite: in inverni più miti il modello anticipa le fasi più della realtà (la dormienza e il
+    fabbisogno di vernalizzazione non sono rappresentati). AquaCrop (annesso I, I.10) dichiara la sua taratura valida per
+    il frumento invernale "in the absence of a cold period below 5 GDD"; FAO-66 (sez. 3.4, Wheat) nota che periodi
+    prolungati sotto 5 °C possono indurre dormienza.
+
+mais:
+  kc:
+    ini:
+      valore: 0.30
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, gruppo i. Cereals (Kc ini 0.3; la riga Maize, Field (grain) non ha un Kc ini proprio)"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Nota 1 della tab. 12: valore generico; con bagnature frequenti Kc ini cresce fino a 1.0-1.2 e va stimato con fig. 29-30 / eq. 59. In un modello con evaporazione separata dal suolo nudo (sezione suolo_nudo) va trattato come valore tabellare di riferimento."
+      verificato: true
+      sensibilita: true
+    mid:
+      valore: 1.20
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, riga Maize, Field (grain) (field corn)"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Clima sub-umido standard (RHmin 45%, u2 2 m/s); correzione climatica con eq. 62 nel codice usando h_max."
+      verificato: true
+    end:
+      valore: 0.60
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, riga Maize, Field (grain), Kc end 0.60-0.35, nota 11"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Nota 11: 0.60 per raccolta a umidità della granella alta, 0.35 dopo essiccazione completa in campo (~18%). Scelto 0.60 perché il ciclo simulato termina alla maturità fisiologica (granella ancora umida); dopo, il campo passa a suolo nudo. Eq. 65 (correzione climatica) si applica perché > 0.45."
+      verificato: true
+      intervallo: [0.35, 0.60]
+      sensibilita: true
+  h_max:
+    valore: 2.0
+    unita: "m"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 12, riga Maize, Field (grain), Maximum Crop Height (h) = 2"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Usata nelle eq. 62 e 65."
+    verificato: true
+  fasi_giorni:
+    valore: [30, 40, 50, 30]
+    unita: "giorni"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 11, riga Maize (grain), semina April, regione 'Spain (spr, sum.); Calif.' (30/40/50/30, totale 150)"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Riga più vicina alla Pianura Padana: semina in aprile, clima temperato-mediterraneo irriguo. Alternativa scartata: Idaho, USA (30/40/50/50, 170 gg; fase finale lunga per clima freddo). Servono come proporzioni; le soglie usate dal motore sono in GDD."
+    verificato: true
+  zr_ini:
+    valore: 0.30
+    unita: "m"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.2 Maize, 1.4 Development of root zone, Zn Minimum effective rooting depth = 0.30 m"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Profondità efficace minima di AquaCrop (anche nella v7.1, br244e). Il vecchio motore usava 0.15 m senza fonte."
+    verificato: true
+    sensibilita: true
+  zr_max:
+    valore: 1.7
+    unita: "m"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 22, riga Maize, Field (grain) (field corn), 1.0-1.7 m, nota 1"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Nota 1 tab. 22: i valori maggiori valgono per suoli senza strati limitanti e per modellare lo stress idrico o le colture in asciutta; i minori per programmare le irrigazioni. Scelto il massimo perché il motore modella lo stress. Il limite di profondità del suolo reale va applicato dal modulo suolo."
+    verificato: true
+    intervallo: [1.0, 1.7]
+    sensibilita: true
+  p:
+    valore: 0.55
+    unita: "-"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 22, riga Maize, Field (grain), p = 0.55 (per ETc circa 5 mm/giorno)"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Correzione per ETc diversa da 5 mm/giorno (nota 2 tab. 22): p = p_tab + 0.04 (5 - ETc), limitata a 0.1-0.8."
+    verificato: true
+  ky:
+    valore: 1.25
+    unita: "-"
+    fonte: "Allen et al. (1998), FAO-56, che riporta Doorenbos & Kassam (1979), FAO Irrigation and Drainage Paper 33"
+    riferimento: "FAO-56 Tabella 24, riga Maize, Ky = 1.25 (stagionale)"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Ky stagionale di FAO-33 letto nella tab. 24 di FAO-56; FAO-33 originale non aperto."
+    verificato: true
+  t_base:
+    valore: 8.0
+    unita: "°C"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.2 Maize, 1.1 Threshold air temperatures, Tbase = 8.0 °C"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Confermato da Steduto et al. (2012) FAO-66, sez. 3.4 Maize ('Tbase for maize is set at 8 °C'). Molte fonti agronomiche italiane usano base 10 °C: le somme termiche in base 10 non sono confrontabili con queste."
+    verificato: true
+  t_upper:
+    valore: 30.0
+    unita: "°C"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.2 Maize, 1.1 Threshold air temperatures, Tupper = 30.0 °C"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Confermato da FAO-66 sez. 3.4 Maize. Applicato a Tmedia (metodo 1, vedi _meta)."
+    verificato: true
+  classe_fao:
+    valore: 600
+    unita: "classe FAO"
+    fonte: "Regione Emilia-Romagna (2022). Disciplinari di produzione integrata 2022, Norme tecniche di coltura, Colture erbacee, Mais"
+    riferimento: "Mais da granella - Allegato Classi di precocità: granella, 1a epoca di semina (aprile): FAO 600 terreni sabbiosi, FAO 500 terreni argillosi"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2022/norme/erbacee.pdf/@@download/file"
+    nota: "Disciplinare dell'Emilia-Romagna (stessa pianura, sponda sud del Po); il disciplinare lombardo 2026 (All. 3 Colture erbacee) contiene solo le schede di concimazione e non indica classi. Anche Capo et al. (2023) usano ibridi FAO 600 in Piemonte. Non usato direttamente dal motore: documenta a quale ibrido si riferiscono le soglie GDD."
+    verificato: true
+  gdd_fine_ini:
+    valore: 195
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.2 Maize (totale)"
+    riferimento: "Tab. 11 riga Maize (grain) Spain/Calif.: fine fase iniziale = 10% dei GDD del ciclo nel clima di Cremona; x gdd_maturita 1950"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato (vedi _meta.metodo_soglie_fenologiche): 30 gg dalla semina del 15/4 = 206 GDD su 2055 (POWER 2001-2023) -> 0.100 x 1950 = 195. Nessuna fonte dà direttamente questa soglia."
+    verificato: false
+    sensibilita: true
+  gdd_fine_sviluppo:
+    valore: 670
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.2 Maize (totale)"
+    riferimento: "Tab. 11 riga Maize (grain) Spain/Calif.: fine sviluppo a 70 gg = 34.3% dei GDD del ciclo; x 1950"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 705/2055 = 0.343 x 1950 = 669 -> 670. Con il clima tipico cade intorno al 22/6 (circa 69 gg)."
+    verificato: false
+    sensibilita: true
+  gdd_fine_mid:
+    valore: 1500
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.2 Maize (totale)"
+    riferimento: "Tab. 11 riga Maize (grain) Spain/Calif.: fine piena stagione a 120 gg = 77.0% dei GDD; x 1950"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 1582/2055 = 0.770 x 1950 = 1502 -> 1500. Controllo: AquaCrop 'time from sowing to start senescence' = emergenza (60-100) + 1150-1500 = 1210-1600 GDD; 1500 è dentro."
+    verificato: false
+    intervallo: [1210, 1600]
+    sensibilita: true
+  gdd_maturita:
+    valore: 1950
+    unita: "°C·giorno"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.2 Maize, 1.2: time from sowing to emergence 60-100 GDD; time from sowing to maturity = emergence + 1450-1850 GDD"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Massimo dell'intervallo AquaCrop (100 + 1850) per un ibrido a ciclo lungo (FAO 600-700). La durata di tab. 11 (150 gg dal 15/4) a Cremona vale 2055 GDD, sopra il massimo AquaCrop: si tiene il limite AquaCrop. Con il clima POWER la maturità fisiologica cade in media a 144 gg (7/9)."
+    verificato: true
+    intervallo: [1510, 1950]
+    sensibilita: true
+  gdd_fioritura:
+    valore: 1000
+    unita: "°C·giorno"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.2 Maize, 1.3 Flowering: time from sowing to flowering = emergence (60-100) + 600-900 GDD; length of flowering 150-200 GDD"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Massimo dell'intervallo (100 + 900), coerente con la scelta della maturità al massimo. Inizio fioritura (emissione delle sete); con il clima tipico cade il 12/7 (88 gg)."
+    verificato: true
+    intervallo: [660, 1000]
+    sensibilita: true
+  semina:
+    valore: "04-15"
+    unita: "MM-GG"
+    fonte: "Regione Emilia-Romagna (2022). Disciplinari di produzione integrata, Mais - Allegato Classi di precocità; Allen et al. (1998) FAO-56 Tab. 11 nota 2"
+    riferimento: "DPI E-R: '1a epoca di semina (aprile)' per FAO 600; FAO-56 tab. 11 nota 2: semina del mais quando la media mobile a 10 giorni di Tmedia sale a 13 °C"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2022/norme/erbacee.pdf/@@download/file"
+    nota: "Il disciplinare indica solo il mese. La regola FAO-56 applicata a POWER 2001-2024 dà mediana 17/4 (estremi 24/3 - 1/5). Il giorno 15 è una scelta."
+    verificato: false
+    assunzione: true
+    motivazione: "Nessuna fonte ufficiale lombarda dà un giorno tipico: metà del mese indicato dal disciplinare E-R per la prima epoca, vicino alla mediana della regola termica FAO-56 su Cremona."
+  semina_min:
+    valore: "04-01"
+    unita: "MM-GG"
+    fonte: "Regione Emilia-Romagna (2022). Disciplinari di produzione integrata, Mais - Allegato Classi di precocità"
+    riferimento: "Granella, 1a epoca di semina (aprile) per FAO 600; 'semina ritardata (maggio)' richiede FAO 500/400"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2022/norme/erbacee.pdf/@@download/file"
+    nota: "Inizio del mese di aprile. La regola termica FAO-56 su POWER dà date dal 24/3 in annate calde: il motore può anticipare se la regola termica lo consente."
+    verificato: false
+    assunzione: true
+    motivazione: "Il disciplinare indica il mese, non i giorni: si prende il primo giorno di aprile."
+  semina_max:
+    valore: "04-30"
+    unita: "MM-GG"
+    fonte: "Regione Emilia-Romagna (2022). Disciplinari di produzione integrata, Mais - Allegato Classi di precocità"
+    riferimento: "Granella: in maggio ('semina ritardata') il disciplinare consiglia una classe più precoce (FAO 500 sabbiosi / 400 argillosi)"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2022/norme/erbacee.pdf/@@download/file"
+    nota: "Oltre fine aprile le soglie GDD di un FAO 600 non sono più adatte."
+    verificato: false
+    assunzione: true
+    motivazione: "Fine del mese della prima epoca per la classe FAO 600."
+  resa_potenziale:
+    valore: 15.8
+    unita: "t/ha (granella al 14% di umidità)"
+    fonte: "Capo L., Sopegno A., Reyneri A., Ujvári G., Agnolucci M., Blandino M. (2023). Agronomic strategies to enhance the early vigor and yield of maize part II. Frontiers in Plant Science 14, doi:10.3389/fpls.2023.1240313"
+    riferimento: "Tabella 7, resa dell'ibrido standard (FAO 600): 17.1, 16.1, 14.9, 15.0 t/ha (Carmagnola e Poirino 2018-2019), umidità commerciale 14%"
+    url: "https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2023.1240313/full"
+    nota: "Media dei 4 ambienti-anno = 15.8 t/ha. Prove sperimentali ben concimate in pianura piemontese (non Lombardia), FAO 600: usate come resa senza stress. Il disciplinare lombardo 2026 (scheda 3.13 Mais alta produzione) indica come produzione 'normale' 10-14 t/ha, con incremento di N previsto oltre 14 t/ha: è il livello aziendale, non il potenziale."
+    verificato: true
+    intervallo: [14.9, 17.7]
+    sensibilita: true
+  hi:
+    valore: 0.50
+    unita: "-"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.2 Maize, 3.2 Harvest Index, HIo reference harvest index 48-52%"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Punto medio dell'intervallo. FAO-66 sez. 3.4 Maize: HI 'close to 0.50' per ibridi moderni. AquaCrop considera la resa con umidità vicina a quella commerciale (10-15%)."
+    verificato: true
+    intervallo: [0.48, 0.52]
+  irrigabile:
+    valore: 1
+    unita: "-"
+    fonte: "Regione Emilia-Romagna (2022). Disciplinari di produzione integrata 2022, Norme tecniche di coltura, Mais"
+    riferimento: "Scheda Mais, voce Irrigazione: non ammesso lo scorrimento; volumi e momento d'intervento secondo l'Allegato Irrigazione Mais"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2022/norme/erbacee.pdf/@@download/file"
+    nota: "Il disciplinare prevede e regola l'irrigazione del mais (per il frumento invece 'di norma non è ammessa'). Non ho trovato una statistica aperta sulla quota di mais irrigato nel Cremonese: che sia normalmente irrigato è un'assunzione coerente con il disciplinare."
+    verificato: false
+    assunzione: true
+    motivazione: "Il mais da granella in Pianura Padana è coltura irrigua; manca un dato provinciale verificato."
+
+soia:
+  kc:
+    ini:
+      valore: 0.40
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, gruppo e. Legumes (Leguminosae), Kc ini 0.4 (la riga Soybeans non ha un Kc ini proprio)"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Nota 1 tab. 12: valore generico, dipende dalla frequenza delle bagnature (fig. 29-30)."
+      verificato: true
+      sensibilita: true
+    mid:
+      valore: 1.15
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, riga Soybeans"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Correzione climatica eq. 62 nel codice."
+      verificato: true
+    end:
+      valore: 0.50
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, riga Soybeans"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Eq. 65 applicabile (> 0.45)."
+      verificato: true
+  h_max:
+    valore: 0.75
+    unita: "m"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 12, riga Soybeans, h = 0.5-1.0 m"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Punto medio dell'intervallo; nessuna fonte locale sull'altezza."
+    verificato: true
+    intervallo: [0.5, 1.0]
+  fasi_giorni:
+    valore: [20, 35, 60, 25]
+    unita: "giorni"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 11, riga Soybeans, semina May, regione Central USA (20 / 30-35 / 60 / 25, totale 140)"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Scelta la riga con semina in maggio a latitudine temperata (le prove del Nord-Est italiano sono seminate per lo più in maggio, Danuso et al. 2017). Sviluppo: 35 gg perché il totale 140 lo richiede (30 darebbe 135). Alternative: Japan (giugno, 20/25/75/30), Tropics."
+    verificato: true
+  zr_ini:
+    valore: 0.30
+    unita: "m"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.6 Soybean, 1.4 Development of root zone, Zn = 0.30 m"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: ""
+    verificato: true
+    sensibilita: true
+  zr_max:
+    valore: 1.3
+    unita: "m"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 22, riga Soybeans, 0.6-1.3 m, nota 1"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Massimo dell'intervallo, per la nota 1 (valori maggiori per modellare lo stress idrico)."
+    verificato: true
+    intervallo: [0.6, 1.3]
+    sensibilita: true
+  p:
+    valore: 0.50
+    unita: "-"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 22, riga Soybeans, p = 0.50"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Correzione per ETc: p = p_tab + 0.04 (5 - ETc)."
+    verificato: true
+  ky:
+    valore: 0.85
+    unita: "-"
+    fonte: "Allen et al. (1998), FAO-56, che riporta Doorenbos & Kassam (1979), FAO Irrigation and Drainage Paper 33"
+    riferimento: "FAO-56 Tabella 24, riga Soybean, Ky = 0.85"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "FAO-33 originale non aperto."
+    verificato: true
+  t_base:
+    valore: 5.0
+    unita: "°C"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.6 Soybean, 1.1 Threshold air temperatures, Tbase = 5.0 °C"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Valore AquaCrop (identico nella v7.1). Altri modelli per la soia usano basi più alte (spesso 10 °C, non verificato qui): le soglie GDD sotto valgono solo con base 5."
+    verificato: true
+    sensibilita: true
+  t_upper:
+    valore: 30.0
+    unita: "°C"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.6 Soybean, 1.1 Threshold air temperatures, Tupper = 30.0 °C"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Applicato a Tmedia (metodo 1)."
+    verificato: true
+  gdd_fine_ini:
+    valore: 240
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.6 Soybean (totale)"
+    riferimento: "Tab. 11 riga Soybeans Central USA: fine fase iniziale a 20 gg = 9.8% dei GDD del ciclo nel clima di Cremona; x 2470"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 241/2472 = 0.098 x 2470 = 242 -> 240 (semina 5/5, POWER 2001-2023). Coerente con AquaCrop 'sowing to emergence' 150-300 GDD."
+    verificato: false
+    sensibilita: true
+  gdd_fine_sviluppo:
+    valore: 830
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.6 Soybean (totale)"
+    riferimento: "Tab. 11 riga Soybeans Central USA: fine sviluppo a 55 gg = 33.7% dei GDD; x 2470"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 832/2472 = 0.337 x 2470 = 831 -> 830."
+    verificato: false
+    sensibilita: true
+  gdd_fine_mid:
+    valore: 2060
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.6 Soybean (totale)"
+    riferimento: "Tab. 11 riga Soybeans Central USA: fine piena stagione a 115 gg = 83.4% dei GDD; x 2470"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 2061/2472 = 0.834 x 2470 = 2060. Controllo: AquaCrop inizio senescenza = emergenza (150-300) + 1600-2400 = 1750-2700 GDD; dentro."
+    verificato: false
+    intervallo: [1750, 2700]
+    sensibilita: true
+  gdd_maturita:
+    valore: 2470
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (durata) convertita in GDD; intervallo da Raes et al. (2026) AquaCrop Annex I v7.3, I.6 Soybean"
+    riferimento: "Tab. 11 riga Soybeans Central USA (140 gg); AquaCrop: maturity = emergence (150-300) + 2000-3000 GDD"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "140 gg dal 5/5 a Cremona = 2472 GDD (base 5, tetto 30), dentro l'intervallo AquaCrop 2150-3300. Maturità tipica 23/9; le prove del Nord-Est (Danuso et al. 2017) raccolgono soprattutto in ottobre, compatibile (raccolta dopo la maturità fisiologica)."
+    verificato: false
+    intervallo: [2150, 3300]
+    sensibilita: true
+  gdd_fioritura:
+    valore: 1330
+    unita: "°C·giorno"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.6 Soybean, 1.3 Flowering: time from sowing to flowering = emergence (150-300) + 1000-1500 GDD"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Intervallo 1150-1800; preso nella stessa posizione relativa (28%) di gdd_maturita nel suo intervallo: 1150 + 0.28 x 650 = 1332 -> 1330. Con il clima tipico cade il 24/7 (80 gg), probabilmente tardi per gruppi 0+/I+ seminati a inizio maggio: AquaCrop non tiene conto del fotoperiodo. Vedi problemi aperti."
+    verificato: false
+    intervallo: [1150, 1800]
+    sensibilita: true
+  semina:
+    valore: "05-05"
+    unita: "MM-GG"
+    fonte: "Danuso F., Patat I., Signor M., Valdevit F., Ceccon P., Baldini M. (2017). Analysis of grain yield in thirty years of soybean cultivation in North-East Italy. Atti XX Convegno AIAM e XLVI Convegno SIA, Milano, doi:10.6092/unibo/amsacta/5692"
+    riferimento: "Materials and methods: sowing date ranged from 24/04 to 12/06, with most of the sowing times in May"
+    url: "https://air.uniud.it/retrieve/e27ce0c5-8164-055e-e053-6605fe0a7873/SIA2017.pdf"
+    nota: "Prove varietali nazionali in Friuli (non Lombardia). La fonte dice solo 'per lo più in maggio': il giorno 5 è una scelta."
+    verificato: false
+    assunzione: true
+    motivazione: "Nessuna fonte ufficiale lombarda con la data tipica; inizio maggio, dentro il mese indicato dalle prove del Nord-Est e dopo la semina del mais."
+  semina_min:
+    valore: "04-24"
+    unita: "MM-GG"
+    fonte: "Danuso et al. (2017). Analysis of grain yield in thirty years of soybean cultivation in North-East Italy"
+    riferimento: "Materials and methods: sowing date ranged from 24/04 (Palazzolo, 2007)"
+    url: "https://air.uniud.it/retrieve/e27ce0c5-8164-055e-e053-6605fe0a7873/SIA2017.pdf"
+    nota: "Data più precoce osservata in 30 anni di prove (Friuli)."
+    verificato: true
+  semina_max:
+    valore: "06-12"
+    unita: "MM-GG"
+    fonte: "Danuso et al. (2017). Analysis of grain yield in thirty years of soybean cultivation in North-East Italy"
+    riferimento: "Materials and methods: sowing date ranged ... to 12/06 (Palazzolo, 2013)"
+    url: "https://air.uniud.it/retrieve/e27ce0c5-8164-055e-e053-6605fe0a7873/SIA2017.pdf"
+    nota: "Data più tardiva osservata nelle prove; oltre questa la soia è di secondo raccolto (non modellata qui)."
+    verificato: true
+  resa_potenziale:
+    valore: 4.5
+    unita: "t/ha (granella al 13% di umidità)"
+    fonte: "Regione Lombardia (2026). Disciplinari di produzione integrata, Norme tecniche agronomiche, All. 3 Colture erbacee, 3.18 Scheda Soia"
+    riferimento: "Concimazione azoto: dose standard per una produzione 'normale' di 2,8-4,2 t/ha; incremento previsto se si prevedono produzioni superiori a 4,2 t/ha"
+    url: "https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/3e3f7971-e8cc-4d7a-a72f-b20298107b5b/All++3_Colture+Erbacee_2026.pdf?MOD=AJPERES"
+    nota: "Il valore 4.5 non è scritto nella fonte: è appena sopra il limite superiore della produzione 'normale' del disciplinare (4,2 t/ha). Umidità: il disciplinare non la indica; 13% è la base delle prove nazionali (Danuso et al. 2017). Non ho potuto leggere rese numeriche delle prove varietali (Terra e Vita / Edagricole bloccano il download; i dati di Danuso et al. sono solo in figura)."
+    verificato: false
+    assunzione: true
+    motivazione: "Manca una fonte aperta con la resa senza stress della soia in Lombardia; si usa il limite superiore della produzione normale del disciplinare lombardo, leggermente aumentato perché il potenziale senza stress supera la media aziendale."
+    intervallo: [4.2, 5.0]
+  hi:
+    valore: 0.40
+    unita: "-"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.6 Soybean, 3.2 Harvest Index, HIo = 40%"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Resa con umidità vicina a quella commerciale (nota AquaCrop per i cereali; per la soia l'annesso non lo specifica)."
+    verificato: true
+  irrigabile:
+    valore: 1
+    unita: "-"
+    fonte: "Danuso et al. (2017). Analysis of grain yield in thirty years of soybean cultivation in North-East Italy"
+    riferimento: "Materials and methods: 'Irrigation was generally applied two or three times (supplementary irrigation)'"
+    url: "https://air.uniud.it/retrieve/e27ce0c5-8164-055e-e053-6605fe0a7873/SIA2017.pdf"
+    nota: "Riguarda le prove del Friuli, non il Cremonese; irrigazione di soccorso in fioritura e riempimento. Nel Cremonese è un'assunzione."
+    verificato: false
+    assunzione: true
+    motivazione: "Nessuna statistica aperta trovata sulla soia irrigata nel Cremonese; le prove del Nord-Est la irrigano 2-3 volte e la zona ha reti irrigue consortili."
+
+frumento:
+  kc:
+    ini:
+      valore: 0.70
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, riga Winter Wheat - with non-frozen soils, Kc ini 0.7 (with frozen soils 0.4)"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "A Cremona il suolo gela raramente e per poco: si usa il valore per suoli non gelati. La tab. 11 nota 2 dice che le fasi del frumento invernale si allungano nei climi con gelo per i giorni senza crescita; con suolo gelato FAO-56 indica 0.4 (cap. 11 riporta circa 0.4 anche per il frumento invernale nei periodi gelati in Cina del Nord)."
+      verificato: true
+      intervallo: [0.4, 0.7]
+      sensibilita: true
+    mid:
+      valore: 1.15
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, riga Winter Wheat"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Correzione climatica eq. 62; Box 14 di FAO-56 mostra che per il frumento Kc mid va da 1.02 (umido, calmo) a 1.25 (arido, ventoso)."
+      verificato: true
+    end:
+      valore: 0.25
+      unita: "-"
+      fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+      riferimento: "Tabella 12, riga Winter Wheat, Kc end 0.25-0.4, nota 10 (valore alto per raccolta a mano)"
+      url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+      nota: "Raccolta meccanica: valore basso. Eq. 65 non si applica (< 0.45)."
+      verificato: true
+      intervallo: [0.25, 0.40]
+  h_max:
+    valore: 1.0
+    unita: "m"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 12, righe Spring/Winter Wheat, h = 1 m"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "La riga Winter Wheat non ripete l'altezza: vale 1 m della riga Spring Wheat (stessa usata nel Box 14)."
+    verificato: true
+  fasi_giorni:
+    valore: [30, 140, 40, 30]
+    unita: "giorni"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 11, riga Winter Wheat, semina November, regione Mediterranean (30/140/40/30, totale 240)"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Scelta perché semina autunnale e raccolta a fine giugno come in Pianura Padana (30/10 + 240 gg = 27/6). Alternative scartate: Calif., USA (dicembre, 180 gg) e Idaho, USA (ottobre, 335 gg, inverno gelato)."
+    verificato: true
+  zr_ini:
+    valore: 0.30
+    unita: "m"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.10 Wheat, 1.4 Development of root zone, Zn = 0.30 m"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: ""
+    verificato: true
+    sensibilita: true
+  zr_max:
+    valore: 1.8
+    unita: "m"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 22, riga Winter Wheat, 1.5-1.8 m, nota 1"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Massimo dell'intervallo per la nota 1 (modellazione dello stress, coltura in asciutta)."
+    verificato: true
+    intervallo: [1.5, 1.8]
+    sensibilita: true
+  p:
+    valore: 0.55
+    unita: "-"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 22, riga Winter Wheat, p = 0.55"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Correzione per ETc: p = p_tab + 0.04 (5 - ETc); in inverno ETc è bassa e p sale."
+    verificato: true
+  ky:
+    valore: 1.05
+    unita: "-"
+    fonte: "Allen et al. (1998), FAO-56, che riporta Doorenbos & Kassam (1979), FAO Irrigation and Drainage Paper 33"
+    riferimento: "FAO-56 Tabella 24, riga Winter wheat, Ky = 1.05 (Spring Wheat 1.15)"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "FAO-33 originale non aperto."
+    verificato: true
+  t_base:
+    valore: 0.0
+    unita: "°C"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.10 Wheat, 1.1 Threshold air temperatures, Tbase = 0.0 °C"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Confermato da FAO-66 sez. 3.4 Wheat ('base temperature of 0 °C and an upper temperature of 26 °C'), che però indica circa 5 °C come temperatura minima di crescita misurabile. Vedi _meta.frumento_inverno."
+    verificato: true
+    sensibilita: true
+  t_upper:
+    valore: 26.0
+    unita: "°C"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.10 Wheat, 1.1 Threshold air temperatures, Tupper = 26.0 °C"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Confermato da FAO-66 sez. 3.4 Wheat. Applicato a Tmedia (metodo 1)."
+    verificato: true
+  gdd_fine_ini:
+    valore: 270
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.10 Wheat (intervallo)"
+    riferimento: "Tab. 11 riga Winter Wheat Mediterranean: fine fase iniziale a 30 gg = 11.2% dei GDD del ciclo nel clima di Cremona; x 2395"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 269/2395 (semina 30/10, POWER 2001-2023) = 0.112 x 2395 = 268 -> 270. AquaCrop 'sowing to emergence' 100-250 GDD."
+    verificato: false
+    sensibilita: true
+  gdd_fine_sviluppo:
+    valore: 1105
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.10 Wheat (intervallo)"
+    riferimento: "Tab. 11 riga Winter Wheat Mediterranean: fine sviluppo a 170 gg = 46.1% dei GDD; x 2395"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 1104/2395 = 0.461 -> 1105. Comprende i GDD invernali (vedi _meta.frumento_inverno). Con il clima tipico cade il 20/4."
+    verificato: false
+    sensibilita: true
+  gdd_fine_mid:
+    valore: 1745
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (proporzioni) e Raes et al. (2026) AquaCrop Annex I v7.3, I.10 Wheat (intervallo)"
+    riferimento: "Tab. 11 riga Winter Wheat Mediterranean: fine piena stagione a 210 gg = 72.9% dei GDD; x 2395"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Derivato: 1745/2395 = 0.729. Controllo: AquaCrop inizio senescenza = emergenza (100-250) + 1000-2000 = 1100-2250 GDD; dentro."
+    verificato: false
+    intervallo: [1100, 2250]
+    sensibilita: true
+  gdd_maturita:
+    valore: 2395
+    unita: "°C·giorno"
+    fonte: "Allen et al. (1998) FAO-56 Tab. 11 (durata) convertita in GDD; intervallo da Raes et al. (2026) AquaCrop Annex I v7.3, I.10 Wheat"
+    riferimento: "Tab. 11 riga Winter Wheat Mediterranean (240 gg); AquaCrop: maturity = emergence (100-250) + 1500-2900 GDD"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "240 gg dal 30/10 a Cremona = 2395 GDD (base 0, tetto 26), dentro l'intervallo AquaCrop 1600-3150. Maturità tipica 25/6 (225-255 gg)."
+    verificato: false
+    intervallo: [1600, 3150]
+    sensibilita: true
+  gdd_fioritura:
+    valore: 1330
+    unita: "°C·giorno"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.10 Wheat, 1.3 Flowering: time from sowing to flowering = emergence (100-250) + 1000-1300 GDD"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Intervallo 1100-1550; preso nella stessa posizione relativa (51%) di gdd_maturita: 1100 + 0.51 x 450 = 1331 -> 1330. Antesi con il clima tipico il 5/5 (186 gg)."
+    verificato: false
+    intervallo: [1100, 1550]
+    sensibilita: true
+  semina:
+    valore: "10-30"
+    unita: "MM-GG"
+    fonte: "Mazzoleni M. (2020). Tecniche di coltivazione del Grano Lombardo, campagna cerealicola 2020-2021 (Filiera della qualità 'Il pane lombardo per la qualità della vita')"
+    riferimento: "Sezione Epoca e modalità di semina / tabella riassuntiva: 'è consigliato seminare verso la fine di ottobre - inizio novembre'"
+    url: "https://quivicino.genuineway.io/wp-content/uploads/2021/10/tecniche_GRANO_LOMBARDO_2020-21-.pdf"
+    nota: "Fonte NON ufficiale (disciplinare di filiera privato, redatto da un agronomo): i disciplinari regionali lombardo ed emiliano non danno date di semina. Il giorno 30 è una scelta dentro 'fine ottobre - inizio novembre'. La regola FAO-56 (tab. 11 nota 2: media mobile 10 gg sotto 17 °C o 1 dicembre) su POWER dà mediana 5/10, molto prima della pratica locale."
+    verificato: false
+    assunzione: true
+    motivazione: "Data dentro l'intervallo consigliato dalla fonte di filiera lombarda; la regola termica FAO-56 non rappresenta la pratica padana (semine dopo la raccolta di mais/soia)."
+  semina_min:
+    valore: "10-15"
+    unita: "MM-GG"
+    fonte: "Mazzoleni M. (2020). Tecniche di coltivazione del Grano Lombardo, campagna cerealicola 2020-2021"
+    riferimento: "Epoca di semina: data prima della quale non è consentito seminare la varietà BOLOGNA: 15 ottobre (GIORGIONE: 20 ottobre)"
+    url: "https://quivicino.genuineway.io/wp-content/uploads/2021/10/tecniche_GRANO_LOMBARDO_2020-21-.pdf"
+    nota: "Vincolo di filiera per due varietà (fonte non ufficiale, dichiarata)."
+    verificato: true
+  semina_max:
+    valore: "12-01"
+    unita: "MM-GG"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 11, nota 2: semina autunnale del frumento invernale quando la media mobile a 10 giorni scende a 17 °C 'or December 1, whichever comes first'"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "Usato come limite tardivo della finestra."
+    verificato: true
+  resa_potenziale:
+    valore: 8.0
+    unita: "t/ha (granella al 13% di umidità)"
+    fonte: "Regione Lombardia (2026). Disciplinari di produzione integrata, Norme tecniche agronomiche, All. 3 Colture erbacee, 3.8 Scheda Frumento tenero"
+    riferimento: "Concimazione azoto: dose standard per una produzione 'normale' di 5-7 t/ha; incremento previsto se si prevedono produzioni superiori a 7 t/ha"
+    url: "https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/3e3f7971-e8cc-4d7a-a72f-b20298107b5b/All++3_Colture+Erbacee_2026.pdf?MOD=AJPERES"
+    nota: "Il valore 8.0 non è nella fonte: è sopra il limite superiore della produzione 'normale' lombarda (7 t/ha), perché il potenziale senza stress supera la media aziendale (la fonte di filiera Grano Lombardo considera una 'produzione media di 50-60 q/ha'). Umidità 13%: assunta, il disciplinare non la indica. Rese delle reti varietali CREA non leggibili (articoli Edagricole/Informatore Agrario non scaricabili)."
+    verificato: false
+    assunzione: true
+    motivazione: "Manca una fonte aperta con la resa senza stress del frumento tenero in Lombardia; si parte dal limite superiore della produzione normale del disciplinare lombardo."
+    intervallo: [7.0, 9.0]
+  hi:
+    valore: 0.48
+    unita: "-"
+    fonte: "Raes, Steduto, Hsiao, Fereres (2026). AquaCrop Reference Manual, Annex I, Version 7.3"
+    riferimento: "I.10 Wheat, 3.2 Harvest Index, HIo = 45-50%"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/annexesaquacropv73.pdf"
+    nota: "Punto medio (47.5%) arrotondato. Resa con umidità vicina alla commerciale (10-15%)."
+    verificato: true
+    intervallo: [0.45, 0.50]
+  irrigabile:
+    valore: 0
+    unita: "-"
+    fonte: "Regione Emilia-Romagna (2022). Disciplinari di produzione integrata 2022, Norme tecniche di coltura, Frumento tenero e duro"
+    riferimento: "Scheda Frumento tenero e duro, voce Irrigazione: 'Di norma non è ammessa l'irrigazione'"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2022/norme/erbacee.pdf/@@download/file"
+    nota: "Disciplinare emiliano (il lombardo 2026 non ha una voce irrigazione per coltura)."
+    verificato: true
+
+suolo_nudo:
+  kc_metodo:
+    valore: "Kc suolo nudo = Kc ini calcolato con la procedura del cap. 6 (fig. 29-30, eq. 59) in funzione dell'intervallo tra le bagnature e di ET0"
+    unita: "-"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 11 (ETc during non-growing periods), Bare soil: 'Kc for bare soil can be calculated as Kc = Kc ini where Kc ini is calculated using the procedure of Chapter 6'"
+    url: "https://www.fao.org/4/x0490e/x0490e0h.htm"
+    nota: "Con residui o pacciamatura Kc ini si riduce di circa il 5% per ogni 10% di superficie coperta (stesso capitolo). Le figure 29-30 sono grafici: non ne ho letto valori numerici. In alternativa si usa il bilancio dello strato evaporante (voci sotto)."
+    verificato: true
+  ze:
+    valore: 0.10
+    unita: "m"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 7, eq. 73 e testo: 'Where unknown, a value for Ze ... of 0.10-0.15 m is recommended'; tab. 19 riporta TEW per Ze = 0.10 m"
+    url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+    nota: "Scelto 0.10 m perché è la profondità su cui è costruita la tab. 19."
+    verificato: true
+    intervallo: [0.10, 0.15]
+    sensibilita: true
+  tew_formula:
+    valore: "TEW = 1000 (theta_FC - 0.5 theta_WP) Ze"
+    unita: "mm"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 7, eq. 73"
+    url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+    nota: "Da calcolare con theta_FC e theta_WP del suolo (params/suolo, altro agent). Le voci per tessitura sotto sono il riferimento tabellare."
+    verificato: true
+  kc_max:
+    valore: 1.20
+    unita: "-"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 7, eq. 72 (Kc max da 1.05 a 1.30) ed esempio di suolo nudo: Ke = Kr (Kc max - Kcb) con Kc max = 1.20"
+    url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+    nota: "Il coefficiente 1.2 dell'eq. 72 vale per bagnature distanziate più di 3-4 giorni; con bagnature ogni 1-2 giorni si riduce a circa 1.1."
+    verificato: true
+    intervallo: [1.05, 1.30]
+  kcb_suolo_nudo:
+    valore: 0.15
+    unita: "-"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 7, esempio di calcolo di Ke su suolo nudo, punto (8): Kcb = 0.15 come evaporazione 'diffusiva' di base; in alternativa Kcb = 0 e Ke max = Kc max = 1.20"
+    url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+    nota: "Serve solo se il motore usa il Kc duale (Kcb + Ke) anche tra una coltura e l'altra."
+    verificato: true
+    intervallo: [0.0, 0.15]
+  tessiture:
+    franco:
+      rew:
+        valore: 9
+        unita: "mm"
+        fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+        riferimento: "Cap. 7, Tabella 19, riga Loam: REW 8-10 mm"
+        url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+        nota: "Punto medio."
+        verificato: true
+        intervallo: [8, 10]
+      tew:
+        valore: 19
+        unita: "mm"
+        fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+        riferimento: "Cap. 7, Tabella 19, riga Loam: TEW 16-22 mm (Ze = 0.10 m)"
+        url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+        nota: "Punto medio."
+        verificato: true
+        intervallo: [16, 22]
+    franco_limoso:
+      rew:
+        valore: 9.5
+        unita: "mm"
+        fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+        riferimento: "Cap. 7, Tabella 19, riga Silt loam: REW 8-11 mm"
+        url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+        nota: "Punto medio."
+        verificato: true
+        intervallo: [8, 11]
+      tew:
+        valore: 21.5
+        unita: "mm"
+        fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+        riferimento: "Cap. 7, Tabella 19, riga Silt loam: TEW 18-25 mm (Ze = 0.10 m)"
+        url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+        nota: "Punto medio."
+        verificato: true
+        intervallo: [18, 25]
+    argilloso:
+      rew:
+        valore: 10
+        unita: "mm"
+        fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+        riferimento: "Cap. 7, Tabella 19, riga Clay: REW 8-12 mm"
+        url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+        nota: "Punto medio."
+        verificato: true
+        intervallo: [8, 12]
+      tew:
+        valore: 25.5
+        unita: "mm"
+        fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+        riferimento: "Cap. 7, Tabella 19, riga Clay: TEW 22-29 mm (Ze = 0.10 m)"
+        url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+        nota: "Punto medio."
+        verificato: true
+        intervallo: [22, 29]

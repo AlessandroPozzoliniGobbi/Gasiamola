@@ -1,0 +1,577 @@
+_meta:
+  descrizione: "Suolo del punto pilota (lat 45.2, lon 10.0, provincia di Cremona): ingressi SoilGrids 2.0, proprieta' idrauliche Saxton e Rawls (2006), profilo simulato, evaporazione, ruscellamento, drenaggio, condizione iniziale"
+  compilato_il: "2026-11-11"
+  dati: "SoilGrids 250 m v2.0 via REST (https://rest.isric.org/soilgrids/v2.0/properties/query), scaricato il 2026-11-11T16:25:34Z, sha256 812148f6...1ff1c; aggregati per spessore in data/processed/lat45.200_lon10.000/soilgrids_agg.csv"
+  calcolo: "fc, wp, sat, ksat e acqua disponibile sono calcolati da fieldwise.soil (Saxton e Rawls 2006, coefficienti nel codice con il numero di equazione); tests/test_soil.py verifica che i valori qui coincidano con il ricalcolo (tolleranza 5e-4 m3/m3, 0,5% su ksat, 0,5 mm su acqua disponibile)"
+  scelte:
+    - "Contenuti idrici riferiti alla terra fine: nessuna correzione per lo scheletro (Rv = 0). ERSAF descrive i suoli della bassa pianura cremonese 'senza scheletro'; SoilGrids da' 9-12% vol ma cfvo e' la sua proprieta' meno accurata (MEC 0,31). Con lo scheletro SoilGrids l'acqua disponibile 0-150 cm scende da 215 a 194 mm."
+    - "Nessuna correzione per la densita' (DF = 1). La densita' SoilGrids (1,43 g/cm3) darebbe DF = 1,07 nello strato 0-30 cm, ma e' una stima con q05-q95 0,98-1,81. Con DF da SoilGrids: fc 0-30 = 0,318, sat 0,459, ksat 7,4 mm/h, acqua disponibile 0-150 cm 209 mm."
+    - "Profilo simulato 0-150 cm in due strati (0-30, 30-150). Lo strato profondo e' la media pesata sullo spessore degli orizzonti SoilGrids 30-100 e 100-150; ksat con la media armonica pesata."
+  limiti:
+    - "Falda e risalita capillare ignorate. Nella bassa pianura cremonese centrale ERSAF indica suoli limitati dalla falda e/o da orizzonti sabbiosi mediamente tra 110 e 150 cm (Media Pianura: falda tra 85 e 170 cm). In questi suoli la falda d'estate rifornisce la zona radicale per risalita capillare e d'inverno puo' limitare il drenaggio. Ignorarla fa sbagliare il modello in una direzione nota: sovrastima lo stress idrico e il fabbisogno irriguo delle colture a radici profonde (mais, soia) negli anni secchi, sovrastima la percolazione profonda (e quindi la lisciviazione dei nitrati) e sottostima l'umidita' del profilo profondo. L'errore e' maggiore per le rotazioni con mais e minore per i cereali autunno-vernini, che crescono quando la domanda evapotraspirativa e' bassa."
+    - "La sostanza organica SoilGrids dello strato 0-30 cm (3,56%) e' circa 1,5 volte quella misurata da ERSAF nei seminativi della zona (13,5 g/kg di carbonio organico, cioe' 2,33% di sostanza organica): vedi sostanza_organica e docs/fonti_soil.md. Decisione del responsabile."
+    - "Saxton e Rawls (2006) sono regressioni su orizzonti A USA; l'errore tipico delle pedotransfer sulla singola stima di fc e wp e' dell'ordine di qualche punto percentuale in volume."
+    - "Un solo profilo per tutto il campo: nessuna variabilita' spaziale. La tessitura misurata nel sito sperimentale di Luignano (circa 5 km dal punto) e' franco-sabbiosa (sabbia 56%, argilla 10%), molto piu' grossolana della media SoilGrids."
+
+strati_soilgrids:
+  s0_30:
+    profondita:
+      valore: [0, 30]
+      unita: "cm"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0: producing soil information for the globe with quantified spatial uncertainty. SOIL 7:217-240"
+      riferimento: "Strati standard 0-5, 5-15, 15-30 cm, aggregati per spessore"
+      url: "https://soil.copernicus.org/articles/7/217/2021/"
+      nota: ""
+      verificato: true
+    sabbia:
+      valore: 32.78
+      unita: "% peso terra fine"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' sand, statistica mean, media pesata 0-5/5-15/15-30 cm; intervallo = media pesata di Q0.05 e Q0.95"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Mappato in g/kg, diviso per 10. Il sito ERSAF di Luignano (circa 5 km) misura 56% (FerSoil 2009)."
+      verificato: true
+      sensibilita: true
+      intervallo: [12.13, 57.48]
+    argilla:
+      valore: 25.55
+      unita: "% peso terra fine"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' clay, statistica mean, media pesata 0-30 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Il sito di Luignano misura 10% (FerSoil 2009)."
+      verificato: true
+      sensibilita: true
+      intervallo: [4.73, 63.38]
+    limo:
+      valore: 41.68
+      unita: "% peso terra fine"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' silt, statistica mean, media pesata 0-30 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Non entra in Saxton-Rawls; serve per la classe tessiturale."
+      verificato: true
+      intervallo: [10.9, 75.8]
+    carbonio_organico:
+      valore: 20.67
+      unita: "g/kg"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' soc, statistica mean, media pesata 0-30 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Alternativa regionale nell'intervallo: ERSAF misura 13,5 +/- 4,7 g/kg (Bassa Pianura Centrale) e 14,7 +/- 3,7 g/kg (Media Pianura) nei campionamenti 2020-2023. Il limite superiore dell'intervallo e' il q95 SoilGrids."
+      verificato: true
+      sensibilita: true
+      intervallo: [13.5, 48.18]
+    sostanza_organica:
+      valore: 3.563
+      unita: "% peso"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "soc 0-30 cm x 1,724 (fattore di van Bemmelen, fieldwise.data.soilgrids)"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "CONFLITTO DI FONTI, decisione al responsabile. ERSAF (Piano di monitoraggio dei suoli 2020-2023, tab. 19) misura 13,5 g/kg di carbonio organico nella Bassa Pianura Centrale, pari a 2,33% di sostanza organica (alternativa nell'intervallo). Anche lo stock medio ERSAF dei seminativi lombardi, 57 t C/ha in 0-30 cm (ERSAF 2008), corrisponde a circa 13 g/kg con densita' 1,43. Con 2,33%: fc 0-30 da 0,3255 a 0,3146, wp da 0,1722 a 0,1662, acqua disponibile 0-30 da 46,0 a 44,5 mm, humus 0-30 cm da 153 a 100 t/ha (densita' 1,433)."
+      verificato: true
+      sensibilita: true
+      intervallo: [2.327, 8.307]
+    densita_apparente:
+      valore: 1.433
+      unita: "g/cm3"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' bdod (terra fine), statistica mean, media pesata 0-30 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Non usata nella correzione di Saxton-Rawls (DF = 1, vedi _meta.scelte); usata per lo stock di humus. Densita' normale di Saxton-Rawls per questo strato 1,34 g/cm3 (DF = 1,07). FerSoil (2009) assume 1,4 t/m3 per i suoli dei siti sperimentali."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.982, 1.805]
+    frammenti_grossolani:
+      valore: 9.32
+      unita: "% volume"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' cfvo, statistica mean, media pesata 0-30 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Non applicato (Rv = 0): ERSAF descrive i suoli della Bassa Pianura Centrale 'senza scheletro'; cfvo ha MEC 0,31 nella validazione SoilGrids (Poggio et al. 2021, tab. 4)."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.0, 29.85]
+    classe_tessiturale:
+      valore: "loam"
+      unita: "-"
+      fonte: "Soil Science Society of America, Glossary of Soil Science Terms (definizioni da USDA Soil Survey Manual, Handbook 18, 1993)"
+      riferimento: "Voce soil texture: loam = argilla 7-27%, limo 28-50%, sabbia < 52%"
+      url: "https://agronomy.org/files/publications/soils-glossary/table-5.pdf"
+      nota: "Calcolato da fieldwise.soil.usda_texture_class; franco. Coerente con ERSAF ('suoli franchi con substrato sabbioso'); il sito di Luignano e' invece franco-sabbioso."
+      verificato: true
+    fc:
+      valore: 0.3255
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). Soil water characteristic estimates by texture and organic matter for hydrologic solutions. SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 2 (33 kPa), applicata a sabbia, argilla e sostanza organica di questo strato"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil. Coefficienti letti nella riproduzione USDA-ARS (WEPP) e verificati sul foglio USDA Ag Data Commons. Intervallo: fc con la sostanza organica ERSAF (2,33%)."
+      verificato: true
+      intervallo: [0.3146, 0.3255]
+    wp:
+      valore: 0.1722
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 1 (1500 kPa)"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil. Intervallo: con la sostanza organica ERSAF."
+      verificato: true
+      intervallo: [0.1662, 0.1722]
+    sat:
+      valore: 0.4942
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 3 e 5 (saturazione)"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil. Intervallo: con DF da SoilGrids (0,459) e valore base."
+      verificato: true
+      intervallo: [0.4591, 0.4942]
+    ksat:
+      valore: 12.47
+      unita: "mm/h"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 16 (con eq. 14-15 per lambda)"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil; pari a 3,46 micrometri/s. Intervallo: con DF da SoilGrids (7,37) e valore base. Ksat da pedotransfer ha incertezza di un ordine di grandezza."
+      verificato: true
+      sensibilita: true
+      intervallo: [7.37, 12.47]
+    acqua_disponibile:
+      valore: 46.0
+      unita: "mm"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "(fc - wp) x spessore"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil: 1000 x (0,3255 - 0,1722) x 0,30 m. Cumulata 0-30 cm = 46,0 mm."
+      verificato: true
+  s30_100:
+    profondita:
+      valore: [30, 100]
+      unita: "cm"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240"
+      riferimento: "Strati standard 30-60, 60-100 cm, aggregati per spessore"
+      url: "https://soil.copernicus.org/articles/7/217/2021/"
+      nota: ""
+      verificato: true
+    sabbia:
+      valore: 34.04
+      unita: "% peso terra fine"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' sand, mean, media pesata 30-100 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: ""
+      verificato: true
+      intervallo: [8.96, 65.9]
+    argilla:
+      valore: 26.44
+      unita: "% peso terra fine"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' clay, mean, media pesata 30-100 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: ""
+      verificato: true
+      intervallo: [1.26, 72.51]
+    sostanza_organica:
+      valore: 1.773
+      unita: "% peso"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "soc 30-100 cm (10,29 g/kg) x 1,724"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Nessun confronto regionale trovato per questa profondita'."
+      verificato: true
+      intervallo: [0.207, 3.894]
+    densita_apparente:
+      valore: 1.507
+      unita: "g/cm3"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' bdod, mean, media pesata 30-100 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Non usata (DF = 1); densita' normale Saxton-Rawls 1,455 (DF = 1,04)."
+      verificato: true
+      intervallo: [1.037, 1.876]
+    frammenti_grossolani:
+      valore: 8.9
+      unita: "% volume"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' cfvo, mean, media pesata 30-100 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Non applicato (vedi s0_30)."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.0, 36.6]
+    fc:
+      valore: 0.3113
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 2"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil."
+      verificato: true
+    wp:
+      valore: 0.1684
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 1"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil."
+      verificato: true
+    sat:
+      valore: 0.4508
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 3 e 5"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil."
+      verificato: true
+    ksat:
+      valore: 7.19
+      unita: "mm/h"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 16"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil; 2,00 micrometri/s."
+      verificato: true
+      sensibilita: true
+    acqua_disponibile:
+      valore: 100.0
+      unita: "mm"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "(fc - wp) x spessore"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil. Cumulata 0-100 cm = 146,0 mm."
+      verificato: true
+  s100_200:
+    profondita:
+      valore: [100, 200]
+      unita: "cm"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240"
+      riferimento: "Strato standard 100-200 cm"
+      url: "https://soil.copernicus.org/articles/7/217/2021/"
+      nota: "Il motore usa solo 100-150 cm (profondita_profilo)."
+      verificato: true
+    sabbia:
+      valore: 37.5
+      unita: "% peso terra fine"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' sand, mean, 100-200 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "ERSAF indica substrato sabbioso tra 110 e 150 cm nella Bassa Pianura Centrale: probabilmente SoilGrids sottostima la sabbia profonda."
+      verificato: true
+      intervallo: [6.6, 77.6]
+    argilla:
+      valore: 24.0
+      unita: "% peso terra fine"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' clay, mean, 100-200 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: ""
+      verificato: true
+      intervallo: [0.7, 75.0]
+    sostanza_organica:
+      valore: 1.448
+      unita: "% peso"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "soc 100-200 cm (8,4 g/kg) x 1,724"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: ""
+      verificato: true
+      intervallo: [0.086, 2.793]
+    densita_apparente:
+      valore: 1.53
+      unita: "g/cm3"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' bdod, mean, 100-200 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Non usata (DF = 1); densita' normale Saxton-Rawls 1,49."
+      verificato: true
+      intervallo: [1.08, 1.88]
+    frammenti_grossolani:
+      valore: 12.0
+      unita: "% volume"
+      fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240; servizio REST ISRIC v2.0, download 2026-11-11"
+      riferimento: "Proprieta' cfvo, mean, 100-200 cm"
+      url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.0&lat=45.2"
+      nota: "Non applicato (vedi s0_30)."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.0, 51.0]
+    fc:
+      valore: 0.2913
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 2"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil."
+      verificato: true
+    wp:
+      valore: 0.1532
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 1"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil."
+      verificato: true
+    sat:
+      valore: 0.4372
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 3 e 5"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil."
+      verificato: true
+    ksat:
+      valore: 8.29
+      unita: "mm/h"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 16"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil; 2,30 micrometri/s."
+      verificato: true
+      sensibilita: true
+    acqua_disponibile:
+      valore: 138.1
+      unita: "mm"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "(fc - wp) x spessore (100 cm)"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil. Cumulata 0-200 cm = 284,1 mm; nel profilo simulato (fino a 150 cm) entra solo 100-150 cm = 69,1 mm."
+      verificato: true
+
+profilo:
+  profondita_profilo:
+    valore: 1.50
+    unita: "m"
+    fonte: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56, cap. 8; ERSAF (2024) Piano di monitoraggio dei suoli 2020-2023"
+    riferimento: "FAO-56 tabella 22: Maize, Field (grain) Zr 1,0-1,7 m; ERSAF tabella 1: Bassa Pianura Centrale, suoli limitati da falda e/o orizzonti sabbiosi mediamente tra 110 e 150 cm"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Scelto il limite superiore dell'intervallo ERSAF, dentro l'intervallo FAO-56 del mais; SoilGrids arriva a 200 cm, quindi i dati coprono il profilo."
+    verificato: true
+    sensibilita: true
+    intervallo: [1.10, 1.70]
+  spessore_strati:
+    valore: [0.30, 1.20]
+    unita: "m"
+    fonte: "Poggio L. et al. (2021). SoilGrids 2.0. SOIL 7:217-240"
+    riferimento: "Limite a 30 cm = orizzonte superficiale SoilGrids 0-30 cm (strato arato)"
+    url: "https://soil.copernicus.org/articles/7/217/2021/"
+    nota: "Strato 1: 0-30 cm; strato 2: 30-150 cm (decisione di progetto del motore a due strati)."
+    verificato: true
+  strato_superficiale:
+    fc:
+      valore: 0.3255
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 2; = strati_soilgrids.s0_30"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+      intervallo: [0.3146, 0.3255]
+    wp:
+      valore: 0.1722
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 1"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+      intervallo: [0.1662, 0.1722]
+    sat:
+      valore: 0.4942
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 3 e 5"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+    ksat:
+      valore: 12.47
+      unita: "mm/h"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 16"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+      sensibilita: true
+    acqua_disponibile:
+      valore: 46.0
+      unita: "mm"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "(fc - wp) x 0,30 m"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+  strato_profondo:
+    fc:
+      valore: 0.3030
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 2; media pesata 30-100 (70 cm) e 100-150 (50 cm)"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+    wp:
+      valore: 0.1621
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 1; media pesata"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+    sat:
+      valore: 0.4451
+      unita: "m3/m3"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 3 e 5; media pesata"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+    ksat:
+      valore: 7.61
+      unita: "mm/h"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "Tabella 1, eq. 16; media armonica pesata"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+      sensibilita: true
+    acqua_disponibile:
+      valore: 169.1
+      unita: "mm"
+      fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+      riferimento: "(fc - wp) x 1,20 m"
+      url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+      nota: "Calcolato da fieldwise.soil.engine_layers."
+      verificato: true
+  acqua_disponibile_totale:
+    valore: 215.1
+    unita: "mm"
+    fonte: "Saxton K.E., Rawls W.J. (2006). SSSA J. 70:1569-1578"
+    riferimento: "Somma dei due strati, 0-150 cm"
+    url: "https://infosys.ars.usda.gov/svn/code/weps1/branches/weps.src.wepp/src/lib_wepp/saxpar.for"
+    nota: "Calcolato da fieldwise.soil. Alternative: 194 mm con lo scheletro SoilGrids, 209 mm con la correzione di densita', 214 mm con la sostanza organica ERSAF nello strato 0-30. FAO-56 tab. 19 per Loam: fc - wp = 0,13-0,18, cioe' 195-270 mm su 1,5 m: coerente."
+    verificato: true
+    sensibilita: true
+    intervallo: [193.6, 215.1]
+
+evaporazione:
+  rew:
+    valore: 9
+    unita: "mm"
+    fonte: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 7, Tabella 19, riga Loam: REW 8-10 mm"
+    url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+    nota: "Classe del punto: loam (franco). Punto medio dell'intervallo. Lo spessore dello strato evaporante Ze e la tabella per tessitura stanno in crops.yaml (suolo_nudo): questo e' lo stesso numero, scelto per la classe del punto."
+    verificato: true
+    intervallo: [8, 10]
+
+ruscellamento:
+  metodo:
+    valore: "SCS Curve Number, Q = (P - Ia)^2 / (P - Ia + S), S = 25400/CN - 254 mm, Ia = 0,2 S"
+    unita: "-"
+    fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 10 Estimation of Direct Runoff from Storm Rainfall"
+    riferimento: "Eq. 10-9 e 10-11; tabella 10-1 (CN per Ia = 0,2 S)"
+    url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930608/7300.pdf"
+    nota: "AquaCrop v7.3 (cap. 3, eq. 3.7e-f) usa la stessa equazione ma con Ia = 0,05 S e CN diversi (tab. 3.7a); i CN di NEH tab. 9-1 valgono per Ia = 0,2 S e non vanno mescolati con Ia = 0,05 S."
+    verificato: true
+  gruppo_idrologico:
+    valore: "C"
+    unita: "-"
+    fonte: "USDA NRCS (2009). National Engineering Handbook Part 630 Hydrology, Chapter 7 Hydrologic Soil Groups"
+    riferimento: "Tabella 7-1: nessuno strato impermeabile entro 100 cm; falda alta > 60 cm; Ksat dello strato meno permeabile 2,0 micrometri/s (tra 1 e 10 per 0-50 cm, tra 0,4 e 4 per 0-100 cm) -> C"
+    url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930597/11905.pdf"
+    nota: "Calcolato da fieldwise.soil.hydrologic_soil_group; il risultato e' C per qualsiasi profondita' di falda tra 85 e 170 cm. Con falda < 60 cm diventerebbe C/D. Coerente con la descrizione testuale (gruppo C: 20-40% argilla, < 50% sabbia, tessiture franche)."
+    verificato: true
+  cn:
+    colture_a_file:
+      valore: 85
+      unita: "-"
+      fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 9 Hydrologic Soil-Cover Complexes"
+      riferimento: "Tabella 9-1, Row crops, Straight row (SR), Good, gruppo C"
+      url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930607/7306.pdf"
+      nota: "Mais e soia. Condizione di ruscellamento media (ARC II), Ia = 0,2 S. Poor = 88; SR + residui, Good = 82."
+      verificato: true
+      intervallo: [82, 88]
+    cereali_a_paglia:
+      valore: 83
+      unita: "-"
+      fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 9 Hydrologic Soil-Cover Complexes"
+      riferimento: "Tabella 9-1, Small grain, SR, Good, gruppo C"
+      url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930607/7306.pdf"
+      nota: "Frumento, orzo. Poor = 84; SR + residui, Good = 80."
+      verificato: true
+      intervallo: [80, 84]
+    suolo_nudo:
+      valore: 91
+      unita: "-"
+      fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 9 Hydrologic Soil-Cover Complexes"
+      riferimento: "Tabella 9-1, Fallow, Bare soil, gruppo C"
+      url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930607/7306.pdf"
+      nota: "Con residui colturali (CR): Poor 90, Good 88."
+      verificato: true
+      intervallo: [88, 91]
+  umidita_antecedente:
+    arc_i:
+      valore: [70, 67, 80]
+      unita: "-"
+      fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 10"
+      riferimento: "Tabella 10-1, colonna ARC I per CN(ARC II) = 85, 83, 91"
+      url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930608/7300.pdf"
+      nota: "Ordine: colture_a_file, cereali_a_paglia, suolo_nudo. NEH cap. 10 tratta ARC I e III come estremi della variabilita' (circa 10 e 90 percentile) e non come funzione dell'umidita' del suolo; la regola con l'umidita' e' quella di AquaCrop (sotto)."
+      verificato: true
+    arc_iii:
+      valore: [94, 93, 97]
+      unita: "-"
+      fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 10"
+      riferimento: "Tabella 10-1, colonna ARC III per CN(ARC II) = 85, 83, 91"
+      url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930608/7300.pdf"
+      nota: "Ordine: colture_a_file, cereali_a_paglia, suolo_nudo."
+      verificato: true
+    regola_umidita:
+      valore: "CN = CN(ARC II) con lo strato 0-30 cm a meta' tra fc e wp; interpolazione lineare verso CN(ARC I) a wp e CN(ARC III) a fc"
+      unita: "-"
+      fonte: "Raes D., Steduto P., Hsiao T.C., Fereres E. (2026). AquaCrop Version 7.3 Reference Manual, Chapter 3 Calculation procedures. FAO"
+      riferimento: "Sez. 3.7.4, testo dopo la tab. 3.7a ed eq. 3.7g-3.7i"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+      nota: "AquaCrop calcola ARC I e III con le eq. 3.7g-h (da Smedema e Rycroft 1983) e pesa l'umidita' con la profondita' (eq. 3.7i); qui si propone di usare i valori di NEH tab. 10-1, coerenti con Ia = 0,2 S. Lo stesso manuale riporta che l'effetto dell'umidita' antecedente e' poco documentato: la correzione e' opzionale (sensibilita')."
+      verificato: true
+      sensibilita: true
+
+drenaggio:
+  metodo_base:
+    valore: "FAO-56: l'acqua oltre la capacita' di campo dello strato drena (percolazione profonda) nello stesso giorno"
+    unita: "-"
+    fonte: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 8, eq. 85 e 88 e testo 'Deep percolation (DP)': il contenuto idrico torna a theta_FC nello stesso giorno dell'evento"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Metodo adottato. L'eq. 85 contiene anche la risalita capillare CR, qui posta a zero (vedi _meta.limiti)."
+    verificato: true
+  tau_alternativa:
+    strato_superficiale:
+      valore: 0.637
+      unita: "-"
+      fonte: "Raes D. et al. (2026). AquaCrop Version 7.3 Reference Manual, Chapter 3. FAO"
+      riferimento: "Eq. 3.7b: tau = 0,0866 Ksat^0,35, Ksat in mm/giorno; eq. 3.7a per il drenaggio"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+      nota: "Alternativa NON imposta: frazione dell'acqua tra sat e fc persa il primo giorno. Ksat 0-30 cm = 299 mm/giorno. Calcolato da fieldwise.soil.aquacrop_tau."
+      verificato: true
+      sensibilita: true
+    strato_profondo:
+      valore: 0.536
+      unita: "-"
+      fonte: "Raes D. et al. (2026). AquaCrop Version 7.3 Reference Manual, Chapter 3. FAO"
+      riferimento: "Eq. 3.7b"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+      nota: "Ksat 30-150 cm = 183 mm/giorno (media armonica). Calcolato da fieldwise.soil.aquacrop_tau."
+      verificato: true
+      sensibilita: true
+
+umidita_iniziale:
+  frazione_acqua_disponibile:
+    valore: 1.0
+    unita: "-"
+    assunzione: true
+    motivazione: "Al 1 gennaio il profilo si assume alla capacita' di campo (frazione 1 dell'acqua disponibile, esaurimento iniziale 0). In dicembre-gennaio nella pianura padana le piogge superano l'evapotraspirazione e i campi sono senza coltura o con cereali appena emersi, quindi il profilo tende a ricaricarsi; FAO-56 (cap. 8, 'Initial depletion', eq. 87) ammette Dr ~ 0 dopo piogge abbondanti (https://www.fao.org/4/x0490e/x0490e0e.htm). L'intervallo 0,5-1,0 va esplorato in sensibilita'; l'effetto si esaurisce con le piogge invernali e conta soprattutto nella prima annata simulata."
+    nota: "Riferita a ciascuno dei due strati: theta = wp + frazione x (fc - wp)."
+    verificato: false
+    intervallo: [0.5, 1.0]

@@ -1,0 +1,42 @@
+{
+  "stations": [
+    {
+      "sensor_id": "9031",
+      "station": "Casalbuttano ed Uniti",
+      "station_id": "1219",
+      "lat": 45.25595928,
+      "lon": 9.96349494,
+      "quota_m": "56",
+      "dist_km": 6.848,
+      "role": "explicit",
+      "datastart": "2005-01-15T00:00:00.000",
+      "datastop": null
+    }
+  ],
+  "convention": "Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente.",
+  "datasets": [
+    {
+      "id": "6eu4-4tja",
+      "name": "Temperatura fino al 2010",
+      "first": 0,
+      "last": 2010,
+      "updated": "2025-05-06T16:42:07.000Z"
+    },
+    {
+      "id": "d4kj-kbpj",
+      "name": "Temperatura dal 2011 al 2020",
+      "first": 2011,
+      "last": 2020,
+      "updated": "2025-05-07T19:53:27.000Z"
+    },
+    {
+      "id": "w9wd-u6jh",
+      "name": "Temperatura dal 2021",
+      "first": 2021,
+      "last": 9999,
+      "updated": "2026-03-06T20:50:13.000Z"
+    }
+  ],
+  "start_year": 2000,
+  "end_year": 2025
+}

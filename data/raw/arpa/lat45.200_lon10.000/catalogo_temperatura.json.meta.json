@@ -1,0 +1,16 @@
+{
+  "file": "catalogo_temperatura.json",
+  "source": "arpa",
+  "product": "Catalogo dati.lombardia.it (Temperatura)",
+  "version": "catalogo del 2026-11-11",
+  "url": "https://www.dati.lombardia.it/api/catalog/v1",
+  "params": {
+    "q": "Temperatura",
+    "only": "datasets",
+    "limit": "50"
+  },
+  "downloaded_at_utc": "2026-11-11T21:20:48+00:00",
+  "bytes": 61341,
+  "sha256": "84fdeab036ebfc4d73320c151bef79178bb34aa8f9311adce4cce719b2a88b42",
+  "notes": "Serve a trovare gli identificativi dei dataset delle misure."
+}

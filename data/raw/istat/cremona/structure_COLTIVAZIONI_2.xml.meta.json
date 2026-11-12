@@ -1,0 +1,12 @@
+{
+  "file": "structure_COLTIVAZIONI_2.xml",
+  "source": "istat",
+  "product": "101_1015_DF_DCSP_COLTIVAZIONI_2",
+  "version": "1.0",
+  "url": "https://esploradati.istat.it/SDMXWS/rest/dataflow/IT1/101_1015_DF_DCSP_COLTIVAZIONI_2/1.0?references=descendants",
+  "params": {},
+  "downloaded_at_utc": "2026-11-11T16:17:57+00:00",
+  "bytes": 10299455,
+  "sha256": "01037bdec6501035d4d1b47beba804d469c50271d5a2c276ba2621ac9b28c5eb",
+  "notes": null
+}

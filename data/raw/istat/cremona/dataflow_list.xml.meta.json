@@ -1,0 +1,12 @@
+{
+  "file": "dataflow_list.xml",
+  "source": "istat",
+  "product": "ISTAT dataflow list",
+  "version": "n/a",
+  "url": "https://esploradati.istat.it/SDMXWS/rest/dataflow/IT1",
+  "params": {},
+  "downloaded_at_utc": "2026-11-11T16:17:24+00:00",
+  "bytes": 13921382,
+  "sha256": "e164f3fb4c3b472cc4266dac9a7d51d31ad3547e3b46cb7271113dd728557c1d",
+  "notes": null
+}

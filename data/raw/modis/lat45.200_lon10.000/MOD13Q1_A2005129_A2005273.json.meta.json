@@ -1,0 +1,25 @@
+{
+  "file": "MOD13Q1_A2005129_A2005273.json",
+  "source": "modis",
+  "product": "MOD13Q1",
+  "version": "not declared by service; /products description: MODIS/Terra Vegetation Indices (NDVI/EVI) 16-Day L3 Global 250m SIN Grid",
+  "url": "https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=45.2&longitude=10.0&band=250m_16_days_NDVI&startDate=A2005129&endDate=A2005273&kmAboveBelow=1&kmLeftRight=1",
+  "params": {
+    "latitude": 45.2,
+    "longitude": 10.0,
+    "bands": [
+      "250m_16_days_NDVI",
+      "250m_16_days_pixel_reliability",
+      "250m_16_days_VI_Quality"
+    ],
+    "startDate": "A2005129",
+    "endDate": "A2005273",
+    "kmAboveBelow": 1,
+    "kmLeftRight": 1,
+    "n_dates": 10
+  },
+  "downloaded_at_utc": "2026-11-11T16:28:23+00:00",
+  "bytes": 18764,
+  "sha256": "17a1b0087b9fa8abc6eb7b663767951e9538852417f8f285373a04549e268873",
+  "notes": "Un file per blocco: le tre bande sono tre richieste, una per banda."
+}

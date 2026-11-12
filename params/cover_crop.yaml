@@ -1,0 +1,270 @@
+# FIELDWISE - cover crop invernale (intervallo autunno-inverno tra cereale/soia e coltura primaverile)
+# Specie scelta: segale (Secale cereale). Fonti in dettaglio: docs/fonti_rotation_heat_cover.md
+
+_meta:
+  descrizione: "Specie e parametri della cover crop autunno-vernina per la provincia di Cremona"
+  compilato_il: "2026-11-11"
+  scelta_specie: >-
+    Segale (Secale cereale, Poaceae). Motivi, tutti dalle fonti lette: (1) e' tra le specie ammesse
+    dall'intervento regionale SRA06 'Cover crops' del CSR Lombardia 2023-2027, il cui obiettivo dichiarato e'
+    'la riduzione della lisciviazione dei nitrati'; (2) nelle schede tecniche del progetto lombardo BENCO
+    (UniMi/Condifesa, PSR Lombardia) avena e segale sono le graminacee 'maggiormente impiegate' come catch
+    crop; (3) nella prova lombarda di due epoche di semina la segale e' 'la specie che ha risentito meno del
+    ritardo di semina' (BENCO Scheda 3, Fig. 3.2): e' decisivo perche' dopo mais da granella o soia la semina
+    avviene a fine settembre-ottobre; (4) e' ingeliva (BENCO Scheda 4), quindi resta attiva fino alla
+    terminazione di fine inverno, mentre avena strigosa e senape gelano e rilasciano N gia' in inverno
+    (BENCO 5.2: la senape a fine inverno conserva circa il 40% dell'N di novembre); (5) le non leguminose
+    riducono la lisciviazione piu' delle leguminose (BENCO 6.4). Svantaggio documentato: C/N alto (25.4)
+    -> immobilizzazione di N per la coltura successiva (Npd negativo): il mais dopo segale richiede N in
+    presemina (BENCO 5.3). La loiessa e' ammessa da SRA06 ma nelle fonti lette non ha dati lombardi di
+    biomassa o N.
+  regole_d_uso: >-
+    La cover crop si semina solo se il calendario agronomico lo consente (calendario_agronomico: semina tra
+    semina_inizio_ottimale e semina_max, terminazione a terminazione_tipica e prima della semina successiva,
+    durata_minima_giorni); i requisiti del premio SRA06 (requisiti_sra06) non decidono il calendario ma producono
+    un'avvertenza se non rispettati. Non conta ai fini dell'avvicendamento (rotation_rules) e non interrompe un
+    ristoppio. Azoto e humus seguono nitrogen._meta.equazioni (passo 3bis e humus_henin_dupuis): U_cov =
+    min(biomassa_e_azoto.n_assorbito, N_min) sottratto alla lisciviazione; alla terminazione l'N della biomassa
+    passa a N_res; npd_per_t_ss x biomassa_secca (negativo per la segale) e' immobilizzato da N_min, con
+    efficienza_campo solo se positivo; humus formato = humus.coefficiente_isoumico x C x 1,724.
+  limiti: >-
+    Biomassa, C/N e Npd vengono da 2 anni di prove in 4 aziende lombarde (BENCO/COCROP), non da Cremona; i
+    valori sono medie e dipendono molto da data di semina e piovosita' autunnale. L'N assorbito e' derivato;
+    il coefficiente isoumico e' quello generico dei sovesci (Mémento 2007), non specifico della segale.
+
+specie:
+  nome:
+    valore: "segale (Secale cereale)"
+    unita: "-"
+    fonte: "Regione Lombardia (2025). CSR PSP 2023-2027 - Specifiche tecniche interventi SRA anno 2025, Intervento SRA06 Cover crops"
+    riferimento: "SRA06, 'Impegni': elenco delle specie ammesse (Segale, Loiessa, Avena strigosa, ...), p. 10"
+    url: "https://psr.regione.lombardia.it/attachments/file/view?hash=dcc3bc626dc8c417c1769471b65a4356930b2a915bfb06c85228700ea4eaa236&canCache=0"
+    nota: "Motivazione della scelta in _meta.scelta_specie (fonti: questo documento e BENCO schede 2-6)."
+    verificato: true
+  famiglia:
+    valore: "Poaceae"
+    unita: "-"
+    fonte: "GBIF Backbone Taxonomy: Secale cereale L."
+    riferimento: "famiglia Poaceae, genere Secale (usageKey 2705966)"
+    url: "https://www.gbif.org/species/2705966"
+    nota: ""
+    verificato: true
+
+acqua:
+  kc:
+    valore: 0.70
+    unita: "-"
+    fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
+    riferimento: "Tabella 12, Small grain cereals, Winter Wheat with non-frozen soils, Kc ini"
+    url: "https://www.fao.org/4/x0490e/x0490e0b.htm"
+    nota: "La segale non e' in Tabella 12: si usa per analogia il frumento autunnale su suolo non gelato (0.4 con suolo gelato). Si usa Kc ini costante perche' la segale cover e' terminata a fine inverno, prima della levata, quando la Tabella 12 prevede la salita verso Kc mid = 1.15. Il valore puo' crescere con bagnature frequenti (nota 1 della tabella)."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.4, 0.7]
+  profondita_radicale_max:
+    valore: 1.0
+    unita: "m"
+    fonte: "Allen et al. (1998), FAO-56"
+    riferimento: "Tabella 22, Barley / Oats / Spring Wheat Zr 1.0-1.5 m; Winter Wheat 1.5-1.8 m"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Segale non tabulata. Si prende l'estremo inferiore dei cereali a paglia (1.0 m) perche' la cover vive circa 5-6 mesi, in buona parte d'inverno, e viene terminata prima della levata: i valori FAO sono profondita' massime a fine ciclo (1.5-1.8 m per il frumento autunnale). BENCO Scheda 7 descrive le graminacee come apparato 'fascicolato' con effetti piu' superficiali."
+    verificato: true
+    sensibilita: true
+    intervallo: [1.0, 1.8]
+  frazione_p:
+    valore: 0.55
+    unita: "-"
+    fonte: "Allen et al. (1998), FAO-56"
+    riferimento: "Tabella 22, cereali a paglia (Barley, Oats, Wheat) p = 0.55 per ETc circa 5 mm/d"
+    url: "https://www.fao.org/4/x0490e/x0490e0e.htm"
+    nota: "Correzione FAO-56: p = 0.55 + 0.04 (5 - ETc), limitata a [0.1, 0.8]; con l'ETc invernale bassa p sale verso 0.7-0.8."
+    verificato: true
+
+calendario_agronomico:
+  # Calendario usato dal MOTORE per decidere se e quando c'e' la segale (non dipende dal premio SRA06).
+  semina_inizio_ottimale:
+    valore: "08-25"
+    unita: "MM-DD"
+    fonte: "Bechini L., Marino Gallina P., Michelon L., Tadiello T. (a cura di) (2020). Cover crop: schede tecniche per la coltivazione. Universita' degli Studi di Milano - Condifesa Lombardia Nord-Est, progetto BENCO (PSR Lombardia 2014-2020, Op. 1.2.01)"
+    riferimento: "Scheda 3, par. 3.2 'Come scegliere la data di semina?', p. 33"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Testo: 'la semina delle cover crop autunno-vernine puo' gia' essere condotta tra la fine del mese di agosto e l'inizio del mese di settembre'. 'Fine agosto' convertito in 25 agosto (conversione approssimata)."
+    verificato: true
+  semina_oltre_cui_cala_la_produttivita:
+    valore: "09-15"
+    unita: "MM-DD"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 3, par. 3.2, p. 33 e Fig. 3.2"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "'Semine oltre la meta' di settembre generalmente comportano una minore produttivita' per quasi tutte le specie'; la segale e' la meno penalizzata. Non e' un divieto: il motore puo' seminare piu' tardi, ma la biomassa di riferimento (2.9 t) vale per semine di settembre."
+    verificato: true
+  semina_max:
+    valore: "10-31"
+    unita: "MM-DD"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 8, Tabella 8.1 'Periodi di semina e durata potenziale di cover crop utili per il contenimento della flora infestante', riga 'Settembre-ottobre / Giugno / Segale e altri cereali autunno vernini, veccia vellutata', p. 82"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Fine della finestra di semina della segale (settembre-ottobre). Dopo questa data il motore non semina la cover. La biomassa di riferimento (2,9 t s.s./ha) vale per semine di settembre: con semine di ottobre e' probabilmente sovrastimata (Tab. 8.2: segale seminata a inizio o meta' settembre 0,9-2,2 t a fine novembre)."
+    verificato: true
+    sensibilita: true
+  terminazione_tipica:
+    valore: "03-31"
+    unita: "MM-DD"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 5, par. 5.3 (simulazione: 'il 31 marzo come data di incorporazione delle cover crop nel suolo'; mais seminato il 15 aprile); Tab. 5.1 campionamenti 15-30 marzo"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Per la segale la terminazione deve precedere la levata: il C/N supera circa 20 'all'emergenza della foglia a bandiera' (Scheda 5.1). Con la soia (semina piu' tardiva) la terminazione puo' slittare ad aprile, ma i valori di biomassa e Npd qui riportati valgono per fine marzo."
+    verificato: true
+  durata_minima_giorni:
+    valore: 151
+    unita: "giorni"
+    fonte: "Derivato da Bechini et al. (a cura di) (2020), BENCO: Tabella 8.1 (semina entro ottobre) e Scheda 5.3 (terminazione 31 marzo)"
+    riferimento: "calcolo: dal 31 ottobre (calendario_agronomico.semina_max) al 31 marzo (terminazione_tipica) = 151 giorni"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Durata minima agronomica: la segale si semina solo se tra la semina possibile (raccolta della coltura precedente, non prima di semina_inizio_ottimale) e la terminazione ci sono almeno 151 giorni, cioe' se la semina cade entro il 31 ottobre. Terminazione = terminazione_tipica, comunque prima della semina della coltura successiva."
+    verificato: true
+    derivato: true
+    sensibilita: true
+  compatibilita_con_crops:
+    valore: "frumento -> segale -> mais: si; mais -> segale -> soia: si, se il mais e' raccolto entro il 31/10; soia -> frumento: no"
+    unita: "-"
+    fonte: "Derivato da questo file (calendario_agronomico) e dalle date di crops.yaml"
+    riferimento: "crops.yaml: semina mais 04-15 (min 04-01), soia 05-05 (min 04-24), frumento 10-30 (min 10-15); maturita' da gdd_maturita"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Controllo eseguito: (1) dopo il frumento (maturita' a fine giugno) la segale si semina dal 25/8 e si termina il 31/3, 15 giorni prima della semina del mais (04-15; con semina_min 04-01 la terminazione va anticipata e la biomassa cala); (2) dopo il mais (maturita' a settembre, raccolta 2-4 settimane dopo: la data di raccolta non e' modellata) la segale e' possibile solo se il mais e' raccolto entro il 31/10; terminazione 31/3, soia il 05-05 (35 giorni); (3) soia -> frumento: il frumento e' esso stesso la coltura autunno-vernina, nessuna cover."
+    verificato: true
+    derivato: true
+requisiti_sra06:
+  # Condizioni per il PREMIO dell'intervento regionale SRA06 (CSR Lombardia 2023-2027). Il motore NON le usa per
+  # decidere il calendario: le mostra come avvertenza ('non ammissibile al premio SRA06') quando non sono rispettate.
+  # Nella rotazione mais-soia-frumento: dopo il frumento (raccolta fine giugno) SRA06 chiede la semina entro 30 giorni
+  # (fine luglio), fuori dalla finestra agronomica della segale (settembre-ottobre); tra la terminazione del 31/3 e la
+  # semina della soia (5/5) passano 35 giorni contro i 30 ammessi.
+  max_giorni_raccolta_semina:
+    valore: 30
+    unita: "giorni"
+    fonte: "Regione Lombardia (2025). CSR PSP 2023-2027 - Specifiche tecniche interventi SRA anno 2025, Intervento SRA06 Cover crops"
+    riferimento: "SRA06, 'Impegni', p. 11"
+    url: "https://psr.regione.lombardia.it/attachments/file/view?hash=dcc3bc626dc8c417c1769471b65a4356930b2a915bfb06c85228700ea4eaa236&canCache=0"
+    nota: "'La cover crop deve essere seminata entro trenta giorni dalla raccolta della coltura precedente'. Vincolo per ricevere il premio SRA06."
+    verificato: true
+  terminazione_non_prima_di:
+    valore: "02-28"
+    unita: "MM-DD"
+    fonte: "Regione Lombardia (2025). Specifiche tecniche interventi SRA anno 2025, SRA06"
+    riferimento: "SRA06, 'Impegni', p. 11"
+    url: "https://psr.regione.lombardia.it/attachments/file/view?hash=dcc3bc626dc8c417c1769471b65a4356930b2a915bfb06c85228700ea4eaa236&canCache=0"
+    nota: "'La cover crop autunno-vernina non puo' in ogni caso essere eliminata prima della fine di febbraio'."
+    verificato: true
+  max_giorni_terminazione_semina_successiva:
+    valore: 30
+    unita: "giorni"
+    fonte: "Regione Lombardia (2025). Specifiche tecniche interventi SRA anno 2025, SRA06"
+    riferimento: "SRA06, 'Impegni', p. 11"
+    url: "https://psr.regione.lombardia.it/attachments/file/view?hash=dcc3bc626dc8c417c1769471b65a4356930b2a915bfb06c85228700ea4eaa236&canCache=0"
+    nota: "'la semina della coltura successiva deve avvenire entro trenta giorni dalla terminazione della cover'."
+    verificato: true
+  durata_minima_giorni:
+    valore: 120
+    unita: "giorni"
+    fonte: "Regione Lombardia (2025). Specifiche tecniche interventi SRA anno 2025, SRA06"
+    riferimento: "SRA06, 'Impegni', p. 11"
+    url: "https://psr.regione.lombardia.it/attachments/file/view?hash=dcc3bc626dc8c417c1769471b65a4356930b2a915bfb06c85228700ea4eaa236&canCache=0"
+    nota: "'La presenza della cover in campo deve superare comunque 120 giorni'. Coerente con l'ER, dove le colture secondarie sono quelle con ciclo < 120 giorni."
+    verificato: true
+biomassa_e_azoto:
+  biomassa_secca:
+    valore: 2.9
+    unita: "t s.s./ha"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 5, Tabella 5.1 'Biomassa aerea, rapporto C/N e azoto potenzialmente disponibile (Npd) di alcune cover crop', riga Segale"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Biomassa aerea a fine inverno (campionamenti 15-30 marzo) nei progetti BENCO e COCROP in Lombardia. Solo parte aerea."
+    verificato: true
+    sensibilita: true
+  rapporto_cn:
+    valore: 25.4
+    unita: "-"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 5, Tabella 5.1, riga Segale"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: ""
+    verificato: true
+  frazione_carbonio_sostanza_secca:
+    valore: 0.45
+    unita: "kg C / kg s.s."
+    fonte: "Deryng et al. (2014). Global crop yield response to extreme heat stress under multiple climate change futures. Environ. Res. Lett. 9, 034011"
+    riferimento: "Appendice A.3, sotto eq. A.8: '0.45 is the mass of carbon contained in one unit of dry matter'"
+    url: "https://ueaeprints.uea.ac.uk/49750/1/Deryng_etal_2014_EnvironResLett.pdf"
+    nota: "Valore generico per la sostanza secca vegetale, usato per derivare n_assorbito e per il C apportato (umificazione); non e' specifico della segale. Coincide con nitrogen.suolo.residui.c_residui (0,45, Mémento 2007 p. 42, paglia di frumento): il motore usa lo stesso numero per residui e cover."
+    verificato: true
+    sensibilita: true
+  n_assorbito:
+    valore: 51
+    unita: "kg N/ha"
+    fonte: "Derivato da Bechini et al. (2020), BENCO, Tabella 5.1 (biomassa e C/N della segale) e da Deryng et al. (2014) (frazione di C)"
+    riferimento: "calcolo: 2900 kg s.s./ha x 0.45 / 25.4 = 51.4 kg N/ha"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Valore calcolato, non letto: per la segale le fonti lette danno l'N asportato solo in grafico (BENCO Fig. 6.2 e 6.4). Confronto: nella prova lombarda di Bechini et al. 2019 (SIA, Tabella 2) le non leguminose (avena strigosa, senape bianca, rafano) hanno assorbito a fine autunno 51-140 kg N/ha (avena e rafano 'never below 50 kg N ha-1'); la segale non era tra le specie di quella prova. L'assorbimento reale non puo' superare l'N minerale del suolo disponibile."
+    verificato: false
+    sensibilita: true
+    intervallo: [51, 140]
+  riduzione_lisciviazione:
+    valore: 0.56
+    unita: "frazione (riduzione rispetto al suolo nudo)"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 6, par. 6.4 'A quanto ammonta e da cosa dipende la riduzione della lisciviazione', p. 65"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Testo: 'in media la riduzione della lisciviazione dovuta alla presenza di cover crop non leguminose rispetto a un controllo senza cover crop e' del 56-70%'. Valore prudente = estremo inferiore. Le meta-analisi originali (Thapa et al. 2018: -56%; Tonitto et al. 2006: -70%, come riportate da Bechini 2024, slide 'Riduzione di lisciviazione') non sono state lette direttamente. Thapa: effetto significativo solo per semine agosto-ottobre e crescente con la biomassa. Da usare come controllo del bilancio N, non in aggiunta a n_assorbito."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.56, 0.70]
+  npd_per_t_ss:
+    valore: -3.4
+    unita: "kg N / t s.s."
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 5, Tabella 5.1, riga Segale (Npd -10 kg N/ha; -3.4 kg N/t s.s.)"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Azoto potenzialmente disponibile per la coltura successiva rispetto al suolo senza cover: negativo = immobilizzazione. Da incubazione di 168 giorni in condizioni ottimali. Nella simulazione per il mais (Fig. 5.3) la segale immobilizza fino a circa -35 kg/ha dopo 15 giorni, con saldo finale circa -11 kg/ha."
+    verificato: true
+    sensibilita: true
+  quota_n_che_torna_alla_coltura_successiva:
+    valore: -0.19
+    unita: "frazione dell'N assorbito"
+    fonte: "Derivato da Bechini et al. (2020), BENCO, Tabella 5.1"
+    riferimento: "calcolo: Npd / n_assorbito = -10 / 51.4"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Valore calcolato (dipende dalla frazione di C assunta). Per la segale nessuna quota dell'N catturato torna nella stagione successiva: il saldo e' negativo; l'N resta nella sostanza organica. Preferire npd_per_t_ss nel codice."
+    verificato: false
+    sensibilita: true
+    intervallo: [-0.25, 0.0]
+  efficienza_campo:
+    valore: 0.80
+    unita: "-"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 5, par. 5.1 (testo prima della Tabella 5.1)"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "'orientativamente, per una primavera con piovosita' media, si puo' adottare un valore di efficienza intorno all'80%' (rispetto all'Npd di incubazione). Per la segale (Npd negativo) non si applica."
+    verificato: true
+    sensibilita: true
+
+humus:
+  incremento_c_suolo_medio:
+    valore: 300
+    unita: "kg C/ha/anno"
+    fonte: "Bechini et al. (a cura di) (2020), Cover crop: schede tecniche per la coltivazione (BENCO)"
+    riferimento: "Scheda 7, par. 7.1 'Sostanza organica', p. 71"
+    url: "https://air.unimi.it/retrieve/dfa8b9a5-4f42-748b-e053-3a05fe0a3a96/H07%20Cover%20crop%20schede%20tecniche%20coltivazione_LR.pdf"
+    nota: "Sintesi di esperimenti citata nella scheda: incrementi annui molto variabili, raramente > 3000 e spesso < 500 kg C/ha/anno; 'il valore medio e' di circa 300 kg C ha-1 anno-1' (+9% di sostanza organica rispetto ai controlli). Media su tutte le specie e durate, non specifica della segale."
+    verificato: true
+    sensibilita: true
+  coefficiente_isoumico:
+    valore: 0.039
+    unita: "kg C umificato / kg C apportato"
+    fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+    riferimento: "p. 19, Tableau 2 'Valeurs du coefficient k1', riga 'Engrais vert', colonna 'Modèle HD' (0,039; modello AMG 0,076); fonte primaria indicata: Wylleman 1999"
+    url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+    nota: "Stessa tabella e stesso modello (Hénin-Dupuis, base carbonio) dei k1 dei residui colturali in nitrogen.yaml, quindi confrontabile con k2 di nitrogen.suolo.k2. Uso: H_cov = 0,039 x biomassa_secca x frazione_carbonio_sostanza_secca x 1,724 = 0,088 t SO/ha per 2,9 t s.s. (nitrogen._meta.equazioni.humus_henin_dupuis). Il valore precedente 0,23 (assunzione: 300 kg C/ha/anno di incremento netto, BENCO 7.1, diviso per il C della segale) non e' un k1 perche' incorpora gia' la mineralizzazione e altre specie e durate; resta come estremo superiore dell'intervallo. 'Engrais vert' e' un sovescio generico: per una graminacea con C/N 25 il valore e' probabilmente prudente (paglia di frumento 0,094, stessa tabella)."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.039, 0.23]
