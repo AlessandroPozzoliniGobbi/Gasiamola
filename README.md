@@ -25,7 +25,7 @@ Il repository contiene già la cache dei dati del punto pilota (`data/raw/`, `da
 ### Test
 
 ```bash
-.venv/bin/python -m pytest                      # tutta la suite (1272 test, circa 1 minuto)
+.venv/bin/python -m pytest                      # tutta la suite (1272 test, circa 2 minuti)
 .venv/bin/python -m pytest -m "not slow"        # salta i test lenti (ensemble completo, validazione, giro di sensibilità)
 ```
 
@@ -80,7 +80,7 @@ Esegue i controlli sui dati in cache (completezza, intervalli, confronto POWER c
 .venv/bin/python -m fieldwise.params --table       # riscrive reports/params_table.md
 ```
 
-Ogni numero agronomico sta in `params/*.yaml` con valore, unità, fonte, riferimento, URL e un campo `verificato` (vero solo se il valore è stato letto dalla fonte durante il lavoro); le assunzioni sono marcate (`params/SCHEMA.md`).
+Ogni numero agronomico sta in `params/*.yaml` con valore, unità, fonte, riferimento, URL e un campo `verificato` (vero solo se il valore è stato letto dalla fonte durante il lavoro). Non tutte le voci hanno una fonte: le assunzioni sono marcate e motivate, e alcune voci non sono state verificate direttamente sulla fonte; i numeri esatti li dà `--check` (`params/SCHEMA.md`).
 
 ### 4. Ensemble
 
@@ -124,12 +124,14 @@ Rigenera `reports/FIELDWISE_report.pdf` e `reports/FIELDWISE_report.md` leggendo
 
 ## Dati usati
 
+**Quali dati NASA entrano dove.** Nel motore entra NASA POWER: è meteo da rianalisi e prodotti satellitari assimilati, cioè un prodotto modellato, non un'osservazione diretta. GPM IMERG entra come forzante alternativa nell'analisi di sensibilità. SMAP e MODIS (osservazioni satellitari) entrano nella validazione. POWER è stato controllato contro pluviometri e termometri a terra (ARPA Lombardia). **Collezione MODIS:** il servizio ORNL non la dichiara; l'endpoint `https://modis.ornl.gov/rst/api/v1/products`, consultato il 2026-11-13, indica per MOD13Q1 solo nome, descrizione, frequenza e risoluzione, quindi non la dichiariamo.
+
 | Dato | Prodotto e versione | Periodo in cache | Uso |
 |---|---|---|---|
 | Meteo giornaliero (temperature, pioggia, radiazione, umidità, vento) | NASA POWER, Daily API v2.10.3, community AG (sorgenti MERRA-2, SRB, SYN1DEG, POWER) | 2000-01-01 → 2025-12-31 | Forzante del motore; l'ensemble usa 2000-2022 |
 | Pioggia | GPM IMERG Final Daily V07 (`GPM_3IMERGDF`), interpolazione bilineare di quattro celle | 2000-06-01 → 2025-09-30 | Confronto con POWER e ARPA; forzante alternativa in sensibilità |
 | Umidità superficiale del suolo | SMAP L3 enhanced 9 km, `SPL3SMP_E` V006 | 2015-03-31 → 2025-12-31 | Validazione (solo passaggi di qualità raccomandata) |
-| NDVI | MODIS/Terra MOD13Q1 250 m, 16 giorni (ORNL DAAC; versione non dichiarata dal servizio) | 2000-02 → 2025-12 | Validazione |
+| NDVI | MODIS/Terra MOD13Q1 250 m, 16 giorni (ORNL DAAC; collezione non dichiarata dal servizio) | 2000-02 → 2025-12 | Validazione |
 | Suolo | SoilGrids 2.0, 250 m (ISRIC) | statico | Tessitura e densità; la sostanza organica 0-30 cm è il valore ERSAF (SoilGrids in sensibilità) |
 | Pioggia e temperatura da pluviometri e termometri | ARPA Lombardia, open data `dati.lombardia.it` (stazioni, precipitazioni, temperatura) | 2000 → 2025 | Controllo qualità, alternativa `power_arpa` in sensibilità |
 | Rese provinciali | ISTAT, "Superfici e produzione - dati in complesso - prov" (dataflow `101_1015_DF_DCSP_COLTIVAZIONI_2`), Cremona | 2006 → 2026 (2026 provvisorio, escluso) | Validazione sulle anomalie 2006-2022 |
@@ -141,7 +143,7 @@ Data e checksum di ogni download sono nei `.meta.json` accanto ai file in `data/
 ```
 README.md, AI_USAGE.md, PLAN.md      questo file; uso dell'IA; piano, decisioni e registro del lavoro
 requirements.txt, pyproject.toml     dipendenze e pacchetto (src/fieldwise)
-params/                              parametri agronomici in YAML con fonte (SCHEMA.md descrive il formato)
+params/                              parametri agronomici in YAML, con fonte o assunzione dichiarata (SCHEMA.md descrive il formato)
 src/fieldwise/
   data/                              client di download e cache (power, arpa, imerg, smap, modis, soilgrids, istat, earthdata, cache)
   weather.py, et0.py, soil.py        meteo, evapotraspirazione di riferimento, suolo (Saxton-Rawls)
@@ -166,7 +168,7 @@ I numeri seguenti vengono dai file indicati; rigenerarli dopo ogni modifica.
 - **Classifica** (`ensemble_sintesi.csv`, pesi uguali sulle cinque priorità): la prima rotazione dipende dallo scenario e include frumento e cover crop in tutti e tre; il mais continuo (rotazione di riferimento) è 45° su 45 in solo pioggia, 30° su 45 con il tetto irriguo e 43° su 45 in irrigazione libera. Il confronto completo è nel report, sezione 9.
 - **Validazione** (`reports/validation.md`, scenario tetto irriguo): mais confermato (resa ISTAT, correlazione sui residui dal trend +0,70, IC 95% da +0,33 a +0,88, n = 17); soia non confermata (+0,27, da -0,24 a +0,67); frumento negativo (-0,50, da -0,79 a -0,03). Umidità superficiale SMAP: anomalie mensili r circa 0,7. NDVI estivo contro stress idrico del mais: r circa 0,6.
 - **Sensibilità** (`reports/sensitivity.md`): la prima rotazione non è robusta (resta prima nel 33-62% dei campioni a seconda dello scenario); il mais continuo finisce nell'ultimo quarto della classifica nel 92-99% dei campioni perturbati (ma nel caso di base col tetto irriguo è 30° su 45).
-- **Parametri** (`python -m fieldwise.params --check`): 372 voci con fonte, 26 assunzioni dichiarate, 50 non verificate sulla fonte originale.
+- **Parametri** (`python -m fieldwise.params --check`): 372 voci in totale: 357 con fonte, 26 assunzioni motivate, 50 non verificate direttamente sulla fonte.
 
 ## Limiti
 
@@ -180,6 +182,8 @@ Questi limiti cambiano il modo di leggere i risultati. Elenco completo in `repor
 - **Caldo in fioritura**: effetto piccolo; il criterio "fattore caldo chiaramente basso per il mais nel 2022" non è soddisfatto (0,958 con POWER). Non abbiamo tarato la funzione per ottenerlo.
 - **Pioggia**: NASA POWER sovrastima la pioggia dal 2023 (e ha troppi giorni di pioviggine e pochi eventi intensi): l'ensemble usa solo 2000-2022. IMERG sovrastima i totali annui.
 - **Penalità di rotazione** da studi di altri contesti (USA, UK), non padani; possono includere un effetto azoto.
+- **Origine di alcuni parametri.** La temperatura superiore dei gradi-giorno del frumento è presa da una taratura per frumento primaverile; la frazione di esaurimento della segale è presa per analogia con i cereali a paglia; il contenuto idrico a saturazione è calcolato senza correzione di densità.
+- **Dati NASA.** POWER, che entra nel motore, è un prodotto modellato e non un'osservazione diretta; IMERG è solo una forzante alternativa in sensibilità; SMAP e MODIS entrano solo nella validazione. La collezione di MOD13Q1 non è dichiarata dal servizio ORNL.
 - **Un punto e un suolo** (cella POWER di circa 50 km, pixel SoilGrids da 250 m). Rese ISTAT provinciali, irriguo e asciutto mescolati, n = 17. I parametri senza fonte ufficiale sono dichiarati assunzioni (`assunzione: true`).
 - **Passato, non futuro**: l'ensemble usa annate storiche e può sottostimare gli estremi di un clima che cambia.
 - **App**: il suo aspetto nel browser non è stato controllato da una persona.

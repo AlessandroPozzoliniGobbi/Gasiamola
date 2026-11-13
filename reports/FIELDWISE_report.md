@@ -7,10 +7,18 @@
 ## In breve
 
 - Teniamo l'idea di Lorenzo: ogni coltura eredita il suolo lasciato dalla precedente; lo stato del suolo non si azzera mai.
-- Al posto dei vettori dinamici ci sono bilanci di massa di acqua, azoto e humus a passo giornaliero, con le formule di FAO-56, FAO-33 e AquaCrop. Ogni parametro ha una fonte e un campo `verificato`.
+- Al posto dei vettori dinamici ci sono bilanci di massa di acqua, azoto e humus a passo giornaliero, con le formule di FAO-56, FAO-33 e AquaCrop. Dei 372 parametri, 357 hanno una fonte, 26 sono assunzioni motivate e 50 non sono stati verificati direttamente sulla fonte (`python -m fieldwise.params --check`).
 - L'ensemble prova 216 rotazioni su 17 annate di partenza (meteo reale NASA POWER) in tre scenari d'acqua: 11.016 simulazioni riuscite in 6.7 s.
 - Validazione contro osservazioni: il mais regge (resa ISTAT), la soia no, il frumento va nella direzione sbagliata (sezione 10). Questo pesa su come leggere le classifiche.
 - La prima rotazione della classifica cambia con molti parametri incerti; il giudizio sul mais continuo (nell'ultimo quarto della classifica nel 92%-99% dei campioni) invece regge, con una sfumatura: nel caso di base il mais continuo è 45a su 45 (solo pioggia), 30a su 45 (tetto irriguo), 43a su 45 (irrigazione libera) (sezione 11).
+
+## Quali dati NASA entrano dove
+
+- **Nel motore:** NASA POWER. È meteo da rianalisi e da prodotti satellitari assimilati: un prodotto modellato, non un'osservazione diretta.
+- **Come forzante alternativa, solo nell'analisi di sensibilità:** pioggia GPM IMERG.
+- **Nella validazione:** SMAP (umidità superficiale) e MODIS (NDVI), osservazioni satellitari.
+- **Controllo di POWER:** pluviometri e termometri a terra (ARPA Lombardia).
+- **Collezione MODIS:** il servizio ORNL non dichiara la collezione di MOD13Q1 (endpoint `https://modis.ornl.gov/rst/api/v1/products`, consultato il 2026-11-13: indica solo il nome del prodotto), quindi non la dichiariamo.
 
 ## Cosa è cambiato rispetto alla proposta originale
 
@@ -30,7 +38,7 @@ La proposta era una prima versione non tarata. Strada facendo abbiamo corretto e
 | **Primi risultati** | Irrigazione libera: mais continuo 320 mm e 283 kg N; mais > soia > frumento 213 mm e 157 kg N. | Irrigazione libera: mais continuo 294 mm e 302 kg N; mais > soia > frumento 197 mm e 174 kg N (sezione 9, letti dalla cache). |
 | Caldo 2022 | "Una penalità termica farebbe emergere il 2022". | Penalità aggiunta (Deryng et al. 2014) senza taratura: il criterio non è soddisfatto, f_caldo 0,958 nel 2022 (`PLAN.md` D16). La perdita del 2022 nel modello viene dall'acqua. |
 | Validazione | Da fare (SMAP, NDVI, ISTAT). | Fatta: mais confermato, soia non confermata, frumento negativo. |
-| Parametri | "Indicativi, da verificare". | 372 voci, ognuna con fonte; 26 dichiarate assunzioni, 50 non verificate sulla fonte (`python -m fieldwise.params --check`). |
+| Parametri | "Indicativi, da verificare". | 372 voci in totale: 357 con fonte, 26 assunzioni motivate, 50 non verificate direttamente sulla fonte (`python -m fieldwise.params --check`). |
 
 ## 1. Il problema dei vettori dinamici
 
@@ -60,7 +68,7 @@ Tre bilanci di massa, a passo giornaliero, in un ciclo unico che attraversa tutt
 
 La resa relativa di una coltura è il prodotto di tre fattori, tutti tra 0 e 1, ognuno con la sua fonte e visibile separatamente nell'output (`ensemble_dettaglio.csv`: `f_acqua`, `f_caldo`, `f_rotazione`). La resa in t/ha è questa resa relativa per il potenziale (mais 15,8, soia 4,5, frumento 8,0 t/ha; il potenziale del mais è una resa sperimentale, quello di soia e frumento è un'assunzione e le tre colture non sono perfettamente paragonabili: `reports/params_review.md`).
 
-- **Acqua (f_acqua).** In parole: la resa cala di Ky volte la frazione di acqua che la coltura non ha potuto consumare rispetto a quella che avrebbe voluto (ETa rispetto a ETc, sommate su tutta la stagione). Fonte: FAO-33 e FAO-56 eq. 90. È il fattore che muove quasi tutto: per il mais continuo la mediana di f_acqua è 0,60 con solo pioggia, 0,94 con il tetto irriguo e 1,00 con irrigazione libera.
+- **Acqua (f_acqua).** In parole: la resa cala di Ky volte la frazione di acqua che la coltura non ha potuto consumare rispetto a quella che avrebbe voluto (ETa rispetto a ETc, sommate su tutta la stagione). Fonte: FAO-33 e FAO-56 eq. 90. È il fattore che muove quasi tutto: per il mais continuo la mediana di f_acqua sulle annate è 0,58 con solo pioggia, 0,94 con il tetto irriguo e 1,00 con irrigazione libera.
 - **Caldo (f_caldo).** In parole: per ogni giorno della finestra della fioritura, se la temperatura efficace (media tra media e massima) supera la soglia critica, il fattore scende linearmente fino a zero alla soglia limite; il fattore è la media sulla finestra. Fonte: Deryng et al. (2014), App. A.3, usata senza taratura. Soglie critica/limite: mais 32/45 °C, soia 35/40, frumento 25/35. Alternative in sensibilità: AquaCrop (logistica sulla Tmax) e le soglie di Teixeira et al. (2013).
 - **Rotazione (f_rotazione).** In parole: se la stessa coltura segue sé stessa la resa si riduce di una quota fissa. Mais dopo mais: 0,983 se irriguo; in asciutto 0,981 al primo ristoppio e 0,943 in monosuccessione continua; soia dopo soia 0,897; frumento dopo frumento 0,875 e 0,820. Fonti: Seifert et al. (2017, studio osservazionale USA su mais e soia), Marini et al. (2020) e AHDB (UK, frumento). Sono fonti di altri contesti: non c'è una prova di lungo periodo in Pianura Padana e la penalità può contenere un effetto azoto (doppio conteggio parziale; variante f_rotazione = 1 in sensibilità). La precessione favorevole non si applica alla resa.
 
@@ -207,7 +215,7 @@ Domanda: quali parametri incerti cambiano la *decisione* (la classifica e le alt
 
 - **Frumento.** La validazione è negativa e il modello non vede le perdite degli anni umidi. Il frumento compare spesso in alto nelle classifiche: va letto con questo avvertimento.
 - **Soia.** Validazione non confermata (intervalli che comprendono lo zero).
-- **Acqua in asciutto.** Nessuna falda né risalita capillare (110-150 cm in zona): lo stress del mais senza irrigazione è probabilmente sovrastimato (f_acqua mediana 0,60 in solo pioggia).
+- **Acqua in asciutto.** Nessuna falda né risalita capillare (110-150 cm in zona): lo stress del mais senza irrigazione è probabilmente sovrastimato (f_acqua mediana 0,58 in solo pioggia).
 - **Azoto.** Il concime non passa dal pool di azoto minerale: la lisciviazione (qui 6-21 kg N/ha/anno tra tutte le classi; per il mais irriguo in Pianura Padana la letteratura citata nella revisione riporta in genere diverse decine) è probabilmente sottostimata, e la riduzione relativa della cover è bassa perché quella assoluta è piccola. L'azoto non limita la resa. Nessuna validazione di azoto, humus, lisciviazione, percolazione, ruscellamento.
 - **Humus.** Gli effluenti zootecnici non sono modellati: quasi tutte le rotazioni perdono humus.
 - **Caldo.** Effetto piccolo con la funzione di Deryng; il criterio del 2022 non è soddisfatto; le temperature POWER sono deboli sugli estremi (giorni sopra 35 °C: correlazione 0,46 con le stazioni).
@@ -215,6 +223,8 @@ Domanda: quali parametri incerti cambiano la *decisione* (la classifica e le alt
 - **Penalità di rotazione.** Da studi di altri contesti; possono contenere un effetto azoto; azzerandole vince il frumento continuo.
 - **Un punto, un suolo.** Cella POWER di circa 50 km a 171 m contro un campo a 45 m; suolo da SoilGrids (la sostanza organica è un valore ERSAF, decisione D13); 26 parametri sono assunzioni dichiarate e 50 non sono stati verificati sulla fonte originale.
 - **Validazione.** Rese ISTAT provinciali (irriguo e asciutto mescolati, n = 17); SMAP 0-5 cm su 9 km; NDVI da una finestra di 2 km che mescola colture.
+- **Origine di alcuni parametri.** La temperatura superiore dei gradi-giorno del frumento è presa da una taratura per frumento primaverile; la frazione di esaurimento della segale è presa per analogia con i cereali a paglia; il contenuto idrico a saturazione è calcolato senza correzione di densità.
+- **Dati NASA.** POWER, che entra nel motore, è un prodotto modellato (rianalisi e prodotti satellitari assimilati), non un'osservazione diretta; IMERG è solo una forzante alternativa in sensibilità; SMAP e MODIS entrano solo nella validazione. La collezione di MOD13Q1 non è dichiarata dal servizio ORNL.
 - **Sensibilità.** Il Monte Carlo è indicativo; il passato non copre il clima futuro.
 - **App.** Il suo aspetto nel browser non è stato controllato da una persona.
 

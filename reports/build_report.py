@@ -108,16 +108,17 @@ def conf(row):
 
 
 def stat_params():
-    tot = ass = nonv = der = 0
-    for _, v in P.iter_entries(PAR):
-        tot += 1
-        ass += bool(v.get("assunzione"))
-        nonv += v.get("verificato") is not True
-        der += bool(v.get("derivato"))
-    return tot, ass, nonv, der, len(P.sensitivity_entries(PAR))
+    """Conteggi come in `python -m fieldwise.params --check` (stessa funzione `summary`)."""
+    riep = P.summary(PAR).values()
+    tot = sum(s["voci"] for s in riep)
+    fonte = sum(s["con_fonte"] for s in riep)
+    ass = sum(s["assunzioni"] for s in riep)
+    nonv = sum(s["non_verificati"] for s in riep)
+    der = sum(bool(v.get("derivato")) for _, v in P.iter_entries(PAR))
+    return tot, fonte, ass, nonv, der, len(P.sensitivity_entries(PAR))
 
 
-N_PAR, N_ASS, N_NONV, N_DER, N_SENS = stat_params()
+N_PAR, N_FONTE, N_ASS, N_NONV, N_DER, N_SENS = stat_params()
 MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
 
 
@@ -185,6 +186,8 @@ def PB():
 # =============================================================================== contenuto
 oggi = dt.date.today().isoformat()
 r_m_tet, r_m_pio, r_m_lib = (riga(s, "mais") for s in ("tetto_irriguo", "solo_pioggia", "irrigazione_libera"))
+# mediana vera di f_acqua del mais continuo sulle annate (la colonna della sintesi e' una media)
+FA_MED = {s: float(det[(det["scenario"] == s) & (det["classe"] == ATT_CL)]["f_acqua"].median()) for s in SC}
 msf = {s: riga(s, "mais > soia > frumento") for s in SC}
 mmm = {s: riga(s, "mais") for s in SC}
 mc = {s: riga(s, "mais+cover") for s in SC}
@@ -213,7 +216,8 @@ H(2, "In breve")
 Bu([
     "Teniamo l'idea di Lorenzo: ogni coltura eredita il suolo lasciato dalla precedente; lo stato del suolo non si azzera mai.",
     "Al posto dei vettori dinamici ci sono bilanci di massa di acqua, azoto e humus a passo giornaliero, con le formule di FAO-56, "
-    "FAO-33 e AquaCrop. Ogni parametro ha una fonte e un campo <c>verificato</c>.",
+    f"FAO-33 e AquaCrop. Dei {N_PAR} parametri, {N_FONTE} hanno una fonte, {N_ASS} sono assunzioni motivate e {N_NONV} non sono stati "
+    "verificati direttamente sulla fonte (<c>python -m fieldwise.params --check</c>).",
     f"L'ensemble prova {N_ROT} rotazioni su {N_ANNATE} annate di partenza (meteo reale NASA POWER) in tre scenari d'acqua: "
     f"{SIM_OK:,} simulazioni riuscite in {n(meta['tempo_s'], 1)} s.".replace(",", "."),
     "Validazione contro osservazioni: il mais regge (resa ISTAT), la soia no, il frumento va nella direzione sbagliata (sezione 10). "
@@ -221,6 +225,16 @@ Bu([
     f"La prima rotazione della classifica cambia con molti parametri incerti; il giudizio sul mais continuo (nell'ultimo quarto della "
     f"classifica nel {pc(min(pm[x]['attuale_ultimo_quarto'] for x in SC))}-{pc(max(pm[x]['attuale_ultimo_quarto'] for x in SC))} dei campioni) "
     f"invece regge, con una sfumatura: nel caso di base il mais continuo è {pos_txt()} (sezione 11).",
+])
+
+H(2, "Quali dati NASA entrano dove")
+Bu([
+    "<b>Nel motore:</b> NASA POWER. È meteo da rianalisi e da prodotti satellitari assimilati: un prodotto modellato, non un'osservazione diretta.",
+    "<b>Come forzante alternativa, solo nell'analisi di sensibilità:</b> pioggia GPM IMERG.",
+    "<b>Nella validazione:</b> SMAP (umidità superficiale) e MODIS (NDVI), osservazioni satellitari.",
+    "<b>Controllo di POWER:</b> pluviometri e termometri a terra (ARPA Lombardia).",
+    "<b>Collezione MODIS:</b> il servizio ORNL non dichiara la collezione di MOD13Q1 (endpoint <c>https://modis.ornl.gov/rst/api/v1/products</c>, "
+    "consultato il 2026-11-13: indica solo il nome del prodotto), quindi non la dichiariamo.",
 ])
 
 H(2, "Cosa è cambiato rispetto alla proposta originale")
@@ -258,7 +272,7 @@ T(["Tema", "Proposta originale", "Ora"], [
      "(<c>PLAN.md</c> D16). La perdita del 2022 nel modello viene dall'acqua."],
     ["Validazione", "Da fare (SMAP, NDVI, ISTAT).", "Fatta: mais confermato, soia non confermata, frumento negativo."],
     ["Parametri", "\"Indicativi, da verificare\".",
-     f"{N_PAR} voci, ognuna con fonte; {N_ASS} dichiarate assunzioni, {N_NONV} non verificate sulla fonte "
+     f"{N_PAR} voci in totale: {N_FONTE} con fonte, {N_ASS} assunzioni motivate, {N_NONV} non verificate direttamente sulla fonte "
      "(<c>python -m fieldwise.params --check</c>)."],
 ], [2.3, 5.2, 9.8], small=True)
 
@@ -318,8 +332,8 @@ Pg("La resa relativa di una coltura è il prodotto di tre fattori, tutti tra 0 e
 Bu([
     "<b>Acqua (f_acqua).</b> In parole: la resa cala di Ky volte la frazione di acqua che la coltura non ha potuto consumare rispetto a quella che "
     "avrebbe voluto (ETa rispetto a ETc, sommate su tutta la stagione). Fonte: FAO-33 e FAO-56 eq. 90. È il fattore che muove quasi tutto: "
-    f"per il mais continuo la mediana di f_acqua è {n(r_m_pio['f_acqua'])} con solo pioggia, {n(r_m_tet['f_acqua'])} con il tetto irriguo "
-    f"e {n(r_m_lib['f_acqua'])} con irrigazione libera.",
+    f"per il mais continuo la mediana di f_acqua sulle annate è {n(FA_MED['solo_pioggia'])} con solo pioggia, {n(FA_MED['tetto_irriguo'])} con il tetto irriguo "
+    f"e {n(FA_MED['irrigazione_libera'])} con irrigazione libera.",
     "<b>Caldo (f_caldo).</b> In parole: per ogni giorno della finestra della fioritura, se la temperatura efficace (media tra media e massima) supera "
     "la soglia critica, il fattore scende linearmente fino a zero alla soglia limite; il fattore è la media sulla finestra. Fonte: Deryng et al. "
     f"(2014), App. A.3, usata senza taratura. Soglie critica/limite: mais {n(TCR['mais'][0], 0)}/{n(TCR['mais'][1], 0)} °C, "
@@ -542,7 +556,7 @@ Bu([
     "classifiche: va letto con questo avvertimento.",
     "<b>Soia.</b> Validazione non confermata (intervalli che comprendono lo zero).",
     "<b>Acqua in asciutto.</b> Nessuna falda né risalita capillare (110-150 cm in zona): lo stress del mais senza irrigazione è probabilmente "
-    f"sovrastimato (f_acqua mediana {n(r_m_pio['f_acqua'])} in solo pioggia).",
+    f"sovrastimato (f_acqua mediana {n(FA_MED['solo_pioggia'])} in solo pioggia).",
     "<b>Azoto.</b> Il concime non passa dal pool di azoto minerale: la lisciviazione (qui "
     f"{n(sin['n_lisciviato_kg_n'].min(), 0)}-{n(sin['n_lisciviato_kg_n'].max(), 0)} kg N/ha/anno tra tutte le classi; per il mais irriguo in Pianura Padana la "
     "letteratura citata nella revisione riporta in genere diverse decine) è probabilmente sottostimata, e la riduzione relativa della cover è bassa perché quella assoluta è piccola. L'azoto non "
@@ -556,6 +570,12 @@ Bu([
     "<b>Un punto, un suolo.</b> Cella POWER di circa 50 km a 171 m contro un campo a 45 m; suolo da SoilGrids (la sostanza organica è un valore ERSAF, "
     f"decisione D13); {N_ASS} parametri sono assunzioni dichiarate e {N_NONV} non sono stati verificati sulla fonte originale.",
     "<b>Validazione.</b> Rese ISTAT provinciali (irriguo e asciutto mescolati, n = 17); SMAP 0-5 cm su 9 km; NDVI da una finestra di 2 km che mescola colture.",
+    "<b>Origine di alcuni parametri.</b> La temperatura superiore dei gradi-giorno del frumento è presa da una taratura per frumento primaverile; "
+    "la frazione di esaurimento della segale è presa per analogia con i cereali a paglia; il contenuto idrico a saturazione è calcolato senza "
+    "correzione di densità.",
+    "<b>Dati NASA.</b> POWER, che entra nel motore, è un prodotto modellato (rianalisi e prodotti satellitari assimilati), non un'osservazione "
+    "diretta; IMERG è solo una forzante alternativa in sensibilità; SMAP e MODIS entrano solo nella validazione. La collezione di MOD13Q1 non è "
+    "dichiarata dal servizio ORNL.",
     "<b>Sensibilità.</b> Il Monte Carlo è indicativo; il passato non copre il clima futuro.",
     "<b>App.</b> Il suo aspetto nel browser non è stato controllato da una persona.",
 ])

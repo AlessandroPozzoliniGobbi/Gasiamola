@@ -8,7 +8,8 @@ Cambiano la prima rotazione nel tetto irriguo 29 dei 173 parametri presi uno all
 
 ## Metodo
 
-- **Versione del codice**: commit 2f8776d con modifiche locali in src/ o params/ non registrate, hash dei parametri 2b8a878cc8612e8aed5f97bdedcfa4ba77096eed4b2ddc1be0826954cd891329, ensemble calcolato il 2026-11-13T13:10:26+00:00.
+- **Versione del codice**: commit 2f8776d più le modifiche a src/ e params/ registrate nel commit a767a8e, hash dei parametri 2b8a878cc8612e8aed5f97bdedcfa4ba77096eed4b2ddc1be0826954cd891329, ensemble calcolato il 2026-11-13T13:10:26+00:00.
+- **Nota sull'ensemble di riferimento**: l'ensemble ora in cache è stato rigenerato alle 13:26:10 (stesso hash dei parametri). La sensibilità è stata calcolata su quello delle 13:10:26 e non è stata rilanciata: i due ensemble hanno lo stesso hash dei parametri, le stesse prime tre rotazioni per scenario e lo stesso posto del mais continuo (45a, 30a e 43a su 45 nei tre scenari), verificati confrontando `sensitivity_summary.json` con `ensemble_sintesi.csv` tramite `fieldwise.ranking.score`.
 - **Sottoinsieme fisso**: tutti i membri (125 rotazioni) delle 45 classi cicliche non equivalenti dell'ensemble di base, tutte le annate, i tre scenari d'acqua, rotazione attuale "mais". Le equivalenze sono fissate sul caso di base.
 - **Verifica del sottoinsieme** (classifica di base, pesi uguali, contro l'ensemble completo di 216 rotazioni): solo pioggia tau 1.000, stessa prima si, stesse prime tre si; tetto irriguo tau 1.000, stessa prima si, stesse prime tre si; irrigazione libera tau 1.000, stessa prima si, stesse prime tre si.
 - **Indicatore principale**: punteggio a pesi uguali di `ranking.score` nello scenario tetto irriguo; in subordine solo pioggia e irrigazione libera. Il punteggio e' relativo all'insieme confrontato (0-1).

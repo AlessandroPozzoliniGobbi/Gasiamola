@@ -177,7 +177,7 @@ def available_years(forcing: pd.DataFrame) -> list[int]:
         & d["temp_trusted"].astype(bool)
     out = []
     for year, g in ok.groupby(y):
-        ndays = 366 if pd.Timestamp(year=int(year), month=12, day=31).dayofyear == 366 else 365
+        ndays = 366 if pd.Timestamp(year=int(year), month=12, day=31).day_of_year == 366 else 365
         if len(g) == ndays and bool(g.all()):
             out.append(int(year))
     return out

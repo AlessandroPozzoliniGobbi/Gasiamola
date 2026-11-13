@@ -8,7 +8,7 @@ Il codice (`src/`, `app/`, `tests/`), la ricerca e la lettura delle fonti per i 
 
 ## Come è stato controllato il lavoro
 
-- **Parametri con fonte.** Ogni numero agronomico ha valore, unità, fonte, riferimento e URL, e un campo `verificato` (vero solo se il valore è stato letto dalla fonte durante il lavoro). Senza fonte ufficiale è `assunzione: true` e finisce in sensibilità. Lo stato si vede con `python -m fieldwise.params --check`.
+- **Parametri e fonti.** Ogni numero agronomico ha valore, unità e un campo `verificato` (vero solo se il valore è stato letto dalla fonte durante il lavoro); le voci con fonte hanno anche riferimento e URL. Senza fonte ufficiale è `assunzione: true` e finisce in sensibilità. Su 372 voci, 357 hanno una fonte, 26 sono assunzioni motivate e 50 non sono state verificate direttamente sulla fonte: i numeri esatti si vedono con `python -m fieldwise.params --check`.
 - **Revisione indipendente dei parametri** (`reports/params_review.md`): un agente diverso dagli autori ha riaperto le fonti per 29 voci: 22 confermate, 7 usate fuori dalle condizioni della fonte, nessun errore di trascrizione. Le correzioni sono state applicate.
 - **Test** automatici (`pytest`, 1272 test: bilanci di massa chiusi alla precisione di macchina, esempi della FAO, casi limite) e controlli di qualità dei dati (`data/CHECKS.md`).
 - **Verifica scientifica indipendente del motore** (`reports/engine_review.md`) con prova di mutazione: guasti inseriti di proposito nel codice per vedere se i test li rilevano (7 su 8 rilevati; il guasto non rilevato ha portato ai test della catena di rotazione). La revisione ha trovato errori (coefficiente colturale singolo contro duale, Curve Number, test mancanti) che sono stati corretti. Una verifica indipendente dell'ensemble e della classifica: `reports/phase5_review.md`.
@@ -19,7 +19,7 @@ Il codice (`src/`, `app/`, `tests/`), la ricerca e la lettura delle fonti per i 
 
 Il team deve aggiornare questo elenco con ciò che ha controllato di persona.
 
-- Le fonti sono state lette da agenti: il campo `verificato: true` significa che un agente ha letto il valore sulla fonte, non che una persona lo abbia riletto. Per 50 voci su 372 il valore non è stato verificato sulla fonte originale (ricordato o preso da citazioni) e 26 sono assunzioni.
+- Le fonti sono state lette da agenti: il campo `verificato: true` significa che un agente ha letto il valore sulla fonte, non che una persona lo abbia riletto. Su 372 voci, 357 hanno una fonte; per 50 il valore non è stato verificato direttamente sulla fonte originale (ricordato o preso da citazioni) e 26 sono assunzioni motivate.
 - Le revisioni indipendenti sono state fatte da altri agenti, non da persone: nessun esperto agronomo o idrologo ha controllato le equazioni, i parametri o le conclusioni.
 - Il codice non è stato letto riga per riga da una persona; le equazioni sono state confrontate con le fonti solo dagli agenti revisori (alcuni controlli di coerenza senza riaprire la fonte, indicati in `reports/engine_review.md`).
 - L'aspetto e l'uso dell'app nel browser non sono stati controllati da un agente né da una persona (i test dell'app girano senza browser).

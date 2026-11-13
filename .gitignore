@@ -9,3 +9,10 @@ __pycache__/
 # file temporanei di graphify
 graphify-out/.graphify_*
 graphify-out/cache/
+# stato di strumenti locali: non fa parte del progetto
+.omc/
+.claude/
+.codex/
+runs.pkl
+data/raw/istat/_ratelimit/
+data/logs/

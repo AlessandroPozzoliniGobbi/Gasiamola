@@ -2,7 +2,7 @@
  "generato_il": "2026-11-13T14:16:38",
  "lat": 45.2,
  "lon": 10.0,
- "versione": "commit 2f8776d con modifiche locali in src/ o params/ non registrate, hash dei parametri 2b8a878cc8612e8aed5f97bdedcfa4ba77096eed4b2ddc1be0826954cd891329, ensemble calcolato il 2026-11-13T13:10:26+00:00",
+ "versione": "commit 2f8776d più le modifiche a src/ e params/ registrate nel commit a767a8e, hash dei parametri 2b8a878cc8612e8aed5f97bdedcfa4ba77096eed4b2ddc1be0826954cd891329, ensemble calcolato il 2026-11-13T13:10:26+00:00",
  "indicatore_principale": {
   "scenario": "tetto_irriguo",
   "pesi": {

@@ -85,7 +85,7 @@ def capire():
 
     st.header("NDVI: quanto è verde il campo")
     st.markdown(
-        "- L'NDVI è un numero tra 0 e 1 che dice quanto è verde e rigogliosa la vegetazione vista dall'alto.\n"
+        "- L'NDVI è un numero tra −1 e 1 che dice quanto è verde e rigogliosa la vegetazione vista dall'alto. Sulle colture sta di solito tra 0 e 1.\n"
         "- Terra nuda: valori bassi. Foglie verdi e fitte: valori alti.\n"
         "- Lo misura il satellite MODIS ogni 16 giorni circa, su quadrati di circa 250 metri.\n"
         "- Una coltura in sofferenza per la siccità ingiallisce e l'NDVI scende.\n"
@@ -310,6 +310,15 @@ def limiti(sintesi: pd.DataFrame | None, scenario: str):
     for t, x in limiti_:
         with st.container(border=True):
             st.markdown(f"**{t}.** {x}")
+
+    st.header("Quali dati NASA entrano dove")
+    st.markdown(
+        "- **Nel motore** entra NASA POWER: è meteo da rianalisi e da prodotti satellitari assimilati, "
+        "un prodotto modellato e non un'osservazione diretta.\n"
+        "- **GPM IMERG** (pioggia) entra come forzante alternativa nell'analisi di sensibilità.\n"
+        "- **SMAP e MODIS**, osservazioni satellitari, entrano nella validazione.\n"
+        "- POWER è stato controllato contro pluviometri e termometri a terra.\n"
+        "- Il servizio che fornisce MODIS non dichiara la collezione del prodotto usato.")
 
     st.header("Fonti dei dati")
     lat, lon = dati.PILOTA

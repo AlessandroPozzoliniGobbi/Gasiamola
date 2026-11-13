@@ -52,22 +52,33 @@ Ultimo aggiornamento: 2026-11-11.
 | 3 | Motore di base (ET0, acqua, azoto, humus) | Opus; test Sonnet | Opus diverso (unica con la 4, D12) | chiusa |
 | 4 | Gradi-giorno, caldo in fioritura, penalità di rotazione, fattori moltiplicativi | Opus | Opus diverso | chiusa |
 | 5 | Ensemble e classifica | pianificatore progetta, Sonnet implementa | Sonnet diverso | chiusa |
-| 6 | Validazione (SMAP, NDVI, ISTAT) | Opus | nella verifica finale | consegnata |
-| 7 | Analisi di sensibilità | Opus | nella verifica finale | consegnata |
-| 8 | Interfaccia Streamlit | Sonnet | nella verifica finale | consegnata |
-| 9 | README, report PDF, verifica finale | Sonnet; Opus verifica | — | in corso |
+| 6 | Validazione (SMAP, NDVI, ISTAT) | Opus | verifica finale Opus | chiusa |
+| 7 | Analisi di sensibilità | Opus | verifica finale Opus | chiusa |
+| 8 | Interfaccia Streamlit | Sonnet | verifica finale Opus | chiusa |
+| 9 | README, report PDF, verifica finale | Sonnet; Opus verifica | `reports/final_review.md` | chiusa dopo le correzioni P3–P10 |
 
 Il grafo si ricostruisce (`/graphify .`) alla fine delle fasi 3, 4, 5, 6, 7, 8 e prima della verifica finale.
 
 ## Blocchi aperti
 
-- **Credenziali Earthdata assenti** (`~/.netrc` non esiste, nessuna variabile d'ambiente): IMERG e SMAP
-  non si possono scaricare. I client vengono scritti e provati con dati finti; il download reale parte
-  quando le credenziali ci sono. Senza IMERG il confronto delle piogge è POWER contro ARPA; senza SMAP
-  la validazione dell'umidità non si fa.
+Nessuno. (Il blocco delle credenziali Earthdata è stato risolto il 2026-11-12: IMERG e SMAP sono in cache.)
+
+## Cosa resta aperto alla consegna
+
+- Collezione di MODIS MOD13Q1 non dichiarata dal servizio ORNL (dichiarato nei documenti).
+- Pulizia del repository: `.omc/`, `.claude/`, `.codex/`, `runs.pkl`, `data/raw/istat/_ratelimit/` sono
+  tracciati da git; sono stati aggiunti a `.gitignore`, ma la rimozione dal tracciamento
+  (`git rm -r --cached ...`) e il commit spettano all'utente.
+- Aspetto dell'app nel browser non verificato da un agent.
+- Verifiche dedicate delle fasi 6, 7 e 8 accorpate nella verifica finale (`reports/final_review.md`).
 
 ## Registro
 
+- 2026-11-13 sera — FASE 9: README, AI_USAGE, report PDF (8 pagine), test di validazione e sensibilità
+  (suite a 1272 test). Grafo ricostruito per intero con i documenti (3768 nodi, 7202 archi; 5 archi
+  ad anello segnalati). VERIFICA FINALE Opus (`reports/final_review.md`): installazione da zero e demo
+  offline riuscite, risultati identici alla cache, 33 numeri del report su 34 confermati, 8 parametri su 8
+  confermati sulle fonti, nessun problema bloccante. Correzioni P3–P10 ai documenti affidate a Sonnet.
 - 2026-11-13 pomeriggio — FASI 3 e 4 CHIUSE: doppio coefficiente FAO-56 per tutte le superfici e Curve
   Number di AquaCrop (72, Ia = 0,05 S) applicati; la cover dimezza la lisciviazione (riduzione per intervallo
   51% dopo il mais, 62% dopo il frumento); test Sonnet sul nuovo nucleo (75) e sulla catena di rotazione.
