@@ -373,7 +373,7 @@ def _raw_path(lat: float, lon: float, via: str) -> Path:
 
 
 def _find_raw(lat: float, lon: float) -> Path:
-    d = cache.raw_dir(SOURCE, lat, lon)
+    d = cache.raw_dir(SOURCE, lat, lon, create=False)
     for via in ("rest", "wcs"):
         p = d / f"soilgrids_{via}.json"
         if cache.is_cached(p):
@@ -460,7 +460,7 @@ def fetch(lat: float, lon: float, force: bool = False) -> Path:
 def load(lat: float, lon: float) -> pd.DataFrame:
     """Strati (``soilgrids_layers.csv``) dalla cache; CacheMiss se manca. Mai rete."""
     raw_path = _find_raw(lat, lon)
-    csv = cache.processed_dir(lat, lon) / "soilgrids_layers.csv"
+    csv = cache.processed_dir(lat, lon, create=False) / "soilgrids_layers.csv"
     if not csv.exists():
         _process(lat, lon, raw_path)
     return pd.read_csv(csv)
@@ -469,7 +469,7 @@ def load(lat: float, lon: float) -> pd.DataFrame:
 def load_aggregated(lat: float, lon: float) -> pd.DataFrame:
     """Aggregato per orizzonti (``soilgrids_agg.csv``) dalla cache; CacheMiss se manca."""
     raw_path = _find_raw(lat, lon)
-    csv = cache.processed_dir(lat, lon) / "soilgrids_agg.csv"
+    csv = cache.processed_dir(lat, lon, create=False) / "soilgrids_agg.csv"
     if not csv.exists():
         _process(lat, lon, raw_path)
     return pd.read_csv(csv)

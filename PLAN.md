@@ -47,15 +47,15 @@ Ultimo aggiornamento: 2026-11-11.
 | Fase | Contenuto | Chi | Verifica | Stato |
 |------|-----------|-----|----------|-------|
 | 0 | Grafo iniziale, ambiente, scheletro, contratti | pianificatore | — | fatto |
-| 1 | Dati e controlli di qualità | Sonnet (client), Opus (anomalie) | Sonnet diverso | in corso |
-| 2 | Parametri dalle fonti | Opus | Opus diverso (≥10 parametri a campione) | in corso |
-| 3 | Motore di base (ET0, acqua, azoto, humus) | Opus; test Sonnet | Opus diverso | da fare |
-| 4 | Gradi-giorno, caldo in fioritura, penalità di rotazione, fattori moltiplicativi | Opus | Opus diverso | da fare |
-| 5 | Ensemble e classifica | Opus progetta, Sonnet implementa | Sonnet diverso | da fare |
-| 6 | Validazione (SMAP, NDVI, ISTAT) | Opus | Opus diverso | da fare |
-| 7 | Analisi di sensibilità | Opus | Opus diverso | da fare |
-| 8 | Interfaccia Streamlit | Sonnet | Sonnet diverso | da fare |
-| 9 | README, report PDF, verifica finale | Sonnet; Opus verifica | — | da fare |
+| 1 | Dati e controlli di qualità | Sonnet (client), Opus (anomalie) | controllo qualità + Opus | chiusa |
+| 2 | Parametri dalle fonti | Opus | Opus diverso (29 voci sulle fonti) | chiusa |
+| 3 | Motore di base (ET0, acqua, azoto, humus) | Opus; test Sonnet | Opus diverso (unica con la 4, D12) | chiusa |
+| 4 | Gradi-giorno, caldo in fioritura, penalità di rotazione, fattori moltiplicativi | Opus | Opus diverso | chiusa |
+| 5 | Ensemble e classifica | pianificatore progetta, Sonnet implementa | Sonnet diverso | chiusa |
+| 6 | Validazione (SMAP, NDVI, ISTAT) | Opus | nella verifica finale | consegnata |
+| 7 | Analisi di sensibilità | Opus | nella verifica finale | consegnata |
+| 8 | Interfaccia Streamlit | Sonnet | nella verifica finale | consegnata |
+| 9 | README, report PDF, verifica finale | Sonnet; Opus verifica | — | in corso |
 
 Il grafo si ricostruisce (`/graphify .`) alla fine delle fasi 3, 4, 5, 6, 7, 8 e prima della verifica finale.
 
@@ -68,6 +68,27 @@ Il grafo si ricostruisce (`/graphify .`) alla fine delle fasi 3, 4, 5, 6, 7, 8 e
 
 ## Registro
 
+- 2026-11-13 pomeriggio — FASI 3 e 4 CHIUSE: doppio coefficiente FAO-56 per tutte le superfici e Curve
+  Number di AquaCrop (72, Ia = 0,05 S) applicati; la cover dimezza la lisciviazione (riduzione per intervallo
+  51% dopo il mais, 62% dopo il frumento); test Sonnet sul nuovo nucleo (75) e sulla catena di rotazione.
+  FASE 5 CHIUSA: `ensemble.py`, `ranking.py`; ensemble completo in 6–7 s (11 016 simulazioni riuscite);
+  76 classi cicliche, 45 non equivalenti per scenario; verifica indipendente Sonnet
+  (`reports/phase5_review.md`): 12 criteri numerici su 12 superati; corretti i difetti di presentazione;
+  "mais" ricondotta alla classe "mais > mais > mais".
+  FASE 6 CHIUSA (`reports/validation.md`): SMAP anomalie mensili r = 0,71 [0,62–0,81]; NDVI estivo contro
+  stress del mais r = 0,63 [0,29–0,83]; ISTAT mais r = 0,70 [0,33–0,88]; soia 0,27 [−0,24–0,67] (non
+  confermata); frumento −0,50 [−0,79–−0,03] (NEGATIVA: il modello non rappresenta le perdite degli anni
+  umidi). Azoto, humus e lisciviazione non validati.
+  FASE 7 CHIUSA (`reports/sensitivity.md`): 173 parametri, 256 campioni a ipercubo latino. Robusto: mais
+  continuo nell'ultimo quarto nel 92–99% dei campioni. Non robusto: la prima resta prima nel 33–62%.
+  Decisivi: Kcb di piena stagione, gradi-giorno, azoto del mais, tetto irriguo, penalità di rotazione
+  (azzerandole vince il frumento continuo). Non decisivi: sostanza organica (D13), humus, IMERG, funzione
+  del caldo.
+  FASE 8 consegnata: app Streamlit a cinque pagine, 22 test offline; aspetto nel browser non verificato da
+  un agent. Verifica della fase 8 accorpata alla verifica finale (D11).
+  In corso (Sonnet): correzioni finali (casi degeneri, funzione del caldo esposta, resa in t/ha e
+  avvertenze nell'app) e documentazione (README, AI_USAGE, report PDF, test di validazione e sensibilità).
+  Poi: `/graphify .` completo e verifica finale Opus.
 - 2026-11-12 notte — FASE 1 completa: IMERG (9253 giorni, bilineare su quattro celle) e SMAP (3845 giorni,
   2323 di qualità raccomandata) in cache; controllo qualità rieseguito senza errori. IMERG sovrastima i
   totali annui del 21% contro il pluviometro (POWER 1%), ma ha correlazione giornaliera migliore (0,73 contro

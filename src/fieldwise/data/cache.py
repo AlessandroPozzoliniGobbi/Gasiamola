@@ -35,19 +35,23 @@ def point_key(lat: float, lon: float) -> str:
 
 
 def raw_dir(source: str, lat: float | None = None, lon: float | None = None,
-            key: str | None = None) -> Path:
-    """Cartella dei grezzi di una sorgente; key sostituisce il punto (es. 'cremona')."""
+            key: str | None = None, create: bool = True) -> Path:
+    """Cartella dei grezzi di una sorgente; key sostituisce il punto (es. 'cremona').
+    Con ``create=False`` (letture) la cartella non viene creata."""
     k = key if key is not None else point_key(lat, lon)
     d = config.RAW_DIR / source / k
-    d.mkdir(parents=True, exist_ok=True)
+    if create:
+        d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def processed_dir(lat: float | None = None, lon: float | None = None,
-                  key: str | None = None) -> Path:
+                  key: str | None = None, create: bool = True) -> Path:
+    """Cartella degli elaborati del punto. Con ``create=False`` (letture) non viene creata."""
     k = key if key is not None else point_key(lat, lon)
     d = config.PROCESSED_DIR / k
-    d.mkdir(parents=True, exist_ok=True)
+    if create:
+        d.mkdir(parents=True, exist_ok=True)
     return d
 
 

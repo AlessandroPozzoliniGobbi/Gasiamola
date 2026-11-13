@@ -40,6 +40,8 @@ Convenzioni (scelte dichiarate):
   SRA06 producono solo avvertenze.
 - Ciclo che esce dalla serie meteo affidabile (oltre il 31/12 dell'ultimo anno di
   ``weather.available_years``) o maturita' mai raggiunta: esito ``non_simulabile``, nessun numero.
+- Ciclo con una fase di piena stagione vuota o con la finestra sensibile al caldo vuota (caso
+  degenere dei parametri): esito ``parametri_degeneri`` con il motivo, nessun numero.
 - Suolo nudo: Kc, Zr e p non entrano nel bilancio (evaporazione dallo strato superficiale,
   ``water`` usa Kc_max); si passano zeri, valori inerti, non parametri.
 - Kc mid ed end corretti per il clima (FAO-56 eq. 62 e 65) con u2 e RHmin medi delle fasi di
@@ -70,6 +72,7 @@ RIPARTI = ("traspirazione", "eta", "eta_et0")   # riparto giornaliero dell'assor
 ESITO_OK = "ok"
 ESITO_NON_SIMULABILE = "non_simulabile"
 ESITO_CONFLITTO = "conflitto_calendario"
+ESITO_DEGENERE = "parametri_degeneri"   # fase o finestra del ciclo vuota: nessun numero
 TETTO_ILLIMITATO = "illimitato"
 COVER_TAG = "+cover"
 SEP = " > "
@@ -193,6 +196,7 @@ class RotationContext:
     n0: _n.NState
     scenarios: dict              # nome -> dict(cap={coltura: mm}, regime)
     _cycle: dict = field(default_factory=dict, repr=False)
+    _heat: dict = field(default_factory=dict, repr=False)
     _cover_curves: dict = field(default_factory=dict, repr=False)
 
     def idx(self, year: int, mmdd: str) -> int:
@@ -215,19 +219,42 @@ class RotationContext:
             end = slice(cal.end_mid + 1, cal.maturity + 1)
             if end.start >= end.stop:
                 end = slice(cal.maturity, cal.maturity + 1)
-            kc, zr, pt = _ph.crop_daily_curves_gdd(
-                self.p, crop, cal, self.soil.depth,
-                float(self.wind[mid].mean()), float(self.rhmin[mid].mean()),
-                float(self.wind[end].mean()), float(self.rhmin[end].mean()))
-            u2m, rhm = float(self.wind[mid].mean()), float(self.rhmin[mid].mean())
-            u2e, rhe = float(self.wind[end].mean()), float(self.rhmin[end].mean())
-            c.update(kc=kc, zr=zr, pt=pt, heat=_ym.heat_factor(self.p, crop, self.forcing, cal),
-                     kcb=self._kcb_curve(crop, cal, u2m, rhm, u2e, rhe),
-                     h=np.asarray(_water.plant_height(
-                         cal.frac, float(_params.get(self.p, f"crops.{crop}.h_max")),
-                         cal.breakpoints[1]), float))
+            if mid.start >= mid.stop:
+                c["degenere"] = (f"fase di piena stagione vuota per {crop} seminato il "
+                                 f"{self.date(sow)}: vento e umidita' minima non definiti")
+            else:
+                kc, zr, pt = _ph.crop_daily_curves_gdd(
+                    self.p, crop, cal, self.soil.depth,
+                    float(self.wind[mid].mean()), float(self.rhmin[mid].mean()),
+                    float(self.wind[end].mean()), float(self.rhmin[end].mean()))
+                u2m, rhm = float(self.wind[mid].mean()), float(self.rhmin[mid].mean())
+                u2e, rhe = float(self.wind[end].mean()), float(self.rhmin[end].mean())
+                try:
+                    heat = _ym.heat_factor(self.p, crop, self.forcing, cal)
+                except _ym.FinestraVuota as ex:
+                    c["degenere"] = f"{ex} per {crop} seminato il {self.date(sow)}"
+                else:
+                    c.update(kc=kc, zr=zr, pt=pt, heat=heat,
+                             kcb=self._kcb_curve(crop, cal, u2m, rhm, u2e, rhe),
+                             h=np.asarray(_water.plant_height(
+                                 cal.frac, float(_params.get(self.p, f"crops.{crop}.h_max")),
+                                 cal.breakpoints[1]), float))
         self._cycle[key] = c
         return c
+
+    def heat(self, crop: str, sow: int, metodo: str = "deryng"):
+        """``HeatResult`` del ciclo (crop, sow) con la funzione del caldo ``metodo``, in cache.
+        Il ciclo deve essere calcolabile (non degenere): lo garantisce ``build_calendar``."""
+        if metodo not in _ym.METODI_CALDO:
+            raise ValueError(f"metodo_caldo sconosciuto: {metodo} (ammessi {_ym.METODI_CALDO})")
+        c = self.cycle(crop, sow)
+        if metodo == "deryng":
+            return c["heat"]
+        key = (crop, sow, metodo)
+        h = self._heat.get(key)
+        if h is None:
+            h = self._heat[key] = _ym.heat_factor(self.p, crop, self.forcing, c["cal"], metodo=metodo)
+        return h
 
     def _kcb_curve(self, crop, cal, u2m, rhm, u2e, rhe):
         """Kcb del ciclo (FAO-56 Tab. 17): stessa curva a quattro tratti e stessi punti di
@@ -467,6 +494,9 @@ def build_calendar(ctx: RotationContext, rotation: Rotation, anno: int, n_avviam
             rc.motivo = (f"maturita' di {crop} seminato il {ctx.date(s)} oltre la serie meteo "
                          f"affidabile ({lim})")
             return rc
+        if "degenere" in c:
+            rc.esito, rc.motivo = ESITO_DEGENERE, c["degenere"]
+            return rc
         cyc.append(cal)
         harvest = cal.maturity
     segs = rc.segments
@@ -565,7 +595,8 @@ def _caps(ctx: RotationContext, rc: RotationCalendar, scenario: str) -> np.ndarr
 def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
              n_avviamento: int = 1, calendario: RotationCalendar | None = None,
              dettaglio: bool = False, in_conflitto: str = "rinvia",
-             riparto: str = "traspirazione", metodo_et: str = "doppio") -> dict:
+             riparto: str = "traspirazione", metodo_et: str = "doppio",
+             metodo_caldo: str = "deryng") -> dict:
     """Simula la rotazione dal 1 gennaio di ``anno`` nello ``scenario`` d'acqua (uno di
     ``SCENARI``) e restituisce le uscite del ciclo valutato (vedi ``_meta`` del rapporto e le
     chiavi: 'esito', 'motivo', 'label', 'conformita', 'colture', 'intervalli', 'indicatori',
@@ -576,7 +607,11 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
     'traspirazione' (default: la traspirazione ``tr`` calcolata dal nucleo idrico, Ks Kcb ET0
     nel metodo doppio; nel metodo singolo coincide con ETa di colture e cover), 'eta' (ETa),
     'eta_et0' (ETa/ET0); le ultime due servono solo all'analisi di sensibilita'.
-    ``metodo_et``: 'doppio' (FAO-56 cap. 7, default) o 'singolo' (Kc singolo, sensibilita')."""
+    ``metodo_et``: 'doppio' (FAO-56 cap. 7, default) o 'singolo' (Kc singolo, sensibilita').
+    ``metodo_caldo``: funzione del caldo di ``yield_model.heat_factor`` (``METODI_CALDO``:
+    'deryng' default, 'aquacrop', 'teixeira'; le ultime due per la sensibilita')."""
+    if metodo_caldo not in _ym.METODI_CALDO:
+        raise ValueError(f"metodo_caldo sconosciuto: {metodo_caldo} (ammessi {_ym.METODI_CALDO})")
     p = ctx.p
     rc = calendario or build_calendar(ctx, rotation, anno, n_avviamento, in_conflitto)
     out = {"esito": rc.esito, "motivo": rc.motivo, "label": rotation.label,
@@ -599,7 +634,7 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
         if s.kind == _n.SEG_CROP:
             ci = ctx.crop[s.crop]
             fa = _ym.water_factor(agg["eta"][k], agg["etc"][k], ci["ky"])
-            heat = ctx.cycle(s.crop, s.start)["heat"]
+            heat = ctx.heat(s.crop, s.start, metodo_caldo)
             fr, caso = rot_f[s.pos]
             y = _ym.crop_yield(p, s.crop, fa, heat.f_caldo, fr)
             y.update(caso_rotazione=caso, n_hot_days=heat.n_hot_days)
@@ -713,4 +748,5 @@ def start_years(ctx: RotationContext, rotation: Rotation, n_avviamento: int = 1,
 
 __all__ = ["Rotation", "RotationContext", "RotationCalendar", "Segment", "SCENARI",
            "RIPARTI", "build_context", "build_calendar", "simulate", "start_years", "compliance",
-           "enumerate_rotations", "main_crops", "ESITO_OK", "ESITO_NON_SIMULABILE", "ESITO_CONFLITTO"]
+           "enumerate_rotations", "main_crops", "ESITO_OK", "ESITO_NON_SIMULABILE", "ESITO_CONFLITTO",
+           "ESITO_DEGENERE"]

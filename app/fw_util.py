@@ -8,6 +8,29 @@ COLORI = ("#444444", "#1b9e77", "#d95f02", "#7570b3", "#e7298a")   # attuale, po
 RESA = ("resa_rel_mediana", "resa_rel_min", "resa_rel_p10")        # indicatori in frazione (1 = potenziale)
 
 
+AVVISO_PUNTEGGIO = "Il punteggio è relativo alle rotazioni confrontate: serve solo a ordinarle."
+AVVISO_FRUMENTO = ("Per il frumento il modello non rappresenta le perdite degli anni umidi (malattie, piante "
+                   "coricate, ristagni), quindi la sua resa è ottimistica: non leggerla come un indicatore di rischio.")
+AVVISO_HUMUS = ("Gli effluenti zootecnici (letame, liquame) non sono modellati: in un'azienda con stalla "
+                "la variazione di humus può essere migliore.")
+PREFISSO_RESA_T_HA = "resa_t_ha_"       # colonne della sintesi: resa mediana in t/ha di una coltura
+
+
+def rese_t_ha(valori: dict) -> dict:
+    """{coltura: resa mediana in t/ha} dalle colonne ``resa_t_ha_<coltura>`` di una riga della sintesi
+    (solo le colture presenti nella rotazione)."""
+    out = {}
+    for k, x in valori.items():
+        if k.startswith(PREFISSO_RESA_T_HA) and x is not None and x == x:
+            out[k.removeprefix(PREFISSO_RESA_T_HA)] = float(x)
+    return out
+
+
+def rese_t_ha_testo(valori: dict) -> str:
+    """'mais 14,4 t/ha · soia 3,5 t/ha' (stringa vuota se la sintesi non ha le rese per coltura)."""
+    return " · ".join(f"{c} {num(x, 1)} t/ha" for c, x in rese_t_ha(valori).items())
+
+
 def bella(etichetta: str) -> str:
     """'mais > soia+cover' -> 'mais → soia + cover crop'."""
     return etichetta.replace("+cover", " + cover crop").replace(" > ", " → ")

@@ -648,3 +648,61 @@ def _wbal(res):
 def _wbal_day(res):
     from fieldwise import water as _w
     return _w.water_balance_daily_residual(res)
+
+
+# =============================================================================
+# Casi degeneri dei parametri e funzione del caldo scelta come argomento
+# =============================================================================
+def _ctx_con(pars, ctx, modifiche):
+    return rt.build_context(fparams.override(pars, modifiche), forcing=ctx.forcing)
+
+
+_FINESTRA_VUOTA = {"heat.colture.mais.finestra_inizio_frazione": 2.0,
+                   "heat.colture.mais.finestra_fine_frazione": 3.0}
+
+
+def test_heat_factor_con_finestra_vuota_solleva_finestra_vuota(pars, ctx):
+    c2 = _ctx_con(pars, ctx, _FINESTRA_VUOTA)
+    cal = ctx.cycle("mais", ctx.idx(2010, "04-15"))["cal"]
+    with pytest.raises(ym.FinestraVuota):
+        ym.heat_factor(c2.p, "mais", c2.forcing, cal)
+    assert issubclass(ym.FinestraVuota, ValueError)
+
+
+def test_simulate_finestra_del_caldo_vuota_non_riuscita_con_motivo(pars, ctx):
+    c2 = _ctx_con(pars, ctx, _FINESTRA_VUOTA)
+    out = rt.simulate(c2, rt.Rotation.from_label("mais"), 2005, SCEN_PIOGGIA)
+    assert out["esito"] == rt.ESITO_DEGENERE != rt.ESITO_OK
+    assert "finestra sensibile vuota" in out["motivo"] and "mais" in out["motivo"]
+    assert "indicatori" not in out
+
+
+def test_simulate_fase_di_piena_stagione_vuota_senza_avvisi_numpy(pars, ctx):
+    import warnings
+    # soglie GDD ordinate ma cosi' vicine che fine sviluppo e fine piena stagione cadono nello stesso giorno
+    c2 = _ctx_con(pars, ctx, {"crops.mais.gdd_fine_mid": fparams.get(pars, "crops.mais.gdd_fine_sviluppo") + 0.001})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)       # la media di una fase vuota darebbe NaN con avviso
+        out = rt.simulate(c2, rt.Rotation.from_label("mais"), 2005, SCEN_PIOGGIA)
+    assert out["esito"] == rt.ESITO_DEGENERE
+    assert "piena stagione vuota" in out["motivo"]
+
+
+def test_metodo_caldo_default_invariato_e_valore_ignoto(ctx, msf, anno_centrale):
+    a = rt.simulate(ctx, msf, anno_centrale, SCEN_TETTO)
+    b = rt.simulate(ctx, msf, anno_centrale, SCEN_TETTO, metodo_caldo="deryng")
+    assert [c["f_caldo"] for c in a["colture"]] == [c["f_caldo"] for c in b["colture"]]
+    with pytest.raises(ValueError, match="metodo_caldo"):
+        rt.simulate(ctx, msf, anno_centrale, SCEN_TETTO, metodo_caldo="inventato")
+
+
+@pytest.mark.parametrize("metodo", ["aquacrop", "teixeira"])
+def test_metodo_caldo_uguale_alla_sostituzione_di_heat_factor(pars, ctx, msf, anno_centrale, metodo, monkeypatch):
+    import functools
+    arg = rt.simulate(rt.build_context(pars, forcing=ctx.forcing), msf, anno_centrale, SCEN_TETTO,
+                      metodo_caldo=metodo)
+    monkeypatch.setattr(ym, "heat_factor", functools.partial(ym.heat_factor, metodo=metodo))
+    sost = rt.simulate(rt.build_context(pars, forcing=ctx.forcing), msf, anno_centrale, SCEN_TETTO)
+    assert arg["esito"] == sost["esito"] == rt.ESITO_OK
+    assert arg["indicatori"] == sost["indicatori"]
+    assert [c["f_caldo"] for c in arg["colture"]] == [c["f_caldo"] for c in sost["colture"]]

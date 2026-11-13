@@ -19,6 +19,24 @@
       "attempts": 0,
       "retryAt": "2026-11-12T14:46:15.644Z",
       "acknowledgedAt": "2026-11-12T14:46:47.849Z"
+    },
+    {
+      "sessionId": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+      "attempts": 0,
+      "retryAt": "2026-11-13T08:38:51.889Z",
+      "acknowledgedAt": "2026-11-13T08:39:23.584Z"
+    },
+    {
+      "sessionId": "01a1d406-2cc7-7ae1-a056-85d38a0b1629",
+      "attempts": 0,
+      "retryAt": "2026-11-13T08:42:23.433Z",
+      "acknowledgedAt": "2026-11-13T08:42:55.038Z"
+    },
+    {
+      "sessionId": "76bc92de-f754-4979-ac08-fdf0d78466de",
+      "attempts": 0,
+      "retryAt": "2026-11-13T13:08:09.253Z",
+      "acknowledgedAt": "2026-11-13T13:08:40.931Z"
     }
   ]
 }

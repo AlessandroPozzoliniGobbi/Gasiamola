@@ -22,7 +22,10 @@ Colonne della sintesi (le usa `ranking.py`):
 richiesta nel ciclo), ``cover_realizzata_quota`` (quota di quegli intervalli in cui la cover e' stata
 realmente praticata; NaN se nessuna cover e' richiesta), ``equivalente_a`` (classe identica senza le
 cover mai praticate, altrimenti ``nessuno``: `ranking` la esclude di default), ``conformita`` (la piu' sfavorevole tra i
-regimi dei disciplinari), ``conformita_<regime>`` (uno per regime; non dipendono dallo scenario), ``attuale``.
+regimi dei disciplinari), ``conformita_<regime>`` (uno per regime; non dipendono dallo scenario), ``attuale``,
+``resa_t_ha_<coltura>`` (una per coltura principale: resa mediana in t/ha di quella coltura nella classe,
+media dei suoi cicli nell'annata; NaN se la coltura non e' nella rotazione; nel dettaglio e' la resa di
+quella simulazione). La resa relativa (frazione del potenziale) resta in ``resa_rel_*``.
 
 Uso da riga di comando: ``python -m fieldwise.ensemble [--lat --lon] [--attuale "mais"]``.
 """
@@ -50,6 +53,7 @@ FILE_META = "ensemble_meta.json"
 NON_VALUTABILE = "non_valutabile"     # conformita' non tabulata (es. rotazione di lunghezza 1)
 NESSUNO = "nessuno"                   # nessuna annata scartata
 FATTORI = ("acqua", "caldo", "rotazione")
+PREFISSO_RESA_T_HA = "resa_t_ha_"      # + coltura: resa in t/ha (colonne di dettaglio e sintesi)
 PERCENTILE_RISCHIO = 10               # percentile basso della resa relativa
 
 # (colonna del dettaglio, chiave in simulate()['indicatori']) -- stesso nome del motore, unita' esplicita
@@ -115,6 +119,30 @@ def _verifica_colture(p: dict, rot: rt.Rotation) -> rt.Rotation:
     return rot
 
 
+def _rotazione_attuale(rotazione, p: dict | None = None) -> tuple:
+    """``(rotazione, nota)``: la rotazione attuale con le ripetizioni di una classe triennale
+    espanse ('mais' = 'mais > mais > mais'); ``nota`` e' None se l'etichetta resta quella indicata.
+    Con ``p`` verifica che le colture siano tra quelle principali."""
+    att = parse_rotazione(rotazione)
+    if p is not None:
+        att = _verifica_colture(p, att)
+    indicata, nota = att.label, None
+    if att.n < 3 and 3 % att.n == 0:
+        att = rt.Rotation(att.crops * (3 // att.n), att.cover * (3 // att.n))
+        if att.label != indicata:
+            nota = (f"la rotazione attuale '{indicata}' e' la ripetizione di '{att.canonical().label}': "
+                    f"marcata su quella classe")
+    return att, nota
+
+
+def classe_rotazione_attuale(rotazione, p: dict | None = None) -> str:
+    """Etichetta canonica della classe ciclica a cui e' ricondotta la rotazione attuale in
+    ``run_ensemble`` (etichetta, ``Rotation`` o sequenza di voci). Una ripetizione di una classe
+    triennale ('mais') vale come la classe ('mais > mais > mais'). Con ``p`` verifica le colture
+    (``ValueError`` se sconosciute), senza ``p`` no."""
+    return _rotazione_attuale(rotazione, p)[0].canonical().label
+
+
 def _membri(rot: rt.Rotation) -> list:
     """Membri distinti della classe ciclica di ``rot`` (le sue permutazioni cicliche)."""
     visti, out = set(), []
@@ -137,7 +165,7 @@ def _motivo_breve(esito: str, motivo: str) -> str:
 # Ensemble
 # =============================================================================
 def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_avviamento=1,
-                 rotazione_attuale=None, p=None, **opzioni_simulate):
+                 rotazione_attuale=None, p=None, metodo_caldo="deryng", **opzioni_simulate):
     """Esegue l'ensemble e restituisce ``(dettaglio, sintesi)``.
 
     ``ctx``: contesto di ``rotation.build_context`` (costruito qui, una sola volta, se None;
@@ -147,8 +175,11 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
     etichetta, ``Rotation`` o sequenza di lunghezza qualsiasi (coltura sconosciuta = ``ValueError``);
     una ripetizione di una classe triennale (es. 'mais' = 'mais > mais > mais') e' ricondotta a quella
     classe; se la classe e' tra quelle simulate la si marca, altrimenti i suoi membri si simulano in
-    piu' (es. lunghezza 2; nota in ``meta['note']``) e la si aggiunge alla sintesi (marcata ``attuale``). ``opzioni_simulate`` (``metodo_et``, ``riparto``, ``in_conflitto``)
-    passano a ``rotation.simulate``. I metadati del calcolo stanno in ``.attrs['meta']`` di entrambe
+    piu' (es. lunghezza 2; nota in ``meta['note']``) e la si aggiunge alla sintesi (marcata ``attuale``).
+    ``metodo_caldo``: funzione del caldo (``yield_model.METODI_CALDO``, default 'deryng'), passata a
+    ``rotation.simulate``. ``opzioni_simulate`` (``metodo_et``, ``riparto``, ``in_conflitto``)
+    passano a ``rotation.simulate``. Una simulazione non riuscita (esito diverso da ``ok``, anche per
+    parametri degeneri) non interrompe l'ensemble: si conta tra le scartate. I metadati del calcolo stanno in ``.attrs['meta']`` di entrambe
     le tabelle."""
     t0 = time.perf_counter()
     if ctx is None:
@@ -171,13 +202,9 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
     classi_simulate = {v["classe"] for v in voci}
     attuale, note = None, []
     if rotazione_attuale is not None:
-        att = _verifica_colture(p, parse_rotazione(rotazione_attuale))
-        indicata = att.label
-        if att.n < 3 and 3 % att.n == 0:      # ripetizione di una classe triennale: "mais" = mais > mais > mais
-            att = rt.Rotation(att.crops * (3 // att.n), att.cover * (3 // att.n))
-            if att.label != indicata:
-                note.append(f"la rotazione attuale '{indicata}' e' la ripetizione di '{att.canonical().label}': "
-                            f"marcata su quella classe")
+        att, nota = _rotazione_attuale(rotazione_attuale, p)
+        if nota:
+            note.append(nota)
         attuale = att.canonical().label
         if attuale not in classi_simulate:
             voci += [_voce(p, m) for m in _membri(att)]
@@ -188,6 +215,7 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
     n_membri = collections.Counter(v["classe"] for v in voci)
 
     anni = range(int(ctx.year[0]), int(ctx.year[ctx.last_idx]) + 1)
+    colture_principali = rt.main_crops(p)
     righe = []
     scarti = collections.defaultdict(collections.Counter)    # (classe, scenario) -> motivo -> n
     cover_vista = {}       # etichetta -> [intervallo i: cover praticata almeno una volta (qualsiasi anno, scenario)]
@@ -205,7 +233,7 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
                 continue
             for sc in scenari:
                 out = rt.simulate(ctx, rot, anno, sc, n_avviamento=n_avviamento,
-                                  calendario=rc, **opzioni_simulate)
+                                  calendario=rc, metodo_caldo=metodo_caldo, **opzioni_simulate)
                 if out["esito"] != rt.ESITO_OK:        # non dovrebbe accadere con calendario ok
                     scarti[(v["classe"], sc)][_motivo_breve(out["esito"], out["motivo"])] += 1
                     continue
@@ -224,6 +252,11 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
                     res_azoto_max_segmento_kg=out["residui"]["azoto_max_segmento_kg"],
                     res_azoto_rotazione_kg=out["residui"]["azoto_rotazione_kg"],
                     attuale=v["classe"] == attuale)
+                rese = collections.defaultdict(list)
+                for c in out["colture"]:
+                    rese[c["coltura"]].append(c["resa"])
+                riga.update({f"{PREFISSO_RESA_T_HA}{c}": (float(np.mean(rese[c])) if c in rese else float("nan"))
+                             for c in colture_principali})
                 righe.append(riga)
     dettaglio = pd.DataFrame(righe)
     sintesi = _sintesi(dettaglio, voci, scenari, regimi, ctx, scarti, n_membri, attuale,
@@ -236,7 +269,9 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
             "tempo_s": round(time.perf_counter() - t0, 3),
             "n_classi": int(sintesi["classe"].nunique()), "scenari": list(scenari),
             "n_avviamento": n_avviamento, "rotazione_attuale": attuale,
-            "opzioni_simulate": {k: str(x) for k, x in opzioni_simulate.items()},
+            "opzioni_simulate": {k: str(x) for k, x in
+                                 {**opzioni_simulate,
+                                  **({"metodo_caldo": metodo_caldo} if metodo_caldo != "deryng" else {})}.items()},
             "hash_parametri": _hash_albero(p), "hash_file_parametri": _hash_file_parametri(),
             "annate_partenza": [int(anni[0]), int(anni[-1])],          # tentate
             "note": note,
@@ -324,6 +359,9 @@ def _sintesi(dettaglio, voci, scenari, regimi, ctx, scarti, n_membri, attuale, e
             r["cover_realizzata_quota"] = (1.0 - r["quota_cover_non_praticata"]
                                            if n and r["cover_richieste"] else nan)
             r["equivalente_a"] = equivalenze.get(cl, NESSUNO) if n else NESSUNO
+            for c in rt.main_crops(ctx.p):
+                col = f"{PREFISSO_RESA_T_HA}{c}"
+                r[col] = float(np.nanmedian(g[col].to_numpy(float))) if n and c in rot_cl.crops else nan
             righe.append(r)
     return pd.DataFrame(righe)
 
@@ -367,7 +405,7 @@ def load_ensemble(lat=None, lon=None):
     Solleva ``CacheMiss`` se manca un file."""
     lat = _config.PILOT_LAT if lat is None else lat
     lon = _config.PILOT_LON if lon is None else lon
-    d = _cache.processed_dir(lat, lon)
+    d = _cache.processed_dir(lat, lon, create=False)
     for f in (FILE_DETTAGLIO, FILE_SINTESI, FILE_META):
         if not (d / f).exists():
             raise _cache.CacheMiss(f"ensemble non in cache: {d / f}")
@@ -408,5 +446,5 @@ def main(argv=None) -> int:
 if __name__ == "__main__":      # pragma: no cover
     raise SystemExit(main())
 
-__all__ = ["run_ensemble", "save_ensemble", "load_ensemble", "parse_rotazione", "main",
+__all__ = ["run_ensemble", "classe_rotazione_attuale", "save_ensemble", "load_ensemble", "parse_rotazione", "main",
            "FATTORI", "NON_VALUTABILE", "NESSUNO"]

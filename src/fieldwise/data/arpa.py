@@ -613,7 +613,7 @@ def _fetch_variable(lat: float, lon: float, start_year: int, end_year: int, forc
 
 def _load_variable(lat: float, lon: float, spec: _Spec, sensor_id: str | None = None) -> pd.DataFrame:
     sensor_id = None if sensor_id is None else str(sensor_id)
-    csv = cache.processed_dir(lat, lon) / _out_name(spec, sensor_id)
+    csv = cache.processed_dir(lat, lon, create=False) / _out_name(spec, sensor_id)
     if not csv.exists():
         raise cache.CacheMiss(
             f"dato non in cache: {csv} - per scaricarlo: "

@@ -911,7 +911,7 @@ def run_checks(lat: float, lon: float) -> Report:
         checks += check_soil(sg)
 
     # ISTAT
-    ist, why_is = _load("istat_yields.csv", lambda: _read_csv(cache.processed_dir(key="cremona") / "istat_yields.csv"))
+    ist, why_is = _load("istat_yields.csv", lambda: _read_csv(cache.processed_dir(key="cremona", create=False) / "istat_yields.csv"))
     if ist is None:
         checks += _unavailable(D_ISTAT, N_ISTAT, why_is)
     else:

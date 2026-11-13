@@ -15,8 +15,7 @@ Metodo (dichiarato anche nel rapporto):
   limitata all'``intervallo`` della voce, a 1 per le frazioni, e alle soglie che devono restare
   ordinate (``CATENE``). Voci a valore nullo e interruttori 0/1 non si perturbano (dichiarato).
 * Incertezza strutturale (``STRUTTURALI``), una alla volta. La funzione del caldo alternativa
-  non e' un'opzione di ``rotation.simulate``: si seleziona sostituendo, solo nel processo di
-  calcolo, ``yield_model.heat_factor`` con la stessa funzione e ``metodo`` diverso.
+  si seleziona con l'argomento ``metodo_caldo`` di ``ensemble.run_ensemble`` e ``rotation.simulate``.
 * Monte Carlo: ipercubo latino (``scipy.stats.qmc``) su tutte le voci perturbabili, uniformi tra
   i limiti dell'OAT, seme fisso; influenza con correlazioni di rango parziali (PRCC).
 * Pesi dell'utente (non incertezza del modello): 5 casi estremi + 200 pesi casuali di Dirichlet.
@@ -30,7 +29,6 @@ from __future__ import annotations
 import argparse
 import concurrent.futures as cf
 import datetime as dt
-import functools
 import json
 import math
 import os
@@ -47,7 +45,6 @@ from . import params as _params
 from . import ranking as _rk
 from . import rotation as _rt
 from . import weather as _w
-from . import yield_model as _ym
 from .data import cache as _cache
 
 SCENARIO_PRINCIPALE = "tetto_irriguo"
@@ -199,7 +196,6 @@ def valuta(caso: dict) -> dict:
     """Un calcolo dell'ensemble ridotto. ``caso``: id, modifiche, opzioni, n_avviamento,
     metodo_caldo, pioggia, f_rotazione_1. Gli errori si registrano, non interrompono."""
     t0 = time.time()
-    orig = _ym.heat_factor
     try:
         p = _W["p"]
         mod = dict(caso.get("modifiche") or {})
@@ -207,16 +203,14 @@ def valuta(caso: dict) -> dict:
             mod.update({k: 1.0 for k, _ in _params.iter_entries(p) if k.startswith("rotation_rules.f_rotazione.")})
         if mod:
             p = _params.override(p, mod)
-        if caso.get("metodo_caldo"):
-            _ym.heat_factor = functools.partial(orig, metodo=caso["metodo_caldo"])
         ctx = _rt.build_context(p, forcing=_forcing(caso.get("pioggia", "default")))
         _, sin = _ens.run_ensemble(ctx=ctx, rotazioni=_W["rot"], rotazione_attuale=ATTUALE,
-                                   n_avviamento=caso.get("n_avviamento", 1), **(caso.get("opzioni") or {}))
+                                   n_avviamento=caso.get("n_avviamento", 1),
+                                   metodo_caldo=caso.get("metodo_caldo") or "deryng",
+                                   **(caso.get("opzioni") or {}))
         res = {"id": caso["id"], "esito": "ok", "scenari": riassumi(sin)}
     except Exception as ex:                                   # noqa: BLE001 (si registra e si prosegue)
         res = {"id": caso["id"], "esito": "errore", "errore": f"{type(ex).__name__}: {ex}"[:300]}
-    finally:
-        _ym.heat_factor = orig
     res["tempo_s"] = time.time() - t0
     return res
 
@@ -502,17 +496,19 @@ def _g(x):
 
 def conclusione(R: dict) -> str:
     oat = R["oat"]
-    cambia = oat[oat["prima_cambia"] | oat["top3_cambia"]]
-    n_cont = int(oat["conta"].sum())
-    nomi = ", ".join(cambia["etichetta"].head(6)) or "nessuno"
-    st = [s["descrizione"] for s in R["strutturali"]
-          if s[SCENARIO_PRINCIPALE] and s[SCENARIO_PRINCIPALE]["prima_cambia"]]
+    prima = oat[oat["prima_cambia"]]
+    n_no = int((~oat["conta"]).sum())
+    n_inatt = int(oat["inattiva"].sum())
+    st = [s["descrizione"].split(" (")[0].lower() for s in R["strutturali"] if s["esito"] == "ok"
+          and any(s[sc]["prima_cambia"] for sc in _rt.SCENARI)]
     m = R["mc"][SCENARIO_PRINCIPALE]
-    return (f"Nello scenario tetto irriguo la prima rotazione cambia o le prime tre si rimescolano solo con "
-            f"{len(cambia)} parametri presi uno alla volta ({nomi}) e con le scelte strutturali "
-            f"{'; '.join(st) or 'nessuna'}; sotto incertezza congiunta la prima resta prima nel "
-            f"{m['prima_resta']:.0%} dei campioni (tau mediano {m['tau_mediana']:.2f}), mentre "
-            f"{len(oat) - n_cont} dei {len(oat)} parametri perturbati non cambiano la decisione.")
+    return (f"Cambiano la prima rotazione nel tetto irriguo {len(prima)} dei {len(oat)} parametri presi uno "
+            f"alla volta (soprattutto {', '.join(f'`{p}`' for p in prima['percorso'].head(5))}) e, tra le scelte "
+            f"strutturali, {'; '.join(st) or 'nessuna'}; non cambiano la decisione {n_no} parametri "
+            f"({n_inatt} senza alcun effetto); con l'incertezza congiunta la prima resta prima solo nel "
+            f"{m['prima_resta']:.0%} dei campioni (tau mediano {m['tau_mediana']:.2f}) ma il mais continuo resta "
+            f"nell'ultimo quarto nel {m['attuale_ultimo_quarto']:.0%}: e' robusto il giudizio sulla rotazione "
+            f"attuale, non la scelta fine tra le prime alternative.")
 
 
 def scrivi(R: dict, lat=None, lon=None) -> dict:
@@ -542,8 +538,7 @@ def scrivi(R: dict, lat=None, lon=None) -> dict:
          f"- **Versione del codice**: {R['versione']}.",
          f"- **Sottoinsieme fisso**: tutti i membri ({len(R['rotazioni'])} rotazioni) delle {R['n_classi_sottoinsieme']} classi cicliche non "
          "equivalenti dell'ensemble di base, tutte le annate, i tre scenari d'acqua, rotazione attuale \"mais\". "
-         "Le equivalenze sono fissate sul caso di base. (Un solo rappresentante per classe dava tau 0,84 nel "
-         "tetto irriguo e cambiava la prima rotazione: scartato.)",
+         "Le equivalenze sono fissate sul caso di base.",
          "- **Verifica del sottoinsieme** (classifica di base, pesi uguali, contro l'ensemble completo di 216 rotazioni): "
          + "; ".join(f"{sc.replace('_', ' ')} tau {v['tau']:.3f}, stessa prima {'si' if v['stessa_prima'] else 'no'}, "
                      f"stesse prime tre {'si' if v['stesse_prime3'] else 'no'}" for sc, v in R["verifica"].items())
@@ -557,11 +552,12 @@ def scrivi(R: dict, lat=None, lon=None) -> dict:
          f"{len(R['escluse'])} voci: " + "; ".join(f"`{e['percorso']}` ({e['motivo']})" for e in R["escluse"]) + ".",
          f"- **Soglie 'non conta'**: in nessuno dei tre scenari cambia la prima, l'insieme delle prime tre o le "
          f"alternative; |variazione del punteggio della prima| < {DELTA_NON_CONTA}; tau >= {TAU_NON_CONTA}.",
-         "- **Funzione del caldo alternativa**: `rotation.simulate` non la espone; si sostituisce, solo nel processo "
-         "di calcolo, `yield_model.heat_factor` con la stessa funzione e `metodo` diverso (motore non modificato).",
+         "- **Funzione del caldo alternativa**: si seleziona con l'argomento `metodo_caldo` di `ensemble.run_ensemble` "
+         "e `rotation.simulate` (`yield_model.heat_factor` con `metodo` diverso).",
          f"- **Monte Carlo**: {R['n_mc']} campioni a ipercubo latino (`scipy.stats.qmc.LatinHypercube`, seme {R['seme']}) "
          f"su tutte le {len(oat)} voci, uniformi tra gli stessi limiti dell'OAT; {R['n_mc_ordine_corretto']} campioni "
-         f"corretti per le soglie ordinate; {R['n_mc_falliti']} non eseguibili. Con {len(oat)} parametri e "
+         f"corretti per le soglie ordinate; {R['n_mc_falliti']} non eseguibili"
+         + (" (" + "; ".join(R["errori_mc"])[:600] + ")" if R["errori_mc"] else "") + f". Con {len(oat)} parametri e "
          f"{R['n_mc']} campioni l'influenza si stima con correlazioni di rango parziali (PRCC, gradi di liberta' residui "
          f"{int(R['prcc']['dof'].iloc[0])}): indicativa, non un indice di Sobol.",
          f"- **Tempo di calcolo**: OAT + strutturali {T['oat_e_strutturali_s']:.0f} s ({T['n_calcoli_oat_strutturali']} "
@@ -675,7 +671,7 @@ def scrivi(R: dict, lat=None, lon=None) -> dict:
          "oat": oat[cols].to_dict("records"), "escluse": R["escluse"],
          "strutturali": R["strutturali"],
          "montecarlo": {sc: {k: v for k, v in m.items() if k != "tau_tutti"} for sc, m in R["mc"].items()},
-         "montecarlo_n": R["n_mc"], "montecarlo_falliti": R["n_mc_falliti"], "seme": R["seme"],
+         "montecarlo_n": R["n_mc"], "montecarlo_falliti": R["n_mc_falliti"], "montecarlo_errori": R["errori_mc"], "seme": R["seme"],
          "prcc": R["prcc"].drop(columns="dof").to_dict("records"), "pesi": R["pesi"], "tempi": R["tempi"],
          "non_contano": nc.percorso.tolist(), "inattive": inatt.percorso.tolist()}
     out = _cache.processed_dir(lat, lon) / FILE_JSON

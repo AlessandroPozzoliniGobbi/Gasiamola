@@ -8,7 +8,7 @@ from plotly.subplots import make_subplots
 
 import fw_confronto as confronto
 import fw_dati as dati
-from fw_util import COLORI, ET, bella, num, pct
+from fw_util import AVVISO_FRUMENTO, AVVISO_HUMUS, COLORI, ET, bella, num, pct
 
 
 def _gg(iso: str | None) -> str:
@@ -111,6 +111,11 @@ def mostra(stato: dict, risultato: dict | None):
     c[2].metric("Concime", f"{num(ind['concime_anno'], 0)} kg N/ha/anno")
     c[3].metric("Azoto perso", f"{num(ind['n_lisciviato_anno'], 1)} kg N/ha/anno")
     c[4].metric("Humus", f"{num(ind['humus_variazione_anno'], 2)} t/ha/anno")
+
+    rese = " · ".join(f"{c['coltura']} {num(c['resa'], 1)} t/ha" for c in out["colture"])
+    st.caption(f"Resa per coltura in questa annata: {rese}. Humus: {AVVISO_HUMUS}")
+    if any(c["coltura"] == "frumento" for c in out["colture"]):
+        st.warning(AVVISO_FRUMENTO)
 
     st.subheader("Calendario")
     st.dataframe(_calendario(out), hide_index=True, width="stretch")

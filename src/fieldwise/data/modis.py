@@ -259,7 +259,7 @@ def fetch(lat: float, lon: float, start: str = "2000-01-01", end: str = "2025-12
 
 
 def _load_csv(lat: float, lon: float, name: str) -> pd.DataFrame:
-    path = cache.processed_dir(lat, lon) / name
+    path = cache.processed_dir(lat, lon, create=False) / name
     if not path.exists():
         raise cache.CacheMiss(
             f"dato non in cache: {path} - per scaricarlo: "

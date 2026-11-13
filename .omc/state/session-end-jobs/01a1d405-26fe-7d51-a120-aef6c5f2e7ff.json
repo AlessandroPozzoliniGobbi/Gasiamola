@@ -1,0 +1,358 @@
+{
+  "version": 1,
+  "jobId": "20bdc780-bf67-4acb-80ba-d7c2ff8f06f2",
+  "sessionId": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+  "scopeKey": "652613e6ddca9c0e29580cef734e4734558d0ed459be415ce0b3489e50c1f6b2",
+  "revision": 61,
+  "createdAt": "2026-11-13T08:38:51.874Z",
+  "updatedAt": "2026-11-13T08:39:23.570Z",
+  "producerGraceExpiresAt": "2026-11-13T08:39:21.874Z",
+  "bestEffortDeadlineAt": "2026-11-13T08:40:14.874Z",
+  "producers": {
+    "core": {
+      "state": "sealed",
+      "intentKey": "fda5e1dc10d3f9b5d5a718f14fd06280f79f3b6c30cb2df02bb7ce0541173c04",
+      "payloadDigest": "fda5e1dc10d3f9b5d5a718f14fd06280f79f3b6c30cb2df02bb7ce0541173c04",
+      "sealedAt": "2026-11-13T08:39:22.316Z",
+      "sealedBy": "recovery"
+    },
+    "wiki": {
+      "state": "no-op",
+      "sealedAt": "2026-11-13T08:38:51.894Z",
+      "sealedBy": "wiki-producer"
+    }
+  },
+  "actions": {
+    "foreground-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "7d441dd6f188010b4321b81efa867625fc6c43bd8bf6d9a13e52456127a0673b",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "ended_at": "2026-11-13T08:39:22.100Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-13T08:39:21.949Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "f1982f93-b8a0-44e4-8d68-ca29765e0cea",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:22.302Z"
+    },
+    "wiki-capture": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "a801179734925f607140f72c977bbd569d9deb42bf19fb527e9ccb876a8e1c61",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "completedAt": "2026-11-13T08:38:51.894Z"
+    },
+    "team-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "59978cefaf775e3a31f7f0aea220332ad50903ae64d0d82136dcee8dee5a5326",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "ended_at": "2026-11-13T08:39:22.100Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-13T08:39:22.341Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "773c2228-76ac-479c-b6c3-4d113460021c",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:22.497Z"
+    },
+    "python-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "e059be6dd6db75fe21e41ce9b52065d73aa90b464077b8cb7791d2253d84be32",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "ended_at": "2026-11-13T08:39:22.100Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-13T08:39:22.519Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "e8df9289-cc2e-4784-aa1b-9dda97e37a24",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:22.668Z"
+    },
+    "reply-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "1413e40f72387831ffcd5e75d5290b24958d99dd845c4bb59c7f8d960f6c729e",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-11-13T08:39:22.690Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "55e3c29d-1405-41f6-a958-db5b2f2553ae",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:22.839Z"
+    },
+    "callback": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "352b3091707f824e0887c5982c70018f4c2e2c625ff2c0747bffe798b7e72a7f",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "ended_at": "2026-11-13T08:39:22.100Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-13T08:39:22.862Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "501856e9-8bdf-43eb-9fcd-bca619779d51",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:23.013Z"
+    },
+    "notification": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "14b64179e99d9f4936b78a2e467f13131ca97f9ca0110585827554f8e62bbc8a",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "ended_at": "2026-11-13T08:39:22.100Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-13T08:39:23.037Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "f5875f65-ae3b-4cfa-be18-52d292edc9d9",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:23.190Z"
+    },
+    "openclaw": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "97668a666e10beb149f684c55593d6192b6feddfd6f0051f7366964377a6022e",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "ended_at": "2026-11-13T08:39:22.100Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-13T08:39:23.215Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "bf26d1b2-bfa8-4b33-9fe4-bb85e159cd60",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:23.357Z"
+    },
+    "spawn-next": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "21fa545abb9300f87ed92088ba55a45b18b09035f106b1b9501e49831877ac0b",
+      "payload": {
+        "transcriptPath": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+        "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+        "reason": "other",
+        "input": {
+          "session_id": "01a1d405-26fe-7d51-a120-aef6c5f2e7ff",
+          "transcript_path": "/Users/matteodema77gmail.com/.codex/sessions/2026/11/13/rollout-2026-11-13T09-27-50-01a1d405-26fe-7d51-a120-aef6c5f2e7ff.jsonl",
+          "cwd": "/Users/matteodema77gmail.com/Desktop/Progetti/nasa",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-11-13T08:39:23.380Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "37322afc-d4de-4a5e-ba7b-d71d30e8c556",
+        "phase": "terminal",
+        "deadlineAt": "2026-11-13T08:39:31.876Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-11-13T08:39:23.522Z"
+    }
+  },
+  "owner": null,
+  "phase": "complete",
+  "recoverableFailure": {
+    "reason": "actions-settled",
+    "releasedAt": "2026-11-13T08:39:23.543Z",
+    "ownerNonce": "ceef4f6c-06c1-4688-989d-a5ef1bc18b48"
+  },
+  "completion": {
+    "completedAt": "2026-11-13T08:39:23.543Z",
+    "terminalDigest": "b47113566a0ddd507d07ea768dc1adf965d824e152895a1528b178bcec71a83c",
+    "terminalRevision": 60
+  }
+}

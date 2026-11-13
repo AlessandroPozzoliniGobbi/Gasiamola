@@ -117,7 +117,8 @@ def insieme(sintesi: pd.DataFrame, scenario: str, solo_conformi: bool = False,
     classe indicata) sono escluse, salvo ``includi_equivalenti``: cosi' non ci sono pari merito
     arbitrari."""
     df = _scenario(sintesi, scenario)
-    df = df[df["n_simulazioni"] > 0]
+    if "n_simulazioni" in df.columns:
+        df = df[df["n_simulazioni"] > 0]
     if not includi_equivalenti:
         df = df[_senza_equivalente(df) | _attuale(df)]
     if solo_conformi:
@@ -195,7 +196,9 @@ def score(sintesi: pd.DataFrame, pesi: dict, scenario: str, solo_conformi: bool 
 # Fronte di Pareto
 # =============================================================================
 def pareto_front(sintesi: pd.DataFrame, scenario: str, indicatori=None,
-                 tol: float = TOL_PARETO, includi_equivalenti: bool = False) -> pd.DataFrame:
+                 tol: float = TOL_PARETO, includi_equivalenti: bool = False,
+                 solo_conformi: bool = False, regime: str | None = REGIME_PREDEFINITO,
+                 ammetti_deroga: bool = False) -> pd.DataFrame:
     """Righe dello ``scenario`` con la colonna booleana ``non_dominata``.
 
     Una rotazione A domina B se su tutti gli ``indicatori`` A e' almeno pari a B e su almeno uno e'
@@ -204,17 +207,16 @@ def pareto_front(sintesi: pd.DataFrame, scenario: str, indicatori=None,
     ``TOL_PARETO``): cosi' il rumore numerico non crea dominanze. ``indicatori``: colonne tra
     quelle di ``PRIORITA`` (default: tutte, cioe' sei). Le classi con ``equivalente_a`` valorizzato
     sono escluse salvo ``includi_equivalenti`` (restano pari a un'altra: sarebbero entrambe non
-    dominate)."""
+    dominate). ``solo_conformi``, ``regime`` e ``ammetti_deroga`` selezionano l'insieme come in
+    ``score`` (via ``insieme``; l'attuale resta anche se non conforme)."""
     inds = list(VERSI) if indicatori is None else list(indicatori)
     ignoti = [c for c in inds if c not in VERSI]
     if ignoti:
         raise ValueError(f"indicatori senza verso dichiarato: {ignoti}")
     if not inds:
         raise ValueError("nessun indicatore")
-    df = _scenario(sintesi, scenario)
-    df = df[df["n_simulazioni"] > 0].copy() if "n_simulazioni" in df.columns else df.copy()
-    if not includi_equivalenti:
-        df = df[_senza_equivalente(df) | _attuale(df)].copy()
+    df = insieme(sintesi, scenario, solo_conformi, regime, ammetti_deroga,
+                 includi_equivalenti=includi_equivalenti)
     return _marca_non_dominate(df, inds, tol)
 
 

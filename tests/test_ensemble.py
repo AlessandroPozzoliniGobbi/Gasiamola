@@ -262,3 +262,70 @@ def test_cover_realizzata_ed_equivalenze(ctx):
 def test_equivalente_a_solo_se_la_classe_ridotta_e_simulata(ctx):
     _, sin = en.run_ensemble(ctx, rotazioni=["frumento > frumento > soia+cover"])
     assert (sin["equivalente_a"] == en.NESSUNO).all()      # la classe senza cover non e' nell'insieme
+
+
+# =============================================================================
+# Simulazioni degeneri, funzione del caldo, classe dell'attuale, cache in sola lettura
+# =============================================================================
+def test_simulazione_degenere_non_interrompe_l_ensemble(ctx):
+    from fieldwise import params as fparams
+    p2 = fparams.override(ctx.p, {"heat.colture.mais.finestra_inizio_frazione": 2.0,
+                                  "heat.colture.mais.finestra_fine_frazione": 3.0})
+    c2 = rt.build_context(p2, forcing=ctx.forcing)
+    det, sin = en.run_ensemble(c2, rotazioni=["mais > mais > mais", "soia > soia > soia"],
+                           scenari=("solo_pioggia",))
+    mais = sin[sin["classe"] == "mais > mais > mais"].iloc[0]
+    assert mais["n_simulazioni"] == 0 and mais["n_scartate"] > 0
+    assert mais["motivo_scarto_prevalente"].startswith(rt.ESITO_DEGENERE)
+    assert sin[sin["classe"] == "soia > soia > soia"].iloc[0]["n_simulazioni"] > 0
+    assert sin.attrs["meta"]["n_scartate"] >= mais["n_scartate"]
+
+
+def test_metodo_caldo_argomento_di_run_ensemble(ctx):
+    base = en.run_ensemble(ctx, rotazioni=["mais"], scenari=("solo_pioggia",))[1]
+    esplicito = en.run_ensemble(ctx, rotazioni=["mais"], scenari=("solo_pioggia",), metodo_caldo="deryng")[1]
+    aq = en.run_ensemble(ctx, rotazioni=["mais"], scenari=("solo_pioggia",), metodo_caldo="aquacrop")[1]
+    pd.testing.assert_frame_equal(base, esplicito, check_exact=True)
+    assert base.attrs["meta"]["opzioni_simulate"] == {}
+    assert aq.attrs["meta"]["opzioni_simulate"] == {"metodo_caldo": "aquacrop"}
+    assert aq["f_caldo"].iloc[0] != base["f_caldo"].iloc[0]
+    with pytest.raises(ValueError, match="metodo_caldo"):
+        en.run_ensemble(ctx, rotazioni=["mais"], scenari=("solo_pioggia",), metodo_caldo="inventato")
+
+
+def test_classe_rotazione_attuale_pubblica(ctx):
+    assert en.classe_rotazione_attuale("mais") == "mais > mais > mais"
+    assert en.classe_rotazione_attuale("soia > frumento > mais") == CLASSE_MSF
+    assert en.classe_rotazione_attuale(["mais", "soia+cover", "frumento"]) == \
+        rt.Rotation.from_label("mais > soia+cover > frumento").canonical().label
+    # la stessa classe che run_ensemble marca come attuale
+    sin = en.run_ensemble(ctx, rotazioni=SUBSET, scenari=("solo_pioggia",), rotazione_attuale="mais")[1]
+    assert set(sin.loc[sin["attuale"], "classe"]) == {en.classe_rotazione_attuale("mais", ctx.p)}
+    with pytest.raises(ValueError):
+        en.classe_rotazione_attuale("grano", ctx.p)
+
+
+def test_sintesi_ha_la_resa_in_t_ha_per_coltura(ris):
+    det, sin = ris
+    for c in ("mais", "soia", "frumento"):
+        assert f"resa_t_ha_{c}" in sin.columns and f"resa_t_ha_{c}" in det.columns
+    msf = sin[sin["classe"] == CLASSE_MSF]
+    assert (msf[["resa_t_ha_mais", "resa_t_ha_soia", "resa_t_ha_frumento"]] > 0).all().all()
+    solo_mais = ris[1][ris[1]["classe"] == "mais > mais > soia+cover"].iloc[0]
+    assert solo_mais["resa_t_ha_mais"] > 0 and solo_mais["resa_t_ha_soia"] > 0
+    assert pd.isna(solo_mais["resa_t_ha_frumento"])             # coltura assente: NaN, non zero
+
+
+def test_letture_non_creano_cartelle(tmp_path, monkeypatch):
+    from fieldwise import weather
+    from fieldwise.data import cache, power
+    monkeypatch.setattr(config, "PROCESSED_DIR", tmp_path / "processed")
+    monkeypatch.setattr(config, "RAW_DIR", tmp_path / "raw")
+    assert not cache.processed_dir(7.0, 8.0, create=False).exists()
+    assert not cache.raw_dir("power", 7.0, 8.0, create=False).exists()
+    for leggi in (lambda: en.load_ensemble(7.0, 8.0), lambda: weather.load_forcing(7.0, 8.0),
+                  lambda: power.load(7.0, 8.0), lambda: power.load_site(7.0, 8.0)):
+        with pytest.raises(cache.CacheMiss):
+            leggi()
+    assert not (tmp_path / "processed").exists() and not (tmp_path / "raw").exists()
+    assert cache.processed_dir(7.0, 8.0).is_dir()                # default: crea

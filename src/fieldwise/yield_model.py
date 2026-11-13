@@ -46,6 +46,10 @@ def water_factor(eta_sum: float, etc_sum: float, ky: float) -> float:
 
 
 # ----------------------------------------------------------------- f_caldo
+class FinestraVuota(ValueError):
+    """La finestra sensibile al caldo non contiene giorni: caso degenere dei parametri."""
+
+
 @dataclass
 class HeatResult:
     """Esito di ``heat_factor``. Indici = righe del meteo."""
@@ -138,7 +142,7 @@ def heat_factor(p: dict, crop: str, forcing, cal: _ph.CycleCalendar,
     m = _window_mask(cal, fin, f0, f1)
     idx = np.flatnonzero(m)
     if idx.size == 0:
-        raise ValueError("finestra sensibile vuota")
+        raise FinestraVuota("finestra sensibile vuota")
     f = _clip01(float(fd[m].mean()))
     ws, we = cal.sow + int(idx[0]), cal.sow + int(idx[-1])
     return HeatResult(f, metodo, fin, ws, we, int(m.sum()), int((t_used[m] >= tcr).sum()),

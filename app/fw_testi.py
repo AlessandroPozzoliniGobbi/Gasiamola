@@ -12,7 +12,7 @@ import streamlit as st
 
 import fw_dati as dati
 from fieldwise import config, ranking
-from fw_util import ET, bella, num, pct
+from fw_util import AVVISO_FRUMENTO, ET, bella, num, pct
 
 AVVISO = ("Questo è uno strumento di confronto, non una prescrizione agronomica. "
           "Le scelte sul tuo campo vanno discusse con un tecnico.")
@@ -186,9 +186,8 @@ def validazione():
     st.error(
         f"**Frumento.** La correlazione con le rese reali è opposta a quella attesa: {_r(fru)}. "
         "Il modello vede solo la siccità di primavera e penalizza gli anni secchi. "
-        "In pianura padana le perdite del frumento arrivano invece dagli anni molto piovosi "
-        "(malattie, piante coricate, ristagni), che il modello non rappresenta. "
-        "**Non leggere la resa del frumento come un indicatore di rischio.**")
+        "In pianura padana le perdite del frumento arrivano invece dagli anni molto piovosi. "
+        f"**{AVVISO_FRUMENTO}**")
 
     st.subheader("Cosa non è stato validato")
     nv = list(v.get("non_validato", [])) + [
@@ -198,18 +197,7 @@ def validazione():
     st.markdown("Mancano misure con cui confrontare:\n" + "\n".join(f"- {x}" for x in nv)
                 + "\n\nI numeri su azoto, humus e perdite di azoto sono quindi **ordini di grandezza**, non misure.")
 
-    sens = dati.sensibilita()
-    if sens:
-        st.subheader("Quanto cambiano i risultati se cambiano le ipotesi")
-        concl = [(k, x) for k, x in sens.items() if "conclusion" in k.lower() and isinstance(x, (str, list))]
-        if concl:
-            for _, x in concl:
-                for riga in ([x] if isinstance(x, str) else x):
-                    st.markdown(f"- {riga}")
-        else:
-            st.markdown("Il riepilogo dell'analisi di sensibilità è in cache; qui sotto i dati.")
-        with st.expander("Dati dell'analisi di sensibilità"):
-            st.json(sens)
+    _sensibilita(dati.sensibilita(), rapp)
 
     st.subheader("Le figure")
     fig = v.get("figure", {})
@@ -233,6 +221,52 @@ def validazione():
         st.caption("Correlazione tra lo scarto della resa reale dal suo andamento nel tempo e la resa simulata. "
                    "Vicino a +1: vanno nella stessa direzione. Vicino a −1: direzioni opposte. Vicino a 0: nessun legame.")
     st.caption(AVVISO)
+
+
+def _sensibilita(sens: dict | None, rapp: str):
+    """Sezione sulla sensibilita': mostra la conclusione se il riepilogo esiste (altrimenti niente)."""
+    if not sens:
+        return
+    st.subheader("Quanto cambiano i risultati se cambiano le ipotesi")
+    mc = sens.get("montecarlo", {})
+    n_par = len(sens.get("oat", []))
+    st.markdown(
+        "Il modello ha molti numeri incerti (coefficienti delle colture, soglie, tetti di irrigazione). "
+        f"Abbiamo cambiato {n_par} di questi numeri, prima uno alla volta e poi tutti insieme "
+        f"({sens.get('montecarlo_n', 'n.d.')} combinazioni a caso), e guardato se la classifica delle rotazioni cambia. "
+        "Nessun numero è stato ritoccato per far tornare i conti.")
+    if rapp in mc:
+        m = mc[rapp]
+        fragile = m["prima_resta"] < 0.5
+        st.info(
+            f"**Conclusione, scenario «{ET['scenari'][rapp]}».** Con tutti i numeri incerti cambiati insieme, "
+            f"la rotazione che oggi risulta prima resta prima nel {pct(m['prima_resta'])} dei casi, "
+            f"e le prime tre restano le stesse nel {pct(m['top3_restano'])}. "
+            f"La tua rotazione attuale (base: {bella(sens['base'][rapp]['attuale'])}) resta nell'ultimo quarto della classifica "
+            f"nel {pct(m['attuale_ultimo_quarto'])} dei casi. "
+            + ("Quindi **l'ordine preciso delle alternative non è affidabile**, mentre è più solido il messaggio "
+               "su dove sta la rotazione attuale." if fragile and m["attuale_ultimo_quarto"] > 0.5 else
+               "Leggi la classifica con cautela."))
+    righe = []
+    for sc, m in mc.items():
+        righe.append({"Scenario d'acqua": ET["scenari"].get(sc, sc), "Prima resta prima": pct(m["prima_resta"]),
+                      "Prime tre restano": pct(m["top3_restano"]),
+                      "Attuale nell'ultimo quarto": pct(m["attuale_ultimo_quarto"]),
+                      "Somiglianza dell'ordine (tau mediano)": num(m["tau_mediana"], 2)})
+    if righe:
+        st.dataframe(pd.DataFrame(righe), hide_index=True, width="stretch")
+    nc = len(sens.get("non_contano", []))
+    if n_par and nc:
+        st.markdown(f"Dei {n_par} numeri provati, {nc} non cambiano mai la decisione: sono i parametri su cui conviene "
+                    "non spendere tempo. Gli altri sono elencati nel rapporto di sensibilità.")
+    st.caption("Il tau è 1 se l'ordine delle rotazioni è identico a quello di partenza; più è basso, più l'ordine cambia.")
+    with st.expander("Conclusione tecnica (testo del riepilogo)"):
+        st.write(sens.get("conclusione", ""))
+    did = {"sensibilita_tornado_punteggio": "I parametri che spostano di più il punteggio della prima rotazione.",
+           "sensibilita_montecarlo_tau": "Quanto cambia l'ordine delle rotazioni nelle combinazioni a caso."}
+    for f in sorted(Path(config.FIGURE_DIR).glob("sensibilita_*")):
+        if f.stem in did:
+            st.image(str(f), caption=did[f.stem], width="stretch")
 
 
 # ---------------------------------------------------------------------------------------------

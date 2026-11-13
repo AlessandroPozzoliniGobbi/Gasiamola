@@ -158,7 +158,7 @@ def fetch(lat: float, lon: float, start: str = "20000101", end: str = "20251231"
 
 
 def _latest_raw(lat: float, lon: float) -> Path:
-    d = cache.raw_dir(SOURCE, lat, lon)
+    d = cache.raw_dir(SOURCE, lat, lon, create=False)
     cands = sorted(p for p in d.glob("power_daily_*.json") if cache.is_cached(p))
     if not cands:
         raise cache.CacheMiss(
@@ -169,7 +169,7 @@ def _latest_raw(lat: float, lon: float) -> Path:
 
 def load(lat: float, lon: float) -> pd.DataFrame:
     """DataFrame giornaliero dalla cache (mai dalla rete); CacheMiss se manca."""
-    csv = cache.processed_dir(lat, lon) / "power_daily.csv"
+    csv = cache.processed_dir(lat, lon, create=False) / "power_daily.csv"
     if not csv.exists():
         _latest_raw(lat, lon)  # CacheMiss se manca anche il grezzo
         raise cache.CacheMiss(f"elaborato mancante: {csv} - rieseguire fetch()")
@@ -177,7 +177,7 @@ def load(lat: float, lon: float) -> pd.DataFrame:
 
 
 def load_site(lat: float, lon: float) -> dict[str, Any]:
-    f = cache.processed_dir(lat, lon) / "power_site.json"
+    f = cache.processed_dir(lat, lon, create=False) / "power_site.json"
     if not f.exists():
         raise cache.CacheMiss(f"dato non in cache: {f}")
     return json.loads(f.read_text(encoding="utf-8"))

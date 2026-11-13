@@ -7,8 +7,9 @@ import streamlit as st
 
 import fw_dati as dati
 from fieldwise import ranking
-from fw_util import (COLORI, ET, RESA, bella, differenza, nome_regime, num, pct, stato_conformita,
-                     valore)
+from fw_util import (AVVISO_FRUMENTO, AVVISO_HUMUS, AVVISO_PUNTEGGIO, COLORI, ET, PREFISSO_RESA_T_HA, RESA,
+                     bella, differenza, nome_regime, num, pct, rese_t_ha, rese_t_ha_testo, segno,
+                     stato_conformita, valore)
 
 RUOLI = {
     "attuale": "Rotazione attuale",
@@ -53,6 +54,11 @@ def _scheda(v: dict, stato: dict, n_conf: int):
         if v["non_dominata"]:
             riga.append("nessun'altra rotazione la batte su tutti gli indicatori")
         st.caption(" · ".join(riga))
+        rese = rese_t_ha_testo(val)
+        if rese:
+            st.caption(f"Resa mediana: {pct(val['resa_rel_mediana'])} del potenziale ({rese}).")
+        if "frumento" in v["classe"]:
+            st.warning(AVVISO_FRUMENTO)
         if v["evidenze"]:
             st.markdown("**A favore**")
             for f in v["evidenze"]:
@@ -75,6 +81,17 @@ def _tabella(vs: list[dict]) -> pd.DataFrame:
             if att is not None and v["ruolo"] != "attuale":
                 r[f"{nome}: differenza"] = differenza(col, x, att[col])
         righe.append(r)
+        if col == "resa_rel_mediana":      # accanto alla resa relativa, la resa in t/ha per coltura
+            for coltura in dict.fromkeys(c for v in vs for c in rese_t_ha(v["valori"])):
+                r = {"Indicatore": f"Resa mediana del {coltura} (t/ha)"}
+                for i, v in enumerate(vs):
+                    x = v["valori"].get(f"{PREFISSO_RESA_T_HA}{coltura}")
+                    r[_etichetta_voce(v, i)] = "—" if x is None or x != x else num(x, 1)
+                    if att is not None and v["ruolo"] != "attuale":
+                        a = att.get(f"{PREFISSO_RESA_T_HA}{coltura}")
+                        ok = x is not None and x == x and a is not None and a == a
+                        r[f"{_etichetta_voce(v, i)}: differenza"] = segno(x - a, 1) if ok else "—"
+                righe.append(r)
     return pd.DataFrame(righe).set_index("Indicatore")
 
 
@@ -107,8 +124,8 @@ def _compromesso(r: dict, stato: dict, vs: list[dict]):
     if x == y:
         st.info("Scegli due indicatori diversi.")
         return
-    base = ranking.insieme(r["sint"], stato["scenario"], stato["solo_conformi"], stato["regime"])
-    pf = ranking.pareto_front(base, stato["scenario"], indicatori=[x, y])
+    pf = ranking.pareto_front(r["sint"], stato["scenario"], indicatori=[x, y],
+                              solo_conformi=stato["solo_conformi"], regime=stato["regime"])
     classi = {v["classe"]: (_etichetta_voce(v, i), COLORI[i % len(COLORI)]) for i, v in enumerate(vs)}
     fattore = {c: (100 if c in RESA else 1) for c in (x, y)}
     fig = go.Figure()
@@ -191,7 +208,9 @@ def mostra(stato: dict):
 
     st.subheader("Gli indicatori a confronto")
     st.dataframe(_tabella(vs), width="stretch")
-    st.caption("Valori mediani su tutte le annate storiche. La resa è in % del potenziale della coltura.")
+    st.caption("Valori mediani su tutte le annate storiche. La resa è in % del potenziale della coltura; "
+               "sotto, la stessa resa in tonnellate per ettaro per ogni coltura.")
+    st.caption("Humus: " + AVVISO_HUMUS)
 
     st.subheader("Perché una rotazione perde resa")
     st.markdown("La resa è il potenziale della coltura moltiplicato per tre fattori: acqua, caldo e successione "
@@ -212,5 +231,5 @@ def mostra(stato: dict):
                           "Irrigazione (mm)": p["irrigazione_mm"].round(0),
                           "Resa mediana": [pct(x) for x in p["resa_rel_mediana"]]})
         st.dataframe(t, hide_index=True, width="stretch")
-        st.caption("Il punteggio è relativo alle rotazioni confrontate: serve solo a ordinare.")
+        st.caption(AVVISO_PUNTEGGIO)
     return r

@@ -262,8 +262,8 @@ def _raw_dir(lat: float, lon: float) -> Path:
     return cache.raw_dir("smap", lat, lon)
 
 
-def processed_path(lat: float, lon: float) -> Path:
-    return cache.processed_dir(lat, lon) / PROCESSED_NAME
+def processed_path(lat: float, lon: float, create: bool = True) -> Path:
+    return cache.processed_dir(lat, lon, create=create) / PROCESSED_NAME
 
 
 def build_processed(lat: float, lon: float) -> Path:
@@ -325,7 +325,7 @@ def fetch(lat: float, lon: float, start: dt.date | str | None = None,
 
 def load(lat: float, lon: float) -> pd.DataFrame:
     """Legge ``smap_daily.csv`` dalla cache (mai la rete). CacheMiss se manca."""
-    p = processed_path(lat, lon)
+    p = processed_path(lat, lon, create=False)
     if not p.exists():
         raise cache.CacheMiss(f"dato non in cache: {p} - per scaricarlo: "
                               f"python -m fieldwise.data.smap --lat {lat} --lon {lon}")

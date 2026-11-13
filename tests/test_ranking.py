@@ -462,3 +462,17 @@ def test_d9_attuale_senza_simulazioni():
     assert c["attuale"] is None
     assert any("non ha simulazioni riuscite" in n for n in c["note"])
     assert not any("non marcata" in n for n in c["note"])
+
+
+def test_pareto_solo_conformi_coerente_con_score(tre):
+    df = pd.concat([tre, sint(riga("D", resa=0.95, minimo=0.8, irr=10, conc=50, hum=0.1, liv=1,
+                                   conf="non_conforme"),
+                              riga("E", resa=0.5, minimo=0.3, irr=300, conc=300, hum=-0.9, liv=40,
+                                   conf="non_conforme", attuale=True))], ignore_index=True)
+    tutte = rk.pareto_front(df, "solo_pioggia")
+    conf = rk.pareto_front(df, "solo_pioggia", solo_conformi=True)
+    assert set(conf["classe"]) == set(rk.score(df, TUTTI_PESI, "solo_pioggia", solo_conformi=True)["classe"])
+    assert set(conf["classe"]) == {"A", "B", "C", "E"}               # D tolta, l'attuale E resta
+    assert set(tutte["classe"]) == {"A", "B", "C", "D", "E"}
+    assert dict(zip(conf["classe"], conf["non_dominata"]))["A"]       # senza D, A non e' dominata
+    assert not dict(zip(tutte["classe"], tutte["non_dominata"]))["A"]  # D la domina quando c'e'

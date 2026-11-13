@@ -165,8 +165,8 @@ def data_url(province: str = "Cremona") -> str:
     return f"{BASE_URL}data/{AGENCY},{DATAFLOW_ID},{DATAFLOW_VERSION}/A.{_territory(province)}..."
 
 
-def raw_path(province: str = "Cremona") -> Path:
-    return cache.raw_dir(SOURCE, key=province.lower()) / f"data_{_territory(province)}.csv"
+def raw_path(province: str = "Cremona", create: bool = True) -> Path:
+    return cache.raw_dir(SOURCE, key=province.lower(), create=create) / f"data_{_territory(province)}.csv"
 
 
 def fetch(province: str = "Cremona", force: bool = False, *, session=None,
@@ -235,7 +235,7 @@ def parse_sdmx_csv(text: str) -> pd.DataFrame:
 
 def load(province: str = "Cremona") -> pd.DataFrame:
     """Legge SOLO dalla cache (mai rete), scrive istat_yields.csv e restituisce la tabella."""
-    path = cache.require(raw_path(province), hint="python -m fieldwise.data.istat")
+    path = cache.require(raw_path(province, create=False), hint="python -m fieldwise.data.istat")
     df = parse_sdmx_csv(path.read_text(encoding="utf-8"))
     out = cache.processed_dir(key=province.lower()) / "istat_yields.csv"
     df.to_csv(out, index=False)

@@ -64,7 +64,7 @@ RAIN_SOURCES = ("default", "power", "power_arpa", "imerg")
 
 
 def _point_dir(lat: float, lon: float):
-    return cache.processed_dir(lat, lon)
+    return cache.processed_dir(lat, lon, create=False)   # solo letture
 
 
 def _read_csv(path, hint: str) -> pd.DataFrame:

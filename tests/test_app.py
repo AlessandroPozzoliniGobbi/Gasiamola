@@ -170,3 +170,36 @@ def test_capire_i_dati_ha_gli_esempi_numerici(at):
     for parola in ("ET0", "SMAP", "NDVI", "pluviometro", "escluse"):
         assert parola in t, parola
     assert len(at.info) >= 4 and all(re.search(r"\d", i.value) for i in at.info[:4])
+
+
+def test_validazione_mostra_la_sensibilita_se_esiste(at):
+    from fieldwise.data import cache
+    esiste = (config.PROCESSED_DIR / cache.point_key(config.PILOT_LAT, config.PILOT_LON)
+              / "sensitivity_summary.json").exists()
+    vai(at, "Validazione")
+    assert not at.exception, [e.value for e in at.exception]
+    t = contenuto(at) + " ".join(i.value for i in at.info)
+    assert ("Quanto cambiano i risultati" in t) == esiste
+    if esiste:
+        assert "resta prima nel" in " ".join(i.value for i in at.info)
+
+
+def test_confronto_mostra_t_ha_punteggio_e_avvertenze(at):
+    t = contenuto(at) + " ".join(str(d.value) for d in at.dataframe if hasattr(d, "value"))
+    assert "t/ha" in t                                          # resa per coltura accanto alla resa relativa
+    assert "relativo alle rotazioni confrontate" in t and "serve solo a ordinarle" in t
+    assert "effluenti zootecnici" in t                          # avvertenza vicino all'humus
+    frumento = [w for w in at.warning if "perdite degli anni umidi" in str(w.value)]
+    if "frumento" in t.lower():
+        assert frumento                                         # un'alternativa col frumento: avvertenza
+    vai(at, "Dettaglio di una annata")
+    assert not at.exception, [e.value for e in at.exception]
+    assert "effluenti zootecnici" in contenuto(at)
+
+
+def test_avvertenza_frumento_solo_con_frumento():
+    import sys
+    sys.path.insert(0, str(APP_DIR))
+    from fw_util import AVVISO_FRUMENTO, rese_t_ha_testo
+    assert "ottimistica" in AVVISO_FRUMENTO and "anni umidi" in AVVISO_FRUMENTO
+    assert rese_t_ha_testo({"resa_t_ha_mais": 14.44, "resa_t_ha_soia": float("nan")}) == "mais 14,4 t/ha"

@@ -86,10 +86,7 @@ def classe_attuale(etichetta: str) -> str:
 
     Una ripetizione di una classe triennale ('mais') vale come la classe ('mais > mais > mais'), come in
     ``run_ensemble``. Serve solo a sapere se la sintesi in cache e' gia' marcata su questa rotazione."""
-    r = _ens.parse_rotazione(etichetta)
-    if r.n < 3 and 3 % r.n == 0:
-        r = rt.Rotation(r.crops * (3 // r.n), r.cover * (3 // r.n))
-    return r.canonical().label
+    return _ens.classe_rotazione_attuale(etichetta)
 
 
 @st.cache_data(show_spinner="Calcolo il confronto per la tua rotazione (circa 7 secondi)...")
