@@ -109,18 +109,60 @@ def test_rotazione_attuale_tra_le_enumerate(ris):
 
 
 def test_rotazione_attuale_non_enumerata(ris_mais, ris):
+    """'mais' e' la ripetizione di 'mais > mais > mais': qui non e' nel sottoinsieme, quindi si aggiunge
+    quella classe triennale (non una classe di lunghezza 1)."""
     det, sin = ris_mais
-    assert sin["classe"].nunique() == 5          # 4 del sottoinsieme + "mais"
+    assert sin["classe"].nunique() == 5          # 4 del sottoinsieme + mais > mais > mais
     att = sin[sin["attuale"]]
-    assert att["classe"].unique().tolist() == ["mais"] and len(att) == 3
-    assert not sin.loc[sin["classe"] != "mais", "attuale"].any()
-    assert (det.loc[det["classe"] == "mais", "attuale"]).all()
-    # mais continuo = mais > mais > mais per la conformita' (non e' valutabile come lunghezza 1)
+    assert att["classe"].unique().tolist() == ["mais > mais > mais"] and len(att) == 3
+    assert not sin.loc[sin["classe"] != "mais > mais > mais", "attuale"].any()
+    assert (det.loc[det["classe"] == "mais > mais > mais", "attuale"]).all()
     assert (att["conformita"] == "non_conforme").all()
+    assert sin.attrs["meta"]["rotazione_attuale"] == "mais > mais > mais"
+    assert any("ripetizione" in n for n in sin.attrs["meta"]["note"])
     # il resto della sintesi non cambia aggiungendo l'attuale
     a = ris[1].drop(columns="attuale").reset_index(drop=True)
-    b = sin[sin["classe"] != "mais"].drop(columns="attuale").reset_index(drop=True)
+    b = sin[sin["classe"] != "mais > mais > mais"].drop(columns="attuale").reset_index(drop=True)
     pd.testing.assert_frame_equal(a, b)
+
+
+def test_d5_ripetizione_marcata_sulla_classe_gia_simulata(ctx):
+    rot = ["mais > mais > mais", "mais > soia > frumento"]
+    det, sin = en.run_ensemble(ctx, rotazioni=rot, rotazione_attuale="mais")
+    assert sin["classe"].nunique() == 2                         # nessuna classe e simulazione in piu'
+    assert sin.loc[sin["attuale"], "classe"].unique().tolist() == ["mais > mais > mais"]
+    base, _ = en.run_ensemble(ctx, rotazioni=rot)
+    assert len(det) == len(base)
+    # con cover: "mais+cover" = mais+cover > mais+cover > mais+cover
+    _, sin2 = en.run_ensemble(ctx, rotazioni=["mais+cover > mais+cover > mais+cover"], rotazione_attuale="mais+cover")
+    assert sin2["attuale"].all()
+
+
+def test_d5_lunghezza_due_resta_simulazione_in_piu(ctx):
+    det, sin = en.run_ensemble(ctx, rotazioni=[MSF], rotazione_attuale=["mais", "soia"], scenari=["tetto_irriguo"])
+    att = sin[sin["attuale"]]
+    assert att["classe"].tolist() == ["mais > soia"] and len(sin) == 2
+    assert att["conformita"].iloc[0] == en.NON_VALUTABILE
+    assert any("2 colture" in n and "annate valutate diverse" in n for n in sin.attrs["meta"]["note"])
+
+
+def test_d4_coltura_sconosciuta_o_vuota(ctx):
+    for att in ("pomodoro", "", "mais > pomodoro > soia", ["mais", ""]):
+        with pytest.raises(ValueError, match="ammesse.*frumento|ammesse.*mais"):
+            en.run_ensemble(ctx, rotazioni=[MSF], rotazione_attuale=att)
+    with pytest.raises(ValueError, match="coltura sconosciuta"):
+        en.run_ensemble(ctx, rotazioni=["mais > riso > soia"])
+
+
+def test_d6_meta_distingue_annate_tentate_e_con_risultati(ctx, ris):
+    det, sin = ris
+    m = sin.attrs["meta"]
+    assert m["annate_partenza"] == [int(ctx.year[0]), int(ctx.year[ctx.last_idx])]
+    ris_ = m["annate_partenza_con_risultati"]
+    assert ris_ == [int(det["anno_partenza"].min()), int(det["anno_partenza"].max())]
+    assert m["annate_partenza"][0] <= ris_[0] and ris_[1] < m["annate_partenza"][1]   # le ultime non bastano
+    assert m["anni_valutati"] == [int(det["anno_valutato"].min()), int(det["anno_valutato"].max())]
+    assert "resa_rel_p10" in m["colonne_note"] and "per classe" in m["colonne_note"]["resa_rel_p10"]
 
 
 def test_attuale_come_sequenza(ctx):
@@ -177,13 +219,16 @@ def test_load_senza_cache(tmp_path, monkeypatch):
 @pytest.mark.slow
 def test_ensemble_completo(ctx):
     t0 = time.perf_counter()
-    det, sin = en.run_ensemble(ctx)
+    det, sin = en.run_ensemble(ctx, rotazione_attuale="mais")
     dt = time.perf_counter() - t0
     assert dt < 60, f"ensemble completo in {dt:.1f} s"
-    assert sin["classe"].nunique() == 76
+    assert sin["classe"].nunique() == 76          # "mais" e' ricondotta a mais > mais > mais
+    assert sin.loc[sin["attuale"], "classe"].unique().tolist() == ["mais > mais > mais"]
     assert len(sin) == 76 * 3
     assert len(det) == sin["n_simulazioni"].sum() > 0
     assert sin["n_membri"].sum() == 216 * 3
+    m = sin.attrs["meta"]
+    assert m["annate_partenza_con_risultati"][1] < m["annate_partenza"][1]
 
 
 def test_cover_realizzata_ed_equivalenze(ctx):
@@ -205,6 +250,7 @@ def test_cover_realizzata_ed_equivalenze(ctx):
     for cl, r in s.iterrows():
         if r["equivalente_a"] != en.NESSUNO:
             assert r["cover_richieste"] > 0 and r["equivalente_a"] in s.index
+            # resa_rel_p10 e' per classe (dipende dal numero di membri): vedi meta['colonne_note']
             for col in ("resa_rel_mediana", "irrigazione_mm", "concime_kg_n", "humus_t_ha", "n_lisciviato_kg_n"):
                 assert r[col] == pytest.approx(s.loc[r["equivalente_a"], col])
     eq = s.loc["frumento > frumento > soia+cover", "equivalente_a"]

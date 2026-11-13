@@ -13,7 +13,8 @@ Uscite di `run_ensemble`:
   sono contate (``n_scartate``, ``motivo_scarto_prevalente``).
 
 Colonne della sintesi (le usa `ranking.py`):
-``resa_rel_mediana``, ``resa_rel_min`` (annata peggiore), ``resa_rel_p10``,
+``resa_rel_mediana``, ``resa_rel_min`` (resa media della rotazione nell'annata peggiore), ``resa_rel_p10``
+(percentile calcolato PER CLASSE su tutte le simulazioni dei suoi membri),
 ``irrigazione_mm``, ``concime_kg_n``, ``n_lisciviato_kg_n``, ``humus_t_ha`` (variazione annua),
 ``giorni_caldo``, ``ruscellamento_mm``, ``percolazione_mm``, ``deficit_n_kg_n``,
 ``f_acqua``, ``f_caldo``, ``f_rotazione`` (medie), ``fattore_limitante``,
@@ -104,6 +105,16 @@ def _voce(p: dict, rot: rt.Rotation) -> dict:
             "conformita": _conformita(p, rot)}
 
 
+def _verifica_colture(p: dict, rot: rt.Rotation) -> rt.Rotation:
+    """Errore chiaro se una coltura non e' tra quelle principali di crops.yaml (o e' vuota)."""
+    ammesse = rt.main_crops(p)
+    for c in rot.crops:
+        if c not in ammesse:
+            raise ValueError(f"coltura sconosciuta o vuota: {c!r} nella rotazione {rot.label!r}; "
+                             f"colture ammesse: {', '.join(ammesse)}")
+    return rot
+
+
 def _membri(rot: rt.Rotation) -> list:
     """Membri distinti della classe ciclica di ``rot`` (le sue permutazioni cicliche)."""
     visti, out = set(), []
@@ -133,9 +144,10 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
     ``p`` = albero di parametri alternativo, ``lat``/``lon`` = punto). ``rotazioni``: elenco di
     ``Rotation``, etichette o voci di ``enumerate_rotations`` (default: le 216 rotazioni triennali).
     ``scenari``: sottoinsieme di ``rotation.SCENARI`` (default: tutti). ``rotazione_attuale``:
-    etichetta, ``Rotation`` o sequenza di lunghezza qualsiasi; se la sua classe ciclica e' tra
-    quelle simulate la si marca, altrimenti i suoi membri si simulano in piu' e la si aggiunge alla
-    sintesi (marcata ``attuale``). ``opzioni_simulate`` (``metodo_et``, ``riparto``, ``in_conflitto``)
+    etichetta, ``Rotation`` o sequenza di lunghezza qualsiasi (coltura sconosciuta = ``ValueError``);
+    una ripetizione di una classe triennale (es. 'mais' = 'mais > mais > mais') e' ricondotta a quella
+    classe; se la classe e' tra quelle simulate la si marca, altrimenti i suoi membri si simulano in
+    piu' (es. lunghezza 2; nota in ``meta['note']``) e la si aggiunge alla sintesi (marcata ``attuale``). ``opzioni_simulate`` (``metodo_et``, ``riparto``, ``in_conflitto``)
     passano a ``rotation.simulate``. I metadati del calcolo stanno in ``.attrs['meta']`` di entrambe
     le tabelle."""
     t0 = time.perf_counter()
@@ -154,15 +166,24 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
                                 for r, v in e["conformita"].items()}}
                 for e in rt.enumerate_rotations(p)]
     else:
-        voci = [_voce(p, parse_rotazione(r["rotation"] if isinstance(r, dict) else r))
+        voci = [_voce(p, _verifica_colture(p, parse_rotazione(r["rotation"] if isinstance(r, dict) else r)))
                 for r in rotazioni]
     classi_simulate = {v["classe"] for v in voci}
-    attuale = None
+    attuale, note = None, []
     if rotazione_attuale is not None:
-        att = parse_rotazione(rotazione_attuale)
+        att = _verifica_colture(p, parse_rotazione(rotazione_attuale))
+        indicata = att.label
+        if att.n < 3 and 3 % att.n == 0:      # ripetizione di una classe triennale: "mais" = mais > mais > mais
+            att = rt.Rotation(att.crops * (3 // att.n), att.cover * (3 // att.n))
+            if att.label != indicata:
+                note.append(f"la rotazione attuale '{indicata}' e' la ripetizione di '{att.canonical().label}': "
+                            f"marcata su quella classe")
         attuale = att.canonical().label
         if attuale not in classi_simulate:
             voci += [_voce(p, m) for m in _membri(att)]
+            if att.n != 3:
+                note.append(f"la rotazione attuale ha {att.n} colture: il confronto con le triennali usa "
+                            f"annate valutate diverse (cicli di durata diversa)")
     regimi = sorted({r for v in voci for r in v["conformita"]})
     n_membri = collections.Counter(v["classe"] for v in voci)
 
@@ -217,7 +238,15 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
             "n_avviamento": n_avviamento, "rotazione_attuale": attuale,
             "opzioni_simulate": {k: str(x) for k, x in opzioni_simulate.items()},
             "hash_parametri": _hash_albero(p), "hash_file_parametri": _hash_file_parametri(),
-            "annate_partenza": [int(anni[0]), int(anni[-1])]}
+            "annate_partenza": [int(anni[0]), int(anni[-1])],          # tentate
+            "note": note,
+            "colonne_note": {"resa_rel_p10": "percentile per classe, calcolato su tutte le simulazioni dei "
+                             "membri della classe: classi equivalenti con un diverso numero di membri "
+                             "possono differire"}}
+    if n_ok:
+        meta["annate_partenza_con_risultati"] = [int(dettaglio["anno_partenza"].min()),
+                                                 int(dettaglio["anno_partenza"].max())]
+        meta["anni_valutati"] = [int(dettaglio["anno_valutato"].min()), int(dettaglio["anno_valutato"].max())]
     dettaglio.attrs["meta"] = meta
     sintesi.attrs["meta"] = meta
     return dettaglio, sintesi
@@ -368,6 +397,10 @@ def main(argv=None) -> int:
           f"sintesi {sin.shape[0]} righe ({m['n_classi']} classi x {len(m['scenari'])} scenari)")
     if ns.attuale:
         print(f"rotazione attuale: {m['rotazione_attuale']}")
+    for n in m.get("note", []):
+        print(f"nota: {n}")
+    print(f"annate di partenza tentate {m['annate_partenza']}, con risultati "
+          f"{m.get('annate_partenza_con_risultati')}, anni valutati {m.get('anni_valutati')}")
     print(f"salvato in {d}")
     return 0
 

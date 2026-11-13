@@ -1,16 +1,16 @@
 # Graph Report - nasa  (2026-11-13)
 
 ## Corpus Check
-- 162 files · ~138,392 words
+- 164 files · ~144,654 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1481 nodes · 2738 edges · 84 communities (61 shown, 23 thin omitted)
+- 1545 nodes · 2881 edges · 91 communities (67 shown, 24 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 9 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `84ad2921`
+- Built from commit: `10b571f5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -46,19 +46,19 @@
 - ensemble
 - test_nitrogen_daily.py
 - SoilWaterParams
-- nitrogen_params
-- crop_daily_curves
+- water.py
+- crop_daily_curves_gdd
 - Revisione indipendente dei parametri FIELDWISE
 - test_rotation.py
 - soil.py
-- water.py
-- rotation.py
+- yield_model.py
+- RotationContext
 - test_water_dual.py
 - test_water.py
 - simulate
 - TestSupporto
 - test_nitrogen.py
-- humus_balance_residual
+- weather.py
 - Verifica scientifica indipendente del motore (fasi 3 e 4)
 - run_daily
 - test_ranking.py
@@ -66,13 +66,13 @@
 - test_yield_model.py
 - test_humus.py
 - Rotation
-- run_water_balance
+- njit
 - _make_smap
 - fake_net
 - _make_imerg_subset
-- numpy
+- pandas
 - compliance
-- RotationContext
+- validation.py
 - _make_imerg_full
 - ranking.py
 - fixture
@@ -81,9 +81,9 @@
 - _granule
 - _frame
 - TestEsempio18Uccle
-- TestComportamento
+- CycleCalendar
 - _anni
-- TestEsempio20Lione
+- TestTabellaPilota
 - _tutte
 - test_semina_del_ciclo_dopo_raccolta_dell_ultima_coltura
 - test_stato_ereditato_conta
@@ -93,12 +93,19 @@
 - test_cover_cambia_il_bilancio_dell_azoto
 - test_300_simulazioni_in_meno_di_5_secondi
 - ensemble.py
-- njit
+- build_context
 - test_ensemble.py
-- config.py
-- _Resp
-- TestCapitolo3
+- WaterResult
+- numpy
+- Validazione del motore (fase 6)
 - test_mais_traspirazione_potenziale_normalizzata_segue_il_kcb
+- TestComportamento
+- TestEsempio20Lione
+- _sintesi
+- humus_balance_residual
+- sowing_index
+- load_ensemble
+- .breakpoints
 
 ## God Nodes (most connected - your core abstractions)
 1. `run()` - 32 edges
@@ -109,8 +116,8 @@
 6. `build_context()` - 22 edges
 7. `_a()` - 20 edges
 8. `_out()` - 20 edges
-9. `simulate()` - 18 edges
-10. `state_with()` - 18 edges
+9. `Rotation` - 19 edges
+10. `simulate()` - 18 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Nonlinear differential equation system solved with 1-day Euler steps` --conceptually_related_to--> `run_segment()`  [INFERRED]
@@ -132,7 +139,7 @@
 - **Engine nested computation: daily water step, end-of-segment N/humus, rotation chain, ensemble** — legacy_fieldwise_proposta_modello_daily_water_step, legacy_fieldwise_proposta_modello_nitrogen_humus_accounting, legacy_fieldwise_proposta_modello_segment, legacy_fieldwise_proposta_modello_exhaustive_enumeration [EXTRACTED 1.00]
 - **FAO water-stress to yield chain (ET0, Kc, TAW/RAW, Ks, Ky)** — legacy_fieldwise_proposta_modello_et0, legacy_fieldwise_proposta_modello_kc_crop_coefficient, legacy_fieldwise_proposta_modello_taw_raw, legacy_fieldwise_proposta_modello_ks_stress, legacy_fieldwise_proposta_modello_ky_yield_response [EXTRACTED 1.00]
 
-## Communities (84 total, 23 thin omitted)
+## Communities (91 total, 24 thin omitted)
 
 ### Community 0 - "run_segment"
 Cohesion: 0.17
@@ -143,8 +150,8 @@ Cohesion: 0.11
 Nodes (15): FakeService, pixel_values(), fixture, Test del client MODIS: nessuna rete (requests.get sostituito), cartelle…, (ndvi grezzo, affidabilita', vi_quality) dei 9 pixel di una data. Data 0: tutti…, _Resp, run_fetch(), test_block_without_meta_is_redownloaded() (+7 more)
 
 ### Community 2 - "et0.py"
-Cohesion: 0.08
-Nodes (58): _a(), actual_vapour_pressure(), atmospheric_pressure(), clear_sky_radiation(), daylight_hours(), et0_from_power(), et0_hargreaves(), et0_penman_monteith() (+50 more)
+Cohesion: 0.11
+Nodes (44): _a(), actual_vapour_pressure(), atmospheric_pressure(), clear_sky_radiation(), daylight_hours(), et0_from_power(), et0_hargreaves(), et0_penman_monteith() (+36 more)
 
 ### Community 3 - "fieldwise_engine.py"
 Cohesion: 0.16
@@ -152,7 +159,7 @@ Nodes (13): datetime, itertools, Crop, fetch_power(), load_weather(), FIELDWISE 
 
 ### Community 5 - "params.py"
 Cohesion: 0.10
-Nodes (39): build_table(), _cell(), get(), _in_sensitivity(), is_entry(), _is_number(), iter_entries(), _join() (+31 more)
+Nodes (40): os, offline(), Percorsi e costanti condivise da tutto il progetto. Nessun parametro agronomico…, True se la rete e' vietata (demo): i client devono usare solo la cache., build_table(), _cell(), get(), _in_sensitivity() (+32 more)
 
 ### Community 6 - "test_data_arpa.py"
 Cohesion: 0.06
@@ -163,8 +170,8 @@ Cohesion: 0.11
 Nodes (16): clock(), FakeClock, FakeResponse, FakeSession, _limiter(), fixture, Test del client ISTAT: nessuna rete, solo cartelle temporanee., _row() (+8 more)
 
 ### Community 8 - "test_data_power.py"
-Cohesion: 0.20
-Nodes (4): fake_net(), fixture, Test del client NASA POWER, senza rete e senza toccare la cache vera., tmp_cache()
+Cohesion: 0.14
+Nodes (5): fake_net(), fixture, Test del client NASA POWER, senza rete e senza toccare la cache vera., _Resp, tmp_cache()
 
 ### Community 9 - "test_data_soilgrids.py"
 Cohesion: 0.09
@@ -191,12 +198,12 @@ Cohesion: 0.05
 Nodes (117): build_auto_block(), _cell(), Check, check_arpa_completeness(), check_et0(), check_imerg(), check_istat(), check_modis() (+109 more)
 
 ### Community 19 - "phenology.py"
-Cohesion: 0.05
-Nodes (55): calendar_from_cum(), crop_daily_curves_gdd(), crop_pheno_params(), cumulative_gdd(), cycle_calendar(), cycle_calendars(), CycleCalendar, daily_gdd() (+47 more)
+Cohesion: 0.17
+Nodes (21): calendar_from_cum(), crop_pheno_params(), cumulative_gdd(), cycle_calendar(), cycle_calendars(), daily_gdd(), event_table(), _gdd_series() (+13 more)
 
 ### Community 20 - "humus.py"
-Cohesion: 0.09
-Nodes (30): cover_humus(), equilibrium(), grain_moisture(), humus_params(), HumusParams, initial_humus(), k2_from_params(), mineralization() (+22 more)
+Cohesion: 0.10
+Nodes (28): cover_humus(), equilibrium(), grain_moisture(), humus_params(), HumusParams, initial_humus(), k2_from_params(), mineralization() (+20 more)
 
 ### Community 21 - "simulate_rotation"
 Cohesion: 0.16
@@ -238,13 +245,13 @@ Nodes (24): build(), npar(), pars(), fixture, parametrize, Test del nucleo giorn
 Cohesion: 0.10
 Nodes (10): initial_water_state(), Parametri idrici del profilo a due strati (da soil.yaml e…, TAW dello strato 1 [mm], FAO-56 eq. 82., TAW dello strato 2 [mm], FAO-56 eq. 82., Limite inferiore dell'acqua nello strato 1 [mm]: i primi Ze m a 0,5 theta_WP…, Acqua a saturazione dell'intero profilo [mm] (serve alla lisciviazione)., Stato idrico del suolo (mai azzerato tra i segmenti). w1, w2 [mm]: acqua negli…, Stato iniziale: theta = wp + frazione (fc - wp) in ciascuno strato (soil.yaml… (+2 more)
 
-### Community 31 - "nitrogen_params"
-Cohesion: 0.12
-Nodes (16): _credit(), initial_n_min(), _mas(), nitrogen_params(), (credito con residui interrati, con residui asportati) da…, recupero_apparente della coltura; la soia usa quello del frumento (_meta passo…, (MAS base, resa di riferimento, fattore correttivo) da nitrogen.vincoli.mas;…, N_min iniziale = n_pronto[classe] x N_totale [g/kg] (nitrogen.suolo.n_pronto,… (+8 more)
+### Community 31 - "water.py"
+Cohesion: 0.10
+Nodes (26): dataclasses, math, FIELDWISE - confronto di rotazioni colturali con bilanci di massa giornalieri., _credit(), initial_n_min(), _mas(), nitrogen_params(), Bilancio di massa dell'azoto del suolo a passo giornaliero (FIELDWISE).… (+18 more)
 
-### Community 32 - "crop_daily_curves"
-Cohesion: 0.13
-Nodes (16): cover_daily_curves(), crop_daily_curves(), kc_climate_correction(), kc_curve(), kc_end_climate_correction(), plant_height(), Frazioni di sviluppo a fine fase iniziale, sviluppo e piena stagione, dalle…, Kc a quattro tratti in funzione della frazione di sviluppo `frac` in [0, 1].… (+8 more)
+### Community 32 - "crop_daily_curves_gdd"
+Cohesion: 0.14
+Nodes (18): crop_daily_curves_gdd(), Serie (kc, zr, p_tab) del ciclo, lunghe ``cal.n_days``, con la frazione di…, cover_daily_curves(), crop_daily_curves(), kc_climate_correction(), kc_curve(), kc_end_climate_correction(), plant_height() (+10 more)
 
 ### Community 33 - "Revisione indipendente dei parametri FIELDWISE"
 Cohesion: 0.33
@@ -254,13 +261,13 @@ Nodes (5): 1. Verifiche sulle fonti (29 voci), 2. Onestà dei campi, 3. Coerenza
 Cohesion: 0.13
 Nodes (17): aquacrop_tau(), engine_layers(), horizons_from_aggregated(), hydrologic_soil_group(), profile_properties(), ndarray, Proprieta' idrauliche del suolo con le funzioni di pedotrasferimento di Saxton…, Classe tessiturale USDA (nomi inglesi) da percentuali di sabbia, argilla, limo.… (+9 more)
 
-### Community 36 - "water.py"
-Cohesion: 0.13
-Nodes (19): dataclasses, math, FIELDWISE - confronto di rotazioni colturali con bilanci di massa giornalieri., Bilancio di massa dell'azoto del suolo a passo giornaliero (FIELDWISE).…, Aggregati idrici del segmento k da `water.aggregate_segments` come scalari., segment_water(), p_adjusted(), Bilancio idrico giornaliero a due strati (FAO-56, Allen et al. 1998, cap. 7 e… (+11 more)
+### Community 36 - "yield_model.py"
+Cohesion: 0.11
+Nodes (26): Resa relativa per la sola risposta all'acqua (Doorenbos e Kassam 1979, FAO-33;…, relative_yield_fao33(), _aquacrop_daily(), _clip01(), crop_yield(), heat_factor(), HeatResult, _irrigated() (+18 more)
 
-### Community 37 - "rotation.py"
-Cohesion: 0.20
-Nodes (13): build_calendar(), _cap_value(), _cover_window(), _next_sowing(), Catena di rotazione (fase 4): calendario, bilancio idrico unico, azoto/humus,…, Tratto omogeneo della simulazione (indici di riga del meteo, estremi compresi)., (semina, modo, conflitto) della coltura ``crop`` dopo la raccolta ``harvest``…, (semina, terminazione, None) se la segale entra nell'intervallo, altrimenti… (+5 more)
+### Community 37 - "RotationContext"
+Cohesion: 0.11
+Nodes (16): build_calendar(), _cover_window(), _next_sowing(), Tutto cio' che non dipende dalla rotazione: meteo come array, parametri letti…, Riga del meteo per year-mmdd (puo' essere fuori serie: <0 o > ultima riga)., Calendario, curve (kc, zr, p) e fattore di caldo del ciclo (crop, sow), in…, Kcb del ciclo (FAO-56 Tab. 17): stessa curva a quattro tratti e stessi punti di…, Tratto omogeneo della simulazione (indici di riga del meteo, estremi compresi). (+8 more)
 
 ### Community 38 - "test_water_dual.py"
 Cohesion: 0.06
@@ -271,16 +278,16 @@ Cohesion: 0.06
 Nodes (29): dry_rotation_inputs(), forcing(), maize_inputs(), _maize_season(), _mk(), _one_day(), pars(), fixture (+21 more)
 
 ### Community 40 - "simulate"
-Cohesion: 0.16
-Nodes (12): n_balance_residual(), Scarto di chiusura [kg N/ha]: (ENTRATE - USCITE) - (dN_min + dN_res + dN_cov +…, _caps(), _daily_inputs(), ndarray, Esito di ``build_calendar``. Con esito diverso da 'ok' i segmenti sono vuoti., Serie giornaliere della simulazione (in cache nel calendario)., Simula la rotazione dal 1 gennaio di ``anno`` nello ``scenario`` d'acqua (uno… (+4 more)
+Cohesion: 0.11
+Nodes (18): n_balance_residual(), Scarto di chiusura [kg N/ha]: (ENTRATE - USCITE) - (dN_min + dN_res + dN_cov +…, _caps(), _daily_inputs(), ndarray, Esito di ``build_calendar``. Con esito diverso da 'ok' i segmenti sono vuoti., Serie giornaliere della simulazione (in cache nel calendario)., Simula la rotazione dal 1 gennaio di ``anno`` nello ``scenario`` d'acqua (uno… (+10 more)
 
 ### Community 42 - "test_nitrogen.py"
 Cohesion: 0.10
 Nodes (48): assert_closure(), assert_non_negative(), initial_states(), npar(), pars(), fixture, parametrize, Test di ``fieldwise.nitrogen`` (bilancio dell'azoto e dell'humus a fine… (+40 more)
 
-### Community 43 - "humus_balance_residual"
-Cohesion: 0.50
-Nodes (4): humus_balance_residual(), Scarto di chiusura [t SO/ha]: (H1 - H0) - (H_res + H_cov - H_min)., humus_balance_residual(), Scarto di chiusura dell'humus [t SO/ha] (vedi `humus.humus_balance_residual`).
+### Community 43 - "weather.py"
+Cohesion: 0.29
+Nodes (14): _apply_rain(), _apply_temp(), available_years(), load_forcing(), _load_power(), _point_dir(), DataFrame, Series (+6 more)
 
 ### Community 44 - "Verifica scientifica indipendente del motore (fasi 3 e 4)"
 Cohesion: 0.15
@@ -291,8 +298,8 @@ Cohesion: 0.10
 Nodes (24): anni_seg = giorni / 365 (nitrogen._meta.convenzioni.tempo)., years(), _bil(), DailyResult, initial_state(), leaching_fraction(), mas_limit(), NitrogenParams (+16 more)
 
 ### Community 46 - "test_ranking.py"
-Cohesion: 0.06
-Nodes (34): pandas, _nd(), fixture, Test di `fieldwise.ranking` con piccole sintesi finte costruite a mano (nessun…, Tre rotazioni: A costosa e produttiva, B economica e meno produttiva, C…, riga(), _scenario_con_attuale(), sint() (+26 more)
+Cohesion: 0.10
+Nodes (30): _con_equivalenti(), _nd(), fixture, Test di `fieldwise.ranking` con piccole sintesi finte costruite a mano (nessun…, Tre rotazioni: A costosa e produttiva, B economica e meno produttiva, C…, riga(), _scenario_con_attuale(), sint() (+22 more)
 
 ### Community 47 - "test_phenology.py"
 Cohesion: 0.12
@@ -307,12 +314,12 @@ Cohesion: 0.12
 Nodes (10): hp(), pars(), fixture, parametrize, Test di ``fieldwise.humus`` (bilancio dell'humus di Henin-Dupuis a fine…, test_chiusura_update_humus(), test_equilibrio_stazionario(), test_residui_crescenti_con_la_resa() (+2 more)
 
 ### Community 50 - "Rotation"
-Cohesion: 0.20
-Nodes (5): Etichetta leggibile, es. 'mais > soia+cover > frumento'., Permutazione ciclica che parte dalla coltura k., Rappresentante della classe di permutazioni cicliche (minimo lessicografico)., Sequenza di colture principali e, per ogni coltura, se nell'intervallo che la…, Rotation
+Cohesion: 0.16
+Nodes (8): _conformita(), Conformita' per regime. Una rotazione che ripete una sequenza piu' corta di cui…, _voce(), Etichetta leggibile, es. 'mais > soia+cover > frumento'., Permutazione ciclica che parte dalla coltura k., Rappresentante della classe di permutazioni cicliche (minimo lessicografico)., Sequenza di colture principali e, per ogni coltura, se nell'intervallo che la…, Rotation
 
-### Community 51 - "run_water_balance"
-Cohesion: 0.13
-Nodes (16): aggregate_segments(), _cap_array(), cover_fraction_eq76(), DailyInputs, ndarray, Bilancio idrico giornaliero su tutta la serie, in un unico ciclo. irr_cap:…, Scarto di chiusura [mm] su tutta la serie: (S_fine - S_inizio) - (P + I - RO -…, Scarto giornaliero [mm] dello stesso bilancio (deve essere ~0 ogni giorno). (+8 more)
+### Community 51 - "njit"
+Cohesion: 0.14
+Nodes (20): _humify_fresh(), _kernel(), Rilascio uniforme di ``amount`` nei giorni start..start+ndays-1., N_umif = H_add n_humus 1000 preso dall'N fresco dei residui; il deficit da…, _schedule(), _cn_of_day(), _de_bounds_dual(), _de_consistent() (+12 more)
 
 ### Community 52 - "_make_smap"
 Cohesion: 0.33
@@ -326,25 +333,25 @@ Nodes (5): fake_net(), fixture, Cache temporanea; online di default; nessuna chi
 Cohesion: 0.50
 Nodes (4): _centers(), _make_imerg_subset(), Sottoinsieme OPeNDAP finto: precipitation(1, 2, 2) in ordine (time, lon, lat)., test_imerg_extract_from_opendap_subset_and_center_check()
 
-### Community 55 - "numpy"
-Cohesion: 0.25
-Nodes (3): numpy, Test di ``fieldwise.et0`` sugli esempi svolti di FAO-56 (Allen et al. 1998). I…, TestEsempio17Bangkok
+### Community 55 - "pandas"
+Cohesion: 0.17
+Nodes (4): pandas, Test di ``fieldwise.et0`` sugli esempi svolti di FAO-56 (Allen et al. 1998). I…, TestCapitolo3, TestEsempio17Bangkok
 
 ### Community 56 - "compliance"
 Cohesion: 0.33
 Nodes (6): compliance(), enumerate_rotations(), main_crops(), Colture principali di crops.yaml: le voci con un ciclo fenologico…, Stato di conformita' ai disciplinari della sequenza ``crops`` (cover ignorate,…, Tutte le rotazioni di ``length`` colture (colture da crops.yaml se ``crops`` e'…
 
-### Community 57 - "RotationContext"
-Cohesion: 0.22
-Nodes (5): Tutto cio' che non dipende dalla rotazione: meteo come array, parametri letti…, Riga del meteo per year-mmdd (puo' essere fuori serie: <0 o > ultima riga)., Calendario, curve (kc, zr, p) e fattore di caldo del ciclo (crop, sow), in…, Kcb del ciclo (FAO-56 Tab. 17): stessa curva a quattro tratti e stessi punti di…, RotationContext
+### Community 57 - "validation.py"
+Cohesion: 0.10
+Nodes (43): _block_boot(), _clean(), contexts(), corr_stats(), crop_years(), detrend(), fig_case(), fig_istat() (+35 more)
 
 ### Community 58 - "_make_imerg_full"
 Cohesion: 0.50
 Nodes (4): _make_imerg_full(), Granulo IMERG finto con la struttura vera: precipitation(time=1, lon=3600,…, test_imerg_extract_fill_value_becomes_nan(), test_imerg_extract_from_full_granule()
 
 ### Community 59 - "ranking.py"
-Cohesion: 0.12
-Nodes (28): _colonna_conformita(), confronta(), _dict_riga(), _differenze(), _evidenze_e_peggioramenti(), insieme(), _marca_non_dominate(), _normalizza() (+20 more)
+Cohesion: 0.13
+Nodes (30): _attuale(), _colonna_conformita(), confronta(), _dict_riga(), _differenze(), _evidenze_e_peggioramenti(), insieme(), _marca_non_dominate() (+22 more)
 
 ### Community 60 - "fixture"
 Cohesion: 0.17
@@ -353,6 +360,10 @@ Nodes (12): anno_centrale(), ctx(), elenco(), elenco_cover(), _mais_in_rotazione
 ### Community 62 - "_fake_row"
 Cohesion: 0.67
 Nodes (3): _fake_row(), test_imerg_old_single_cell_raw_is_rejected_and_redownloaded(), test_imerg_resume_from_partial_year()
+
+### Community 66 - "CycleCalendar"
+Cohesion: 0.22
+Nodes (5): CycleCalendar, Calendario di un ciclo. Indici = righe del meteo (assoluti); -1 se non…, Durata del ciclo in giorni, semina e maturita' comprese (0 se fuori serie)., Raccolta = maturita' fisiologica., Eventi come date (NaT se non raggiunti); ``dates`` = colonna date del meteo.
 
 ### Community 67 - "_anni"
 Cohesion: 0.25
@@ -363,40 +374,60 @@ Cohesion: 0.50
 Nodes (4): test_regressione_durata_mais_soia_frumento(), test_regressione_frumento_continuo_lisciviazione(), test_regressione_mais_continuo_irrigazione_libera(), _tutte()
 
 ### Community 77 - "ensemble.py"
-Cohesion: 0.11
-Nodes (25): _conformita(), _hash_albero(), _hash_file_parametri(), load_ensemble(), main(), _membri(), _motivo_breve(), parse_rotazione() (+17 more)
+Cohesion: 0.15
+Nodes (18): _equivalenze(), _hash_albero(), _hash_file_parametri(), main(), _membri(), _motivo_breve(), parse_rotazione(), Ensemble delle rotazioni: tutte le rotazioni x tutte le annate di partenza x… (+10 more)
 
-### Community 78 - "njit"
-Cohesion: 0.14
-Nodes (20): _humify_fresh(), _kernel(), Rilascio uniforme di ``amount`` nei giorni start..start+ndays-1., N_umif = H_add n_humus 1000 preso dall'N fresco dei residui; il deficit da…, _schedule(), _cn_of_day(), _de_bounds_dual(), _de_consistent() (+12 more)
+### Community 78 - "build_context"
+Cohesion: 0.17
+Nodes (12): DataFrame, Tmedia giornaliera secondo crops.yaml _meta.metodo_gdd: T2M (``tmean``), oppure…, tmean_of(), build_context(), _cap_value(), Prepara il contesto una volta sola (parametri, meteo del punto, GDD cumulati,…, cn_class(), cn_class_index() (+4 more)
 
 ### Community 79 - "test_ensemble.py"
-Cohesion: 0.11
+Cohesion: 0.10
 Nodes (7): ctx(), fixture, slow, Test di `fieldwise.ensemble` sul meteo reale del punto pilota (saltati se la…, ris(), ris_mais(), test_ensemble_completo()
 
-### Community 80 - "config.py"
-Cohesion: 0.40
-Nodes (4): os, offline(), Percorsi e costanti condivise da tutto il progetto. Nessun parametro agronomico…, True se la rete e' vietata (demo): i client devono usare solo la cache.
+### Community 80 - "WaterResult"
+Cohesion: 0.22
+Nodes (10): aggregate_segments(), _cap_array(), ndarray, Scarto di chiusura [mm] su tutta la serie: (S_fine - S_inizio) - (P + I - RO -…, Scarto giornaliero [mm] dello stesso bilancio (deve essere ~0 ogni giorno)., Somme per segmento: days, rain, eta, etc, irr, runoff, dp, tr, ev [mm] e…, Uscite giornaliere [mm o -] e stato iniziale/finale. etc, eta, ks, kr, irr,…, water_balance_daily_residual() (+2 more)
+
+### Community 81 - "numpy"
+Cohesion: 0.25
+Nodes (6): numpy, forcing(), _offline(), fixture, Test di ``fieldwise.weather`` (tabella meteo del motore, letta solo dalla…, Tabella del punto pilota; salta se la cache e' incompleta.
+
+### Community 82 - "Validazione del motore (fase 6)"
+Cohesion: 0.22
+Nodes (8): A. Umidità superficiale SMAP, B. NDVI MODIS contro stress idrico simulato del mais (2001–2022), C. Rese ISTAT provinciali (2006–2022), Cosa NON è stato validato, D. Robustezza (mais, monosuccessione, residui dal trend), Regole seguite, Sintesi, Validazione del motore (fase 6)
+
+### Community 86 - "_sintesi"
+Cohesion: 0.50
+Nodes (4): _peggiore(), Una riga per (classe ciclica, scenario) in ordine di classe e di scenario., Stato di conformita' piu' sfavorevole tra i regimi (``non_valutabile`` se…, _sintesi()
+
+### Community 87 - "humus_balance_residual"
+Cohesion: 0.50
+Nodes (4): humus_balance_residual(), Scarto di chiusura [t SO/ha]: (H1 - H0) - (H_res + H_cov - H_min)., humus_balance_residual(), Scarto di chiusura dell'humus [t SO/ha] (vedi `humus.humus_balance_residual`).
+
+### Community 88 - "sowing_index"
+Cohesion: 0.50
+Nodes (4): Riga del meteo con data ``year-mmdd`` ("MM-GG"); KeyError se manca., Riga della semina tipica (crops.<crop>.semina) nell'anno ``year`` (per il…, sowing_index(), typical_sowing_index()
 
 ## Knowledge Gaps
-- **52 isolated node(s):** `fieldwise`, `graphify`, `graphify`, `Principi non negoziabili`, `Decisioni prese` (+47 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 631 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **59 isolated node(s):** `fieldwise`, `graphify`, `graphify`, `Principi non negoziabili`, `Decisioni prese` (+54 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 654 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `et0_from_power()` connect `et0.py` to `test_qc.py`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **Why does `SoilWaterParams` connect `SoilWaterParams` to `run_water_balance`, `water.py`, `nitrogen_params`?**
+- **Why does `run_segment()` connect `run_segment` to `fieldwise_engine.py`, `simulate_rotation`, `Dynamic vectors approach F(t), C(t) and its four problems`?**
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+- **Why does `TestSupporto` connect `TestSupporto` to `test_water.py`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `Ks water stress coefficient and ETa = Ks x ETc` connect `run_segment` to `simulate_rotation`, `Dynamic vectors approach F(t), C(t) and its four problems`?**
   _High betweenness centrality (0.018) - this node is a cross-community bridge._
 - **What connects `fieldwise`, `graphify`, `graphify` to the rest of the system?**
-  _52 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _59 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `test_data_modis.py` be split into smaller, more focused modules?**
   _Cohesion score 0.11076923076923077 - nodes in this community are weakly interconnected._
 - **Should `et0.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.07740112994350283 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10505050505050505 - nodes in this community are weakly interconnected._
 - **Should `test_data_earthdata.py` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `params.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.10384615384615385 - nodes in this community are weakly interconnected._

@@ -246,13 +246,17 @@ def test_confronta_evidenze_e_rischi_coerenti_con_i_numeri():
     assert any("humus" in e for e in a1["evidenze"])
     assert any("il fattore che limita la resa e' l'acqua" in e for e in a1["evidenze"])
     rischi = " | ".join(a1["rischi"])
-    assert "0.60" in rischi and "0.50" in rischi                      # anno peggiore, alternativa e attuale
+    # D1: la resa nell'annata peggiore migliora (0.50 -> 0.60): e' un'evidenza, non un rischio
+    assert "annata peggiore" not in rischi
+    assert any("annata peggiore" in e and "0.50" in e and "0.60" in e for e in a1["evidenze"])
     assert "75%" in rischi and "la cover e' praticabile" in rischi   # cover non sempre praticabile
     assert "azoto" not in rischi.replace("limite normativo", "") or "limite normativo" in rischi
     assert "limite normativo di azoto" not in rischi                  # ALT1: quota 0 -> nessuna frase
+    assert any("meno annate" in e and "0%" in e and "50%" in e for e in a1["evidenze"])
     a2 = c["alternative"][1]
     r2 = " | ".join(a2["rischi"])
-    assert "10% delle annate" in r2 and "limite normativo di azoto" in r2
+    assert "limite normativo" not in r2                               # 10% < 50% dell'attuale: miglioramento
+    assert any("10% invece di 50%" in e for e in a2["evidenze"])
     assert "solo in deroga" in r2
     assert any("la successione colturale" in e for e in a2["evidenze"])
     # i peggioramenti rispetto all'attuale finiscono nei rischi, non nelle evidenze
@@ -398,3 +402,63 @@ def test_frase_cover_usa_la_quota_realizzata():
     per = {a["classe"]: " | ".join(a["rischi"]) for a in c["alternative"]}
     assert "la cover e' praticabile nel 40% dei casi" in per["A"]
     assert "cover" not in per["B"] and "cover" not in per["N"]
+
+
+# =============================================================================
+# correzioni dopo la verifica (D1-D9)
+# =============================================================================
+def test_d1_un_miglioramento_non_e_un_rischio():
+    c = rk.confronta(_scenario_con_attuale(), TUTTI_PESI, "solo_pioggia")
+    for a in c["alternative"]:
+        migliora = a["valori"]["resa_rel_min"] > 0.50
+        frasi = " | ".join(a["rischi"])
+        assert migliora and "annata peggiore" not in frasi
+    # peggiora: sta tra i rischi con il valore dell'attuale
+    df = sint(riga("ATT", minimo=0.6, attuale=True), riga("ALT", resa=0.9, minimo=0.4),
+              riga("ALT2", resa=0.85, minimo=0.5))
+    c = rk.confronta(df, TUTTI_PESI, "solo_pioggia")
+    alt = {a["classe"]: a for a in c["alternative"]}
+    assert any("annata peggiore" in r and "0.40" in r and "0.60" in r for r in alt["ALT"]["rischi"])
+    assert not any("annata peggiore" in e for e in alt["ALT"]["evidenze"])
+    # una quota di annate oltre il limite di azoto che peggiora e' un rischio
+    df = sint(riga("ATT", oltre=0.1, attuale=True), riga("ALT", resa=0.9, oltre=0.4))
+    c = rk.confronta(df, TUTTI_PESI, "solo_pioggia")
+    assert any("40%" in r and "limite normativo" in r for r in c["alternative"][0]["rischi"])
+
+
+def test_d2_priorita_che_non_discrimina_da_avviso():
+    df = sint(riga("A", irr=0, resa=0.9), riga("B", irr=0, resa=0.5))
+    s = rk.score(df, {"acqua": 1}, "solo_pioggia")
+    assert s.attrs["avviso"] == rk.AVVISO_NON_DISCRIMINA
+    c = rk.confronta(df, {"acqua": 1}, "solo_pioggia")
+    assert any("non si distinguono" in n for n in c["note"])
+    # se almeno una priorita' pesata discrimina, nessun avviso; i pesi nulli non contano
+    assert "avviso" not in rk.score(df, {"acqua": 1, "resa": 1}, "solo_pioggia").attrs
+    assert "avviso" not in rk.score(df, {"resa": 1, "acqua": 0}, "solo_pioggia").attrs
+    assert not any("non si distinguono" in n for n in rk.confronta(df, {"resa": 1}, "solo_pioggia")["note"])
+
+
+def test_d7_etichette_leggibili():
+    E = rk.ETICHETTE
+    assert E["indicatori"]["resa_rel_min"] == "resa media della rotazione nell'annata peggiore"
+    for col in rk.VERSI:
+        assert col in E["indicatori"]
+    assert set(E["scenari"]) == {"solo_pioggia", "tetto_irriguo", "irrigazione_libera"}
+    assert set(E["stati"]) >= {"conforme", "conforme_solo_in_deroga", "non_conforme"}
+    assert set(E["priorita"]) == set(rk.PRIORITA) and REGIME in E["regimi"]
+    # nelle frasi nessun identificativo tecnico
+    df = _scenario_con_attuale()
+    df["conformita"] = df[COL_REGIME]
+    c = rk.confronta(df, TUTTI_PESI, "solo_pioggia", n_alternative=3)
+    frasi = [f for a in c["alternative"] for f in a["evidenze"] + a["rischi"]]
+    assert any("Lombardia, impegno quinquennale" in f for f in frasi)
+    for f in frasi:
+        assert REGIME not in f and "resa_rel" not in f and "_" not in f.replace("\u2192", ""), f
+
+
+def test_d9_attuale_senza_simulazioni():
+    df = sint(riga("ATT", resa=float("nan"), n=0, attuale=True), riga("X", resa=0.9), riga("Y", resa=0.8))
+    c = rk.confronta(df, TUTTI_PESI, "solo_pioggia")
+    assert c["attuale"] is None
+    assert any("non ha simulazioni riuscite" in n for n in c["note"])
+    assert not any("non marcata" in n for n in c["note"])

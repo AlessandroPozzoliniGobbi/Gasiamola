@@ -33,6 +33,7 @@ PRIORITA = {
 }
 VERSI = {col: v for ind in PRIORITA.values() for col, v in ind}   # colonna -> verso
 NESSUNO = "nessuno"              # valore di ``equivalente_a`` per le classi non equivalenti ad altre
+AVVISO_NON_DISCRIMINA = "con queste priorita' e questo scenario le rotazioni non si distinguono"
 PUNTEGGIO_NEUTRO = 0.5            # indicatore costante su tutte le rotazioni: non discrimina
 TOL_PARETO = 1e-6                 # frazione della scala di un indicatore (il maggiore tra intervallo
                                   # max-min e valore assoluto massimo): differenze minori = parita'
@@ -41,12 +42,38 @@ STATI_CONFORMI = ("conforme",)
 SOGLIA_EVIDENZA = 0.05            # variazione relativa minima per citare un indicatore (5%)
 SOGLIA_FATTORE = 0.97             # sopra questa media un fattore di resa non "limita" davvero
 SOGLIA_HUMUS = 0.05               # variazione minima dell'humus citata (t/ha all'anno)
-_NOMI = {"resa_rel_mediana": "resa relativa mediana", "resa_rel_min": "resa nell'anno peggiore",
+# Etichette leggibili in italiano per l'interfaccia (indicatori, priorita', scenari, regimi, stati):
+# nelle frasi e nelle tabelle per l'agricoltore non compaiono mai gli identificativi tecnici.
+ETICHETTE = {
+    "indicatori": {
+        "resa_rel_mediana": "resa mediana (rispetto al potenziale)",
+        "resa_rel_min": "resa media della rotazione nell'annata peggiore",
+        "resa_rel_p10": "resa media della rotazione nelle annate sfavorevoli (10\u00b0 percentile)",
+        "irrigazione_mm": "irrigazione (mm all'anno)", "concime_kg_n": "concime azotato (kg N/ha all'anno)",
+        "n_lisciviato_kg_n": "azoto lisciviato (kg N/ha all'anno)",
+        "humus_t_ha": "variazione di humus (t/ha all'anno)",
+        "giorni_caldo": "giorni di stress da caldo all'anno", "ruscellamento_mm": "ruscellamento (mm all'anno)",
+        "percolazione_mm": "percolazione (mm all'anno)", "deficit_n_kg_n": "carenza di azoto (kg N/ha all'anno)",
+        "quota_oltre_limite_n": "annate con azoto sopra il limite normativo",
+        "cover_realizzata_quota": "casi in cui la cover e' praticabile"},
+    "priorita": {"resa": "resa", "rischio": "rischio (annata peggiore)", "acqua": "risparmio di acqua",
+                 "concime": "risparmio di concime", "suolo": "salute del suolo"},
+    "scenari": {"solo_pioggia": "solo pioggia", "tetto_irriguo": "irrigazione limitata",
+                "irrigazione_libera": "irrigazione libera"},
+    "regimi": {"lombardia_impegno_quinquennale": "Lombardia, impegno quinquennale",
+               "lombardia_impegno_triennale_SRA01_2026": "Lombardia, impegno triennale (SRA01)",
+               "emilia_romagna_impegno_quinquennale": "Emilia-Romagna, impegno quinquennale",
+               "emilia_romagna_adesione_singola_coltura": "Emilia-Romagna, adesione per singola coltura"},
+    "stati": {"conforme": "conforme", "conforme_solo_in_deroga": "conforme solo in deroga",
+              "non_conforme": "non conforme", "non_valutabile": "non valutabile"},
+    "fattori": {"acqua": "l'acqua", "caldo": "il caldo", "rotazione": "la successione colturale"},
+}
+_NOMI = {"resa_rel_mediana": "resa mediana", "resa_rel_min": "resa media della rotazione nell'annata peggiore",
          "irrigazione_mm": "irrigazione", "concime_kg_n": "concime azotato",
          "n_lisciviato_kg_n": "azoto lisciviato", "humus_t_ha": "bilancio dell'humus"}
 _UNITA = {"irrigazione_mm": "mm", "concime_kg_n": "kg N/ha", "n_lisciviato_kg_n": "kg N/ha",
           "humus_t_ha": "t/ha all'anno"}
-_PRIORITA_FATTORE = {"acqua": "l'acqua", "caldo": "il caldo", "rotazione": "la successione colturale"}
+_PRIORITA_FATTORE = ETICHETTE["fattori"]
 
 
 # =============================================================================
@@ -140,7 +167,9 @@ def score(sintesi: pd.DataFrame, pesi: dict, scenario: str, solo_conformi: bool 
     ATTENZIONE: il punteggio e' RELATIVO all'insieme confrontato (cambia se si aggiungono o
     tolgono rotazioni, o con ``solo_conformi``) e serve solo a ordinare: non e' una misura
     assoluta ne' confrontabile tra scenari. Colonne aggiunte: ``punt_<priorita'>``,
-    ``punteggio``, ``posizione`` (1 = primo). Le classi equivalenti a un'altra (``equivalente_a``)
+    ``punteggio``, ``posizione`` (1 = primo). Se tutti gli indicatori con peso positivo sono costanti
+    (es. solo 'acqua' in 'solo_pioggia'), l'ordine e' alfabetico e non significa nulla: lo dice
+    ``risultato.attrs['avviso']`` (assente altrimenti). Le classi equivalenti a un'altra (``equivalente_a``)
     sono escluse salvo ``includi_equivalenti=True``."""
     w = _verifica_pesi(pesi)
     df = insieme(sintesi, scenario, solo_conformi, regime, ammetti_deroga,
@@ -150,10 +179,16 @@ def score(sintesi: pd.DataFrame, pesi: dict, scenario: str, solo_conformi: bool 
     for pr, inds in PRIORITA.items():
         parz = [_normalizza(df[c].to_numpy(float), v) for c, v in inds]
         df[f"punt_{pr}"] = np.mean(parz, axis=0)
+    # se nessun indicatore pesato discrimina, l'ordine sarebbe solo alfabetico: lo si dichiara
+    discriminano = [c for pr, inds in PRIORITA.items() if w[pr] > 0 for c, _ in inds
+                    if np.ptp(df[c].to_numpy(float)) > 0]
     df["punteggio"] = sum(w[pr] * df[f"punt_{pr}"] for pr in PRIORITA) / sum(w.values())
     df = df.sort_values(["punteggio", "classe"], ascending=[False, True], kind="mergesort")
     df["posizione"] = np.arange(1, len(df) + 1)
-    return df.reset_index(drop=True)
+    df = df.reset_index(drop=True)
+    if not discriminano:
+        df.attrs["avviso"] = AVVISO_NON_DISCRIMINA
+    return df
 
 
 # =============================================================================
@@ -227,7 +262,7 @@ def _evidenze_e_peggioramenti(riga, att, dif):
     numeri presenti nella sintesi o differenze calcolate da essi."""
     ev, peg = [], []
     if att is None:
-        ev.append(f"resa relativa mediana {_num(riga['resa_rel_mediana'])}, "
+        ev.append(f"resa mediana {_num(riga['resa_rel_mediana'])} (rispetto al potenziale), "
                   f"irrigazione mediana {_num(riga['irrigazione_mm'], 0)} mm")
         fl = riga["fattore_limitante"]
         ev.append(f"il fattore che limita la resa e' {_PRIORITA_FATTORE[fl]}"
@@ -247,11 +282,14 @@ def _evidenze_e_peggioramenti(riga, att, dif):
         elif abs(d["percentuale"]) >= 100 * SOGLIA_EVIDENZA:
             aggiungi(col, d["assoluta"] < 0,
                      f"{_pct(d['percentuale'])} di {nome} ({_num(d['attuale'], 0)} → {_num(d['valore'], 0)} {un})")
-    for col, nome in (("resa_rel_mediana", "resa relativa mediana"), ("resa_rel_min", "resa nell'anno peggiore")):
-        d = dif[col]
+    for col in ("resa_rel_mediana", "resa_rel_min"):
+        d, nome = dif[col], _NOMI[col]
         if d["percentuale"] is not None and abs(d["percentuale"]) >= 100 * SOGLIA_EVIDENZA:
-            aggiungi(col, d["assoluta"] > 0,
-                     f"{nome} {_num(d['attuale'])} → {_num(d['valore'])} ({_pct(d['percentuale'])})")
+            frase = f"{nome} {_num(d['attuale'])} → {_num(d['valore'])} ({_pct(d['percentuale'])})"
+            if d["assoluta"] > 0:
+                ev.append(frase)
+            elif col != "resa_rel_min":      # il peggioramento della resa nell'annata peggiore sta in _rischi
+                peg.append(frase)
     d = dif["humus_t_ha"]
     if abs(d["assoluta"]) >= SOGLIA_HUMUS:
         aggiungi("humus_t_ha", d["assoluta"] > 0,
@@ -266,20 +304,48 @@ def _evidenze_e_peggioramenti(riga, att, dif):
     return ev, peg
 
 
-def _rischi(riga, att, peggioramenti, regime) -> list:
-    r = []
-    conf_att = f" (attuale: {_num(att['resa_rel_min'])})" if att is not None else ""
-    r.append(f"nell'anno peggiore la resa relativa scende a {_num(riga['resa_rel_min'])}{conf_att}")
-    if riga["quota_oltre_limite_n"] > 0:
-        r.append(f"in {riga['quota_oltre_limite_n'] * 100:.0f}% delle annate almeno una coltura "
-                 f"supera il limite normativo di azoto")
+def _stato(riga, regime) -> str:
     col = "conformita" if regime is None else f"conformita_{regime}"
-    stato = riga[col] if col in riga.index else riga["conformita"]
+    return riga[col] if col in riga.index else riga["conformita"]
+
+
+_GRAVITA = {"conforme": 0, "conforme_solo_in_deroga": 1, "non_conforme": 2, "non_valutabile": 3}
+
+
+def _evidenze_extra(riga, att, regime) -> list:
+    """Miglioramenti rispetto all'attuale che non sono differenze numeriche degli indicatori principali."""
+    ev = []
+    if att is None:
+        return ev
+    if riga["quota_oltre_limite_n"] < att["quota_oltre_limite_n"]:
+        ev.append(f"il limite normativo di azoto e' superato in meno annate: "
+                  f"{riga['quota_oltre_limite_n'] * 100:.0f}% invece di {att['quota_oltre_limite_n'] * 100:.0f}%")
+    s_alt, s_att = _stato(riga, regime), _stato(att, regime)
+    if s_alt == "conforme" and s_att in ("non_conforme", "conforme_solo_in_deroga"):
+        ev.append(f"conforme al disciplinare di produzione integrata, mentre l'attuale e' "
+                  f"{ETICHETTE['stati'][s_att]}")
+    return ev
+
+
+def _rischi(riga, att, peggioramenti, regime) -> list:
+    """Rischi della rotazione. Un miglioramento rispetto all'attuale non e' mai un rischio: se la resa
+    dell'annata peggiore o la quota di annate oltre il limite di azoto migliorano, stanno nelle evidenze."""
+    r = []
+    if att is None:
+        r.append(f"nell'annata peggiore la resa media della rotazione scende a {_num(riga['resa_rel_min'])}")
+    elif riga["resa_rel_min"] < att["resa_rel_min"]:
+        r.append(f"nell'annata peggiore la resa media della rotazione scende a {_num(riga['resa_rel_min'])} "
+                 f"(attuale: {_num(att['resa_rel_min'])})")
+    q_n = riga["quota_oltre_limite_n"]
+    if q_n > 0 and (att is None or q_n >= att["quota_oltre_limite_n"]):
+        extra = "" if att is None else f" (attuale: {att['quota_oltre_limite_n'] * 100:.0f}%)"
+        r.append(f"in {q_n * 100:.0f}% delle annate almeno una coltura supera il limite normativo di azoto{extra}")
+    stato = _stato(riga, regime)
+    reg = "" if regime is None else f" ({ETICHETTE['regimi'].get(regime, regime)})"
     if stato == "non_conforme":
-        r.append("non conforme al disciplinare di produzione integrata" +
-                 ("" if regime is None else f" ({regime})"))
+        r.append("non conforme al disciplinare di produzione integrata" + reg)
     elif stato == "conforme_solo_in_deroga":
-        r.append("conforme al disciplinare solo in deroga")
+        r.append("conforme al disciplinare solo in deroga" + reg)
     elif stato == "non_valutabile":
         r.append("conformita' al disciplinare non valutabile per questa successione")
     q = riga["cover_realizzata_quota"] if "cover_realizzata_quota" in riga.index else float("nan")
@@ -312,6 +378,7 @@ def confronta(sintesi: pd.DataFrame, pesi: dict, scenario: str, n_alternative: i
     if n_alternative < 1:
         raise ValueError("n_alternative deve essere >= 1")
     sc = score(sintesi, pesi, scenario, solo_conformi, regime, ammetti_deroga, includi_equivalenti)
+    avviso = sc.attrs.get("avviso")
     sc = _marca_non_dominate(sc, list(VERSI), TOL_PARETO)
     is_att = sc["attuale"].astype(bool) if "attuale" in sc.columns else pd.Series(False, index=sc.index)
     att = sc[is_att].iloc[0] if is_att.any() else None
@@ -339,12 +406,22 @@ def confronta(sintesi: pd.DataFrame, pesi: dict, scenario: str, n_alternative: i
             scelte.append(("per_punteggio", r))
     else:
         note.append("nessuna alternativa nell'insieme confrontato")
+    if avviso:
+        note.append(avviso)
     if att is None:
-        note.append("rotazione attuale non marcata nella sintesi: confronto assoluto")
+        grezza = _scenario(sintesi, scenario)
+        senza_sim = grezza[(grezza["n_simulazioni"] == 0) & _attuale(grezza)] if "attuale" in grezza.columns else grezza.iloc[0:0]
+        if len(senza_sim):
+            note.append("la rotazione attuale non ha simulazioni riuscite in questo scenario: confronto assoluto")
+        else:
+            note.append("rotazione attuale non marcata nella sintesi: confronto assoluto")
+    for n in (sintesi.attrs.get("meta") or {}).get("note", []):
+        note.append(n)
 
     def voce(ruolo, riga):
         dif = _differenze(riga, att)
         ev, peg = _evidenze_e_peggioramenti(riga, att, dif)
+        ev = ev + _evidenze_extra(riga, att, regime)
         return {"ruolo": ruolo, "classe": riga["classe"], "punteggio": float(riga["punteggio"]),
                 "posizione": int(riga["posizione"]), "non_dominata": bool(riga["non_dominata"]),
                 "valori": _dict_riga(riga), "differenze": dif, "evidenze": ev,
