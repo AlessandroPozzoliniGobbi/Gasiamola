@@ -108,15 +108,15 @@
     "semantic_hash": ""
   },
   "PLAN.md": {
-    "mtime": 1794495066.822058,
-    "seen": 1794495452.610292,
-    "ast_hash": "f19857c18a862440b898a3048f86137b",
+    "mtime": 1794522359.8323374,
+    "seen": 1794523032.5689669,
+    "ast_hash": "6d9210cfc6ff9dfe85f1ae1d3925eec1",
     "semantic_hash": ""
   },
   "docs/fonti_crops.md": {
-    "mtime": 1794494119.037257,
-    "seen": 1794494123.918588,
-    "ast_hash": "cd676d0059d52991163903a77f69a246",
+    "mtime": 1794523003.2798336,
+    "seen": 1794523032.5689678,
+    "ast_hash": "4ca4ac19d3af2caf6e62b81e8ef281e9",
     "semantic_hash": ""
   },
   "docs/fonti_nitrogen.md": {
@@ -132,15 +132,15 @@
     "semantic_hash": ""
   },
   "params/crops.yaml": {
-    "mtime": 1794491941.436307,
-    "seen": 1794494040.333428,
-    "ast_hash": "fe9560424dd9904c193c12386ca83231",
+    "mtime": 1794522676.762656,
+    "seen": 1794523032.568971,
+    "ast_hash": "1bf6dc9f456997bd392dac97fb087e79",
     "semantic_hash": ""
   },
   "params/nitrogen.yaml": {
-    "mtime": 1794495414.6192029,
-    "seen": 1794495452.610296,
-    "ast_hash": "02f8629d22b869d89aaa8c2fccc46684",
+    "mtime": 1794522990.556293,
+    "seen": 1794523032.568972,
+    "ast_hash": "99791ec75f196f45bb1e51578360b6d9",
     "semantic_hash": ""
   },
   "requirements.txt": {
@@ -180,9 +180,9 @@
     "semantic_hash": ""
   },
   "params/cover_crop.yaml": {
-    "mtime": 1794495414.6198993,
-    "seen": 1794495452.610295,
-    "ast_hash": "d6f869f65c26f7e4fb2c60634cd728cf",
+    "mtime": 1794522676.7631295,
+    "seen": 1794523032.56897,
+    "ast_hash": "1e05fff8ea7ef23c1532045142ae8e4a",
     "semantic_hash": ""
   },
   "params/heat.yaml": {
@@ -210,21 +210,21 @@
     "semantic_hash": ""
   },
   "params/soil.yaml": {
-    "mtime": 1794491513.6474073,
-    "seen": 1794491573.028971,
-    "ast_hash": "d60c7c81026503a21b0ffe30e9a6b696",
+    "mtime": 1794522636.8735027,
+    "seen": 1794523032.568974,
+    "ast_hash": "a74033b5dbe55193a3a8e35ed0c9d25e",
     "semantic_hash": ""
   },
   "docs/fonti_soil.md": {
-    "mtime": 1794491567.7064667,
-    "seen": 1794491573.028973,
-    "ast_hash": "24221bdb808fac3a1b7863824a64a290",
+    "mtime": 1794523003.2760952,
+    "seen": 1794523032.5689769,
+    "ast_hash": "bc57713db8cb80e8020207c399c532bf",
     "semantic_hash": ""
   },
   "src/fieldwise/water.py": {
-    "mtime": 1794495309.5502472,
-    "seen": 1794495452.61028,
-    "ast_hash": "184bc3102aeff4cc3cfa2afffdbcd93e",
+    "mtime": 1794522879.8122342,
+    "seen": 1794523032.568953,
+    "ast_hash": "46fa86492d7d40f57e5f1a1f0eb07369",
     "semantic_hash": ""
   },
   "reports/params_review.md": {
@@ -240,27 +240,27 @@
     "semantic_hash": ""
   },
   ".omc/state/idle-notif-cooldown.json": {
-    "mtime": 1794495070.7562258,
-    "seen": 1794495452.6102028,
-    "ast_hash": "94d70880f6b1f6ec580d8e17d2d29c50",
+    "mtime": 1794556676.5781834,
+    "seen": 1794556786.704698,
+    "ast_hash": "8556b624cf1cf8b4e97348aab10c09d9",
     "semantic_hash": ""
   },
   ".omc/state/sessions/16781da1-d404-42cb-90db-c173feefdc0b/pre-tool-advisory-throttle.json": {
-    "mtime": 1794495314.0220597,
-    "seen": 1794495452.610271,
-    "ast_hash": "a15dd499191f6feb2549e44003066900",
+    "mtime": 1794556674.0514615,
+    "seen": 1794556786.704772,
+    "ast_hash": "ca64784fc9f887f019cd3887bc87889c",
     "semantic_hash": ""
   },
   ".omc/state/sessions/16781da1-d404-42cb-90db-c173feefdc0b/subagent-tracking-state.json": {
-    "mtime": 1794495052.411309,
-    "seen": 1794495452.610271,
-    "ast_hash": "4460800a5e830b6693679855098e6ee5",
+    "mtime": 1794556674.2899394,
+    "seen": 1794556786.704772,
+    "ast_hash": "ac866c78281bf0901693d8cda3d5788d",
     "semantic_hash": ""
   },
   "tests/test_water.py": {
-    "mtime": 1794491845.718964,
-    "seen": 1794494040.3334231,
-    "ast_hash": "b7ea05f037fbcafc5af5f320cabbcceb",
+    "mtime": 1794523178.797456,
+    "seen": 1794556600.058026,
+    "ast_hash": "aa2f10fcbc15f6ef705a66a5df99df8c",
     "semantic_hash": ""
   },
   "tests/test_weather.py": {
@@ -282,9 +282,9 @@
     "semantic_hash": ""
   },
   ".omc/state/sessions/01a1d00f-8a09-7a12-915b-c0424e1e85c3/pre-tool-advisory-throttle.json": {
-    "mtime": 1794493802.4970229,
-    "seen": 1794494040.333405,
-    "ast_hash": "5505486a25ed013b52bc20cdfb117c2b",
+    "mtime": 1794501477.0515451,
+    "seen": 1794523032.568943,
+    "ast_hash": "4ee6376813b6d14b6c8eeaa0e419a26b",
     "semantic_hash": ""
   },
   ".omc/state/sessions/01a1d00f-8a09-7a12-915b-c0424e1e85c3/session-started.json": {
@@ -294,21 +294,21 @@
     "semantic_hash": ""
   },
   ".omc/state/sessions/16781da1-d404-42cb-90db-c173feefdc0b/last-tool-error-state.json": {
-    "mtime": 1794494713.789383,
-    "seen": 1794494937.740132,
-    "ast_hash": "09dae4f5d3457d29561e341b186a289e",
+    "mtime": 1794556758.6892548,
+    "seen": 1794556786.704771,
+    "ast_hash": "dabad9f6849a6a7db6c7f3e79988eb36",
     "semantic_hash": ""
   },
   ".omc/state/sessions/16781da1-d404-42cb-90db-c173feefdc0b/mission-state.json": {
-    "mtime": 1794495052.309236,
-    "seen": 1794495452.61027,
-    "ast_hash": "2f9ce27b272acd29438a4cc161caf349",
+    "mtime": 1794556674.1894233,
+    "seen": 1794556786.704771,
+    "ast_hash": "d074c7fca239b8854f64b9d565b61b8b",
     "semantic_hash": ""
   },
   "src/fieldwise/humus.py": {
-    "mtime": 1794494151.1843581,
-    "seen": 1794494194.754733,
-    "ast_hash": "c7358391f311a3556ba6a146d159d502",
+    "mtime": 1794522654.929342,
+    "seen": 1794523032.568949,
+    "ast_hash": "10a53d5ecdeff9691f4ca6c0f5d382a4",
     "semantic_hash": ""
   },
   "src/fieldwise/nitrogen.py": {
@@ -948,9 +948,9 @@
     "semantic_hash": ""
   },
   "src/fieldwise/rotation.py": {
-    "mtime": 1794495319.6358976,
-    "seen": 1794495452.610278,
-    "ast_hash": "9221a7b6d48cff0dfa0be588164429fe",
+    "mtime": 1794522817.084585,
+    "seen": 1794523032.568952,
+    "ast_hash": "50fda9f62ce67b527d82acc44b446eb3",
     "semantic_hash": ""
   },
   "tests/test_humus.py": {
@@ -960,9 +960,9 @@
     "semantic_hash": ""
   },
   "tests/test_nitrogen.py": {
-    "mtime": 1794494524.5139952,
-    "seen": 1794494937.74015,
-    "ast_hash": "91ccbb2f9b0dfb0ffaaf6deb9cc494e5",
+    "mtime": 1794495773.321329,
+    "seen": 1794523032.56896,
+    "ast_hash": "3e8430e5104722e7935c136440190459",
     "semantic_hash": ""
   },
   "tests/test_phenology.py": {
@@ -981,6 +981,54 @@
     "mtime": 1794494524.513362,
     "seen": 1794494937.740163,
     "ast_hash": "a90490da3183809145c7dafd7b41b8d7",
+    "semantic_hash": ""
+  },
+  "tests/test_nitrogen_daily.py": {
+    "mtime": 1794521909.080836,
+    "seen": 1794523032.568961,
+    "ast_hash": "3f10a16594518ed497f2a334105461ae",
+    "semantic_hash": ""
+  },
+  "tests/test_rotation.py": {
+    "mtime": 1794523406.6038766,
+    "seen": 1794556600.058024,
+    "ast_hash": "15f6c29abf06be12be47001409ddc08c",
+    "semantic_hash": ""
+  },
+  "reports/engine_review.md": {
+    "mtime": 1794522270.8315704,
+    "seen": 1794523032.568974,
+    "ast_hash": "b07837f21b320bc5c4e5c44b59fb150b",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/ensemble.py": {
+    "mtime": 1794556707.9338448,
+    "seen": 1794556786.704776,
+    "ast_hash": "5447b327bd2101a8c67ff84ea28008b6",
+    "semantic_hash": ""
+  },
+  "src/fieldwise/ranking.py": {
+    "mtime": 1794556730.2761168,
+    "seen": 1794556786.704781,
+    "ast_hash": "7e9c5c892571095f9fea8f20f76e84b3",
+    "semantic_hash": ""
+  },
+  "tests/test_ensemble.py": {
+    "mtime": 1794556748.2300854,
+    "seen": 1794556786.704789,
+    "ast_hash": "e9a2753b233719cf0194ab4e45e2bb23",
+    "semantic_hash": ""
+  },
+  "tests/test_ranking.py": {
+    "mtime": 1794556748.229694,
+    "seen": 1794556786.704795,
+    "ast_hash": "509fee0233748b0177e9209e0eed9c67",
+    "semantic_hash": ""
+  },
+  "tests/test_water_dual.py": {
+    "mtime": 1794523387.7115812,
+    "seen": 1794556600.058027,
+    "ast_hash": "f4341077eebf4c7d768076442b367e78",
     "semantic_hash": ""
   }
 }

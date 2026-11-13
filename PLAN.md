@@ -68,6 +68,20 @@ Il grafo si ricostruisce (`/graphify .`) alla fine delle fasi 3, 4, 5, 6, 7, 8 e
 
 ## Registro
 
+- 2026-11-12 notte — FASE 1 completa: IMERG (9253 giorni, bilineare su quattro celle) e SMAP (3845 giorni,
+  2323 di qualità raccomandata) in cache; controllo qualità rieseguito senza errori. IMERG sovrastima i
+  totali annui del 21% contro il pluviometro (POWER 1%), ma ha correlazione giornaliera migliore (0,73 contro
+  0,59): POWER 2000–2022 confermato per il motore, IMERG alternativa per la sensibilità (`data/CHECKS.md`).
+  Azoto a passo giornaliero consegnato (D14), con assorbimento ripartito sulla traspirazione (Kcb FAO-56
+  tab. 17); test Sonnet: 131 nuovi, suite verde.
+  VERIFICA SCIENTIFICA FASI 3–4 (`reports/engine_review.md`, Opus indipendente): bilanci corretti, equazioni
+  fedeli, nessuna taratura; 12 controlli sulle fonti su 16 conformi; 7 mutazioni su 8 rilevate dai test.
+  Condizioni per chiudere: (1) doppio coefficiente FAO-56 per tutte le superfici (oggi una cover consuma
+  meno del suolo nudo bagnato e fa salire la percolazione); (2) Curve Number di AquaCrop (72, indipendente
+  dalla copertura) come default; (3) soglie C/N nei YAML e testi dei parametri riallineati; (4) limiti
+  dichiarati. In corso (Opus). Poi: adeguamento dei test (Sonnet), ensemble (fase 5).
+  Push dei due commit dell'utente su `origin/main` eseguito su sua richiesta; il lavoro successivo non è
+  committato.
 - 2026-11-12 sera — Credenziali Earthdata arrivate; SMAP provato, IMERG sbloccato dopo l'autorizzazione di
   GES DISC; client IMERG esteso alle quattro celle (Sonnet); download completi rilanciati staccati dalla
   sessione (log in `data/logs/`). Da fare a download finiti: `python -m fieldwise.qc` e confronto

@@ -222,7 +222,10 @@ class RotationContext:
             u2m, rhm = float(self.wind[mid].mean()), float(self.rhmin[mid].mean())
             u2e, rhe = float(self.wind[end].mean()), float(self.rhmin[end].mean())
             c.update(kc=kc, zr=zr, pt=pt, heat=_ym.heat_factor(self.p, crop, self.forcing, cal),
-                     kcb=self._kcb_curve(crop, cal, u2m, rhm, u2e, rhe))
+                     kcb=self._kcb_curve(crop, cal, u2m, rhm, u2e, rhe),
+                     h=np.asarray(_water.plant_height(
+                         cal.frac, float(_params.get(self.p, f"crops.{crop}.h_max")),
+                         cal.breakpoints[1]), float))
         self._cycle[key] = c
         return c
 
@@ -303,6 +306,7 @@ def build_context(p: dict | None = None, forcing=None, lat: float | None = None,
              "zr_ini": float(g(p, "cover_crop.acqua.profondita_radicale_iniziale")),
              "cn": _water.cn_class_index(str(g(p, "cover_crop.acqua.classe_curve_number"))),
              "kcb": float(g(p, "cover_crop.acqua.kcb.ini")),
+             "h": float(g(p, "cover_crop.acqua.altezza")),
              "sra_max_racc_sem": int(g(p, f"{sra}.max_giorni_raccolta_semina")),
              "sra_durata_min": int(g(p, f"{sra}.durata_minima_giorni")),
              "sra_term_non_prima": str(g(p, f"{sra}.terminazione_non_prima_di")),
@@ -505,21 +509,24 @@ def _daily_inputs(ctx: RotationContext, rc: RotationCalendar) -> _water.DailyInp
     """Serie giornaliere della simulazione (in cache nel calendario)."""
     if rc._inputs is not None:
         return rc._inputs
-    kcs, zrs, pts, surf, irr, seg, cns, kcbs = [], [], [], [], [], [], [], []
+    kcs, zrs, pts, surf, irr, seg, cns, kcbs, hs = [], [], [], [], [], [], [], [], []
     for k, s in enumerate(rc.segments):
         m = s.end - s.start + 1
         if s.kind == _n.SEG_CROP:
             c = ctx.cycle(s.crop, s.start)
             kc, zr, pt = c["kc"], c["zr"], c["pt"]
             kcbs.append(c["kcb"])
+            hs.append(c["h"])
             sf, ir, cn = _water.SURF_CROP, ctx.crop[s.crop]["irrigabile"], ctx.crop[s.crop]["cn"]
         elif s.kind == _n.SEG_COVER:
             kc, zr, pt = ctx.cover_curves(m)
             kcbs.append(np.full(m, ctx.cover["kcb"]))
+            hs.append(np.full(m, ctx.cover["h"]))
             sf, ir, cn = _water.SURF_COVER, 0, ctx.cover["cn"]
         else:
             kc = zr = pt = np.zeros(m)
-            kcbs.append(kc)
+            kcbs.append(np.full(m, ctx.soil.kcb_bare))     # crops.suolo_nudo.kcb_suolo_nudo
+            hs.append(np.zeros(m))
             sf, ir, cn = _water.SURF_BARE, 0, _water.CN_BARE
         kcs.append(kc)
         zrs.append(zr)
@@ -530,9 +537,14 @@ def _daily_inputs(ctx: RotationContext, rc: RotationCalendar) -> _water.DailyInp
         cns.append(np.full(m, cn, np.int64))
     a, b = rc.segments[0].start, rc.segments[-1].end
     cat = np.concatenate
-    rc._kcb = np.concatenate(kcbs)
+    kcb, h = cat(kcbs), cat(hs)
+    # doppio coefficiente (FAO-56 cap. 7): Kc max del giorno (eq. 72), frazione coperta (eq. 76)
+    kcmx = _water.kc_max_eq72(ctx.soil.kc_max, kcb, ctx.wind[a:b + 1], ctx.rhmin[a:b + 1], h)
+    fcov = _water.cover_fraction_eq76(kcb, kcmx, ctx.soil.kc_min, h)
+    rc._kcb = kcb
     rc._inputs = _water.DailyInputs(ctx.et0[a:b + 1], ctx.rain[a:b + 1], cat(kcs), cat(zrs),
-                                    cat(pts), cat(surf), cat(irr), cat(seg), cat(cns))
+                                    cat(pts), cat(surf), cat(irr), cat(seg), cat(cns),
+                                    kcb=kcb, kc_max=kcmx, fc=fcov)
     return rc._inputs
 
 
@@ -553,7 +565,7 @@ def _caps(ctx: RotationContext, rc: RotationCalendar, scenario: str) -> np.ndarr
 def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
              n_avviamento: int = 1, calendario: RotationCalendar | None = None,
              dettaglio: bool = False, in_conflitto: str = "rinvia",
-             riparto: str = "traspirazione") -> dict:
+             riparto: str = "traspirazione", metodo_et: str = "doppio") -> dict:
     """Simula la rotazione dal 1 gennaio di ``anno`` nello ``scenario`` d'acqua (uno di
     ``SCENARI``) e restituisce le uscite del ciclo valutato (vedi ``_meta`` del rapporto e le
     chiavi: 'esito', 'motivo', 'label', 'conformita', 'colture', 'intervalli', 'indicatori',
@@ -561,8 +573,10 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
     ``build_calendar`` gia' calcolato (stessa rotazione, anno e avviamento). ``dettaglio``:
     aggiunge 'acqua' (WaterResult), 'aggregati' e 'azoto' (voci per segmento).
     ``riparto``: peso giornaliero dell'assorbimento di N di colture e cover (``RIPARTI``):
-    'traspirazione' (default, Tr = Ks Kcb ET0), 'eta' (ETa), 'eta_et0' (ETa/ET0); le ultime due
-    servono solo all'analisi di sensibilita'."""
+    'traspirazione' (default: la traspirazione ``tr`` calcolata dal nucleo idrico, Ks Kcb ET0
+    nel metodo doppio; nel metodo singolo coincide con ETa di colture e cover), 'eta' (ETa),
+    'eta_et0' (ETa/ET0); le ultime due servono solo all'analisi di sensibilita'.
+    ``metodo_et``: 'doppio' (FAO-56 cap. 7, default) o 'singolo' (Kc singolo, sensibilita')."""
     p = ctx.p
     rc = calendario or build_calendar(ctx, rotation, anno, n_avviamento, in_conflitto)
     out = {"esito": rc.esito, "motivo": rc.motivo, "label": rotation.label,
@@ -573,7 +587,8 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
         return out
     sc = ctx.scenarios[scenario]
     inp = _daily_inputs(ctx, rc)
-    res = _water.run_water_balance(inp, ctx.soil, ctx.w0, irr_cap=_caps(ctx, rc, scenario))
+    res = _water.run_water_balance(inp, ctx.soil, ctx.w0, irr_cap=_caps(ctx, rc, scenario),
+                                   metodo_et=metodo_et)
     agg = _water.aggregate_segments(res)
     n = rotation.n
     rot_f = [_ym.rotation_factor(p, c, rotation.crops[(i - 1) % n], rotation.crops[(i - 2) % n],
@@ -593,7 +608,7 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
         rese.append(resa)
     # quota giornaliera dell'assorbimento (colture e cover), normalizzata sul segmento
     if riparto == "traspirazione":
-        w = res.ks * rc._kcb * inp.et0
+        w = res.tr.copy()          # una sola definizione di traspirazione nel motore
     elif riparto == "eta":
         w = res.eta.copy()
     elif riparto == "eta_et0":
@@ -631,7 +646,8 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
             "giorni": int(agg["days"][k]), "resa": y["resa"], "resa_potenziale": y["resa_potenziale"],
             "resa_relativa": y["f_totale"], "f_acqua": y["f_acqua"], "f_caldo": y["f_caldo"],
             "f_rotazione": y["f_rotazione"], "caso_rotazione": y["caso_rotazione"],
-            "etc": agg["etc"][k], "eta": agg["eta"][k], "irrigazione": agg["irr"][k],
+            "etc": agg["etc"][k], "eta": agg["eta"][k], "traspirazione": agg["tr"][k],
+            "evaporazione": agg["ev"][k], "irrigazione": agg["irr"][k],
             "pioggia": agg["rain"][k], "ruscellamento": agg["runoff"][k],
             "percolazione": agg["dp"][k], "concime": b["fert"], "lisciviazione": b["l"],
             "fissazione": b["fix"], "giorni_caldo": y["n_hot_days"], "supera_mas": b["supera_mas"],
@@ -667,6 +683,7 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
         "giorni_caldo_anno": sum(c["giorni_caldo"] for c in colture) / years,
         "ruscellamento_anno": tot("runoff") / years, "percolazione_anno": tot("dp") / years,
         "etc_anno": tot("etc") / years, "eta_anno": tot("eta") / years,
+        "traspirazione_anno": tot("tr") / years, "evaporazione_anno": tot("ev") / years,
         "fissazione_anno": totb("fix") / years,
         "n_colture_oltre_mas": int(sum(c["supera_mas"] for c in colture)),
         "deficit_n_anno": totb("deficit_n") / years,

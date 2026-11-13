@@ -1,0 +1,1805 @@
+{
+ "punto": {
+  "lat": 45.2,
+  "lon": 10.0
+ },
+ "metodo": {
+  "ic_mensile": "bootstrap a blocchi mobili di 6 mesi, 5000 repliche",
+  "ic_annuale": "Fisher (Pearson), Bonett-Wright (Spearman)",
+  "pioggia_simulazioni": "power (uguale al default fino al 2022)",
+  "pioggia_power_uguale_default_fino_2022": true,
+  "scenario_rappresentativo": "tetto_irriguo"
+ },
+ "smap": {
+  "periodo_principale": [
+   "2015-04-01",
+   "2022-12-31"
+  ],
+  "giorni_smap_validi": 2323,
+  "confronti": [
+   {
+    "configurazione": "mais continuo",
+    "scenario": "solo_pioggia",
+    "periodo": "principale",
+    "inizio": "2015-04-01",
+    "fine": "2022-12-31",
+    "mesi": 92,
+    "anomalie": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.7320789132004223,
+     "pearson_ic95": [
+      0.6419545183848858,
+      0.8266327017559295
+     ],
+     "pearson_p": 1.124378616986315e-16,
+     "spearman": 0.7672733998119692,
+     "spearman_ic95": [
+      0.6877243556019456,
+      0.8523140663005826
+     ],
+     "spearman_p": 4.700702314062529e-19,
+     "autocorr_lag1_x": 0.3632564813962048,
+     "autocorr_lag1_y": 0.041537263514350616
+    },
+    "grezzi": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8666595775704826,
+     "pearson_ic95": [
+      0.81647305917604,
+      0.9064843366680455
+     ],
+     "pearson_p": 6.388896118005443e-29,
+     "spearman": 0.8580367738853011,
+     "spearman_ic95": [
+      0.7626823793480016,
+      0.9045367937525833
+     ],
+     "spearman_p": 8.785944964228883e-28,
+     "autocorr_lag1_x": 0.6245327243145682,
+     "autocorr_lag1_y": 0.4745953067313974
+    },
+    "media_smap": 0.2237935389548385,
+    "media_modello": 0.19308415161995954,
+    "sd_anom_smap": 0.03246298022367131,
+    "sd_anom_modello": 0.03803630491185923
+   },
+   {
+    "configurazione": "mais continuo",
+    "scenario": "solo_pioggia",
+    "periodo": "secondario",
+    "inizio": "2015-04-01",
+    "fine": "2025-04-14",
+    "mesi": 120,
+    "anomalie": {
+     "n": 120,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.7788041596051956,
+     "pearson_ic95": [
+      0.6929473798879233,
+      0.8540546587396217
+     ],
+     "pearson_p": 1.1768841389312624e-25,
+     "spearman": 0.8006042086255989,
+     "spearman_ic95": [
+      0.715056753697645,
+      0.8661539797753752
+     ],
+     "spearman_p": 5.159138743399503e-28,
+     "autocorr_lag1_x": 0.3876144642778805,
+     "autocorr_lag1_y": 0.1576978845656069
+    },
+    "grezzi": {
+     "n": 120,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8669252852127055,
+     "pearson_ic95": [
+      0.831565073590187,
+      0.90309076826505
+     ],
+     "pearson_p": 1.754023146950241e-37,
+     "spearman": 0.8671366067087992,
+     "spearman_ic95": [
+      0.8009260093285377,
+      0.9034427341321155
+     ],
+     "spearman_p": 1.6073481335574442e-37,
+     "autocorr_lag1_x": 0.6226438073690621,
+     "autocorr_lag1_y": 0.49944717802178723
+    },
+    "media_smap": 0.22773979184188867,
+    "media_modello": 0.19829081471016557,
+    "sd_anom_smap": 0.033527345900949496,
+    "sd_anom_modello": 0.04071241779395638
+   },
+   {
+    "configurazione": "mais continuo",
+    "scenario": "tetto_irriguo",
+    "periodo": "principale",
+    "inizio": "2015-04-01",
+    "fine": "2022-12-31",
+    "mesi": 92,
+    "anomalie": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.7138076291637736,
+     "pearson_ic95": [
+      0.6248777835782222,
+      0.8064827073694975
+     ],
+     "pearson_p": 1.3915640171506383e-15,
+     "spearman": 0.7400243515250527,
+     "spearman_ic95": [
+      0.6486844139275881,
+      0.8241947441719788
+     ],
+     "spearman_p": 3.527839533707235e-17,
+     "autocorr_lag1_x": 0.3632564813962048,
+     "autocorr_lag1_y": 0.013881855922401478
+    },
+    "grezzi": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8468710934929436,
+     "pearson_ic95": [
+      0.7905107209801906,
+      0.8884198655527653
+     ],
+     "pearson_p": 2.047256080061607e-26,
+     "spearman": 0.8305411278763312,
+     "spearman_ic95": [
+      0.7178839771453018,
+      0.8846683050466784
+     ],
+     "spearman_p": 1.3369781051196003e-24,
+     "autocorr_lag1_x": 0.6245327243145682,
+     "autocorr_lag1_y": 0.42708246249519516
+    },
+    "media_smap": 0.2237935389548385,
+    "media_modello": 0.19774322734728092,
+    "sd_anom_smap": 0.03246298022367131,
+    "sd_anom_modello": 0.038204113120400895
+   },
+   {
+    "configurazione": "mais continuo",
+    "scenario": "tetto_irriguo",
+    "periodo": "secondario",
+    "inizio": "2015-04-01",
+    "fine": "2025-04-14",
+    "mesi": 120,
+    "anomalie": {
+     "n": 120,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.758887371898987,
+     "pearson_ic95": [
+      0.6733493580259611,
+      0.8325125172306671
+     ],
+     "pearson_p": 1.0053025913038229e-23,
+     "spearman": 0.776178901312591,
+     "spearman_ic95": [
+      0.6758916219176662,
+      0.8458545178788326
+     ],
+     "spearman_p": 2.1708828773546863e-25,
+     "autocorr_lag1_x": 0.3876144642778805,
+     "autocorr_lag1_y": 0.13376885728233312
+    },
+    "grezzi": {
+     "n": 120,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8443868149017439,
+     "pearson_ic95": [
+      0.8029066370060408,
+      0.8833029247077668
+     ],
+     "pearson_p": 8.976315079691159e-34,
+     "spearman": 0.8415514966317105,
+     "spearman_ic95": [
+      0.7610783889901693,
+      0.8845756776940273
+     ],
+     "spearman_p": 2.3865361974224078e-33,
+     "autocorr_lag1_x": 0.6226438073690621,
+     "autocorr_lag1_y": 0.4516745933712414
+    },
+    "media_smap": 0.22773979184188867,
+    "media_modello": 0.20284451358887448,
+    "sd_anom_smap": 0.033527345900949496,
+    "sd_anom_modello": 0.04073298227280666
+   },
+   {
+    "configurazione": "mais continuo",
+    "scenario": "irrigazione_libera",
+    "periodo": "principale",
+    "inizio": "2015-04-01",
+    "fine": "2022-12-31",
+    "mesi": 92,
+    "anomalie": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.7193925795934253,
+     "pearson_ic95": [
+      0.6334593546652082,
+      0.8110358463433092
+     ],
+     "pearson_p": 6.587011073604711e-16,
+     "spearman": 0.7444168734491315,
+     "spearman_ic95": [
+      0.666735152493465,
+      0.8215306197054009
+     ],
+     "spearman_p": 1.825100029257824e-17,
+     "autocorr_lag1_x": 0.3632564813962048,
+     "autocorr_lag1_y": 0.005988431887942381
+    },
+    "grezzi": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8489815710190813,
+     "pearson_ic95": [
+      0.7977361130268297,
+      0.8873133155029412
+     ],
+     "pearson_p": 1.1513773616480202e-26,
+     "spearman": 0.8315583434798021,
+     "spearman_ic95": [
+      0.7301881614000608,
+      0.8793389358092625
+     ],
+     "spearman_p": 1.0442385219264147e-24,
+     "autocorr_lag1_x": 0.6245327243145682,
+     "autocorr_lag1_y": 0.4012753002628554
+    },
+    "media_smap": 0.2237935389548385,
+    "media_modello": 0.2002877006691285,
+    "sd_anom_smap": 0.03246298022367131,
+    "sd_anom_modello": 0.03755484658295415
+   },
+   {
+    "configurazione": "mais continuo",
+    "scenario": "irrigazione_libera",
+    "periodo": "secondario",
+    "inizio": "2015-04-01",
+    "fine": "2025-04-14",
+    "mesi": 120,
+    "anomalie": {
+     "n": 120,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.7666366413676012,
+     "pearson_ic95": [
+      0.6820852199485345,
+      0.8397953282699429
+     ],
+     "pearson_p": 1.877587766480623e-24,
+     "spearman": 0.7892423084936453,
+     "spearman_ic95": [
+      0.7019874438725274,
+      0.8555370704751066
+     ],
+     "spearman_p": 9.471243825896379e-27,
+     "autocorr_lag1_x": 0.3876144642778805,
+     "autocorr_lag1_y": 0.12155808284647976
+    },
+    "grezzi": {
+     "n": 120,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.846604653731817,
+     "pearson_ic95": [
+      0.8088870805274418,
+      0.8822306976169517
+     ],
+     "pearson_p": 4.12059420653739e-34,
+     "spearman": 0.8410097923466906,
+     "spearman_ic95": [
+      0.7672468693909449,
+      0.8800747037436216
+     ],
+     "spearman_p": 2.8704810079483766e-33,
+     "autocorr_lag1_x": 0.6226438073690621,
+     "autocorr_lag1_y": 0.4310229048566319
+    },
+    "media_smap": 0.22773979184188867,
+    "media_modello": 0.20503669346694026,
+    "sd_anom_smap": 0.033527345900949496,
+    "sd_anom_modello": 0.040058574032286715
+   },
+   {
+    "configurazione": "mais > soia > frumento",
+    "scenario": "solo_pioggia",
+    "periodo": "principale",
+    "inizio": "2015-04-01",
+    "fine": "2022-12-31",
+    "mesi": 92,
+    "anomalie": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.7324016466122549,
+     "pearson_ic95": [
+      0.651424361668871,
+      0.8226126716417076
+     ],
+     "pearson_p": 1.0735295792276345e-16,
+     "spearman": 0.7558528428093646,
+     "spearman_ic95": [
+      0.6660323878787582,
+      0.8414277433061637
+     ],
+     "spearman_p": 3.076035369796899e-18,
+     "autocorr_lag1_x": 0.3632564813962048,
+     "autocorr_lag1_y": 0.021260282999633073
+    },
+    "grezzi": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8663390976604726,
+     "pearson_ic95": [
+      0.8136881560193515,
+      0.906311502667096
+     ],
+     "pearson_p": 7.06547846396038e-29,
+     "spearman": 0.8484348750828413,
+     "spearman_ic95": [
+      0.7332668991535591,
+      0.9053953101865323
+     ],
+     "spearman_p": 1.3376111879043635e-26,
+     "autocorr_lag1_x": 0.6245327243145682,
+     "autocorr_lag1_y": 0.5005485838446846
+    },
+    "media_smap": 0.2237935389548385,
+    "media_modello": 0.1918953662352835,
+    "sd_anom_smap": 0.03246298022367131,
+    "sd_anom_modello": 0.03669135919912771
+   },
+   {
+    "configurazione": "mais > soia > frumento",
+    "scenario": "solo_pioggia",
+    "periodo": "secondario",
+    "inizio": "2015-04-01",
+    "fine": "2024-04-14",
+    "mesi": 108,
+    "anomalie": {
+     "n": 108,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.755063647759376,
+     "pearson_ic95": [
+      0.6635769676599454,
+      0.823683831336828
+     ],
+     "pearson_p": 3.755273233759731e-21,
+     "spearman": 0.760296093057818,
+     "spearman_ic95": [
+      0.6593409316154608,
+      0.8248326780460601
+     ],
+     "spearman_p": 1.3906447882387775e-21,
+     "autocorr_lag1_x": 0.37294440162840536,
+     "autocorr_lag1_y": 0.07583436520798607
+    },
+    "grezzi": {
+     "n": 108,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8643629225615745,
+     "pearson_ic95": [
+      0.8171555824669978,
+      0.9035078430074321
+     ],
+     "pearson_p": 2.0155178049573555e-33,
+     "spearman": 0.8495717701753884,
+     "spearman_ic95": [
+      0.7432970345571283,
+      0.9006782739035162
+     ],
+     "spearman_p": 3.2415613844694324e-31,
+     "autocorr_lag1_x": 0.6315043590633496,
+     "autocorr_lag1_y": 0.5247063876694488
+    },
+    "media_smap": 0.22534178131237484,
+    "media_modello": 0.19400787775098574,
+    "sd_anom_smap": 0.032631405504486975,
+    "sd_anom_modello": 0.036593919039877604
+   },
+   {
+    "configurazione": "mais > soia > frumento",
+    "scenario": "tetto_irriguo",
+    "periodo": "principale",
+    "inizio": "2015-04-01",
+    "fine": "2022-12-31",
+    "mesi": 92,
+    "anomalie": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.7004078937058336,
+     "pearson_ic95": [
+      0.6183794705175814,
+      0.7942250967829839
+     ],
+     "pearson_p": 7.802684489762682e-15,
+     "spearman": 0.7126057673042245,
+     "spearman_ic95": [
+      0.6014645335686669,
+      0.8095061466516207
+     ],
+     "spearman_p": 1.6307784224217384e-15,
+     "autocorr_lag1_x": 0.3632564813962048,
+     "autocorr_lag1_y": 0.06372338550225042
+    },
+    "grezzi": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.851516384188636,
+     "pearson_ic95": [
+      0.7941525696608714,
+      0.89456418155077
+     ],
+     "pearson_p": 5.700611867588148e-27,
+     "spearman": 0.8302945301542776,
+     "spearman_ic95": [
+      0.7075326588711669,
+      0.8914725395844645
+     ],
+     "spearman_p": 1.4191724908457954e-24,
+     "autocorr_lag1_x": 0.6245327243145682,
+     "autocorr_lag1_y": 0.482492192762971
+    },
+    "media_smap": 0.2237935389548385,
+    "media_modello": 0.19465276999618372,
+    "sd_anom_smap": 0.03246298022367131,
+    "sd_anom_modello": 0.03751743323889695
+   },
+   {
+    "configurazione": "mais > soia > frumento",
+    "scenario": "tetto_irriguo",
+    "periodo": "secondario",
+    "inizio": "2015-04-01",
+    "fine": "2024-04-14",
+    "mesi": 108,
+    "anomalie": {
+     "n": 108,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.726745013406332,
+     "pearson_ic95": [
+      0.6318260905217113,
+      0.7997714775147722
+     ],
+     "pearson_p": 5.4270341813966855e-19,
+     "spearman": 0.7240942391418256,
+     "spearman_ic95": [
+      0.6031753703312499,
+      0.8000800845022831
+     ],
+     "spearman_p": 8.374239020559024e-19,
+     "autocorr_lag1_x": 0.37294440162840536,
+     "autocorr_lag1_y": 0.10779828385373964
+    },
+    "grezzi": {
+     "n": 108,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8513333078146837,
+     "pearson_ic95": [
+      0.801927714956957,
+      0.8930320731421644
+     ],
+     "pearson_p": 1.8224626073303525e-31,
+     "spearman": 0.8341288214391188,
+     "spearman_ic95": [
+      0.7201045117623405,
+      0.8890818122203166
+     ],
+     "spearman_p": 3.757760550429337e-29,
+     "autocorr_lag1_x": 0.6315043590633496,
+     "autocorr_lag1_y": 0.508974404277923
+    },
+    "media_smap": 0.22534178131237484,
+    "media_modello": 0.1963642648711019,
+    "sd_anom_smap": 0.032631405504486975,
+    "sd_anom_modello": 0.03717692786595872
+   },
+   {
+    "configurazione": "mais > soia > frumento",
+    "scenario": "irrigazione_libera",
+    "periodo": "principale",
+    "inizio": "2015-04-01",
+    "fine": "2022-12-31",
+    "mesi": 92,
+    "anomalie": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.6769420139538236,
+     "pearson_ic95": [
+      0.5848882898102451,
+      0.7798374264824512
+     ],
+     "pearson_p": 1.2840410842936816e-13,
+     "spearman": 0.687082903071683,
+     "spearman_ic95": [
+      0.5657870343811627,
+      0.7958492292026635
+     ],
+     "spearman_p": 3.9530262677449335e-14,
+     "autocorr_lag1_x": 0.3632564813962048,
+     "autocorr_lag1_y": 0.07208148891783257
+    },
+    "grezzi": {
+     "n": 92,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8482463814502813,
+     "pearson_ic95": [
+      0.7867374242322541,
+      0.8936340466455608
+     ],
+     "pearson_p": 1.408381572625932e-26,
+     "spearman": 0.8289690673982397,
+     "spearman_ic95": [
+      0.7077514710780772,
+      0.8910340250924298
+     ],
+     "spearman_p": 1.952525534518597e-24,
+     "autocorr_lag1_x": 0.6245327243145682,
+     "autocorr_lag1_y": 0.4584535076328905
+    },
+    "media_smap": 0.2237935389548385,
+    "media_modello": 0.1977209276882658,
+    "sd_anom_smap": 0.03246298022367131,
+    "sd_anom_modello": 0.03748827804182035
+   },
+   {
+    "configurazione": "mais > soia > frumento",
+    "scenario": "irrigazione_libera",
+    "periodo": "secondario",
+    "inizio": "2015-04-01",
+    "fine": "2024-04-14",
+    "mesi": 108,
+    "anomalie": {
+     "n": 108,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.703211675866647,
+     "pearson_ic95": [
+      0.6001898436579062,
+      0.7832534376840921
+     ],
+     "pearson_p": 2.1581195575820403e-17,
+     "spearman": 0.6933321901168938,
+     "spearman_ic95": [
+      0.5644070378315064,
+      0.7850978835935191
+     ],
+     "spearman_p": 9.116495386489739e-17,
+     "autocorr_lag1_x": 0.37294440162840536,
+     "autocorr_lag1_y": 0.12008935116877494
+    },
+    "grezzi": {
+     "n": 108,
+     "metodo_ic": "block",
+     "blocco": 6,
+     "pearson": 0.8478804720069191,
+     "pearson_ic95": [
+      0.7968045268319033,
+      0.8914075057244436
+     ],
+     "pearson_p": 5.596137270532187e-31,
+     "spearman": 0.8314517896100679,
+     "spearman_ic95": [
+      0.7166217629657455,
+      0.8879812646818925
+     ],
+     "spearman_p": 8.150584509754915e-29,
+     "autocorr_lag1_x": 0.6315043590633496,
+     "autocorr_lag1_y": 0.48886146124083724
+    },
+    "media_smap": 0.22534178131237484,
+    "media_modello": 0.19900817615734118,
+    "sd_anom_smap": 0.032631405504486975,
+    "sd_anom_modello": 0.037251460147164316
+   }
+  ]
+ },
+ "ndvi": {
+  "anni": [
+   2001,
+   2022
+  ],
+  "confronti": [
+   {
+    "indicatore": "ndvi_lug_ago",
+    "scenario": "solo_pioggia",
+    "n": 22,
+    "metodo_ic": "fisher",
+    "pearson": 0.6319996314981935,
+    "pearson_ic95": [
+     0.2868148224333207,
+     0.8319339646004844
+    ],
+    "pearson_p": 0.001602897106364146,
+    "spearman": 0.6228119706380577,
+    "spearman_ic95": [
+     0.23385779143891788,
+     0.8399210238835517
+    ],
+    "spearman_p": 0.001962022889062919,
+    "autocorr_lag1_x": -0.06888631599760896,
+    "autocorr_lag1_y": -0.26781982025823464
+   },
+   {
+    "indicatore": "ndvi_lug_ago",
+    "scenario": "tetto_irriguo",
+    "n": 22,
+    "metodo_ic": "fisher",
+    "pearson": 0.6044568432132633,
+    "pearson_ic95": [
+     0.24538274007598967,
+     0.8176834737259586
+    ],
+    "pearson_p": 0.002885743999032225,
+    "spearman": 0.5962651304972457,
+    "spearman_ic95": [
+     0.19675354797644776,
+     0.8259671128171636
+    ],
+    "spearman_p": 0.003402933557550232,
+    "autocorr_lag1_x": -0.06888631599760896,
+    "autocorr_lag1_y": -0.32129021557650284
+   },
+   {
+    "indicatore": "ndvi_picco_giu_ago",
+    "scenario": "solo_pioggia",
+    "n": 22,
+    "metodo_ic": "fisher",
+    "pearson": 0.5496828903187053,
+    "pearson_ic95": [
+     0.1667095335065292,
+     0.7885452323869621
+    ],
+    "pearson_p": 0.008047559774318685,
+    "spearman": 0.5426312817617166,
+    "spearman_ic95": [
+     0.12560071605566497,
+     0.7966909986318744
+    ],
+    "spearman_p": 0.009072936084502383,
+    "autocorr_lag1_x": -0.009196723454691084,
+    "autocorr_lag1_y": -0.26781982025823464
+   },
+   {
+    "indicatore": "ndvi_picco_giu_ago",
+    "scenario": "tetto_irriguo",
+    "n": 22,
+    "metodo_ic": "fisher",
+    "pearson": 0.5347752095909266,
+    "pearson_ic95": [
+     0.146109432062592,
+     0.7804246358095734
+    ],
+    "pearson_p": 0.010339445536904034,
+    "spearman": 0.541904776719719,
+    "spearman_ic95": [
+     0.12466911247363408,
+     0.7962845078123967
+    ],
+    "spearman_p": 0.00918441906568418,
+    "autocorr_lag1_x": -0.009196723454691084,
+    "autocorr_lag1_y": -0.32129021557650284
+   }
+  ],
+  "eterogeneita_finestra": {
+   "sd_tra_pixel_media": 0.08144151577409703,
+   "sd_interannuale_media_finestra": 0.04124612554302566,
+   "quota_pixel_ndvi_sotto_0_5_media": 0.04994388327721661,
+   "n_pixel_medio": 81.0,
+   "anomalia_2022_pixel_mediana": -0.07167500000000004,
+   "quota_pixel_2022_sotto_meno_0_05": 0.5925925925925926,
+   "quota_pixel_2022_sopra_0": 0.1111111111111111
+  },
+  "casi": {
+   "2003": {
+    "ndvi_lug_ago": 0.6006250000000001,
+    "rango_ndvi_lug_ago": 1,
+    "ndvi_picco_giu_ago": 0.7196,
+    "f_acqua_solo_pioggia": 0.467346953998367,
+    "rango_f_acqua_solo_pioggia": 4,
+    "f_acqua_tetto_irriguo": 0.8753883402593902,
+    "rango_f_acqua_tetto_irriguo": 4
+   },
+   "2012": {
+    "ndvi_lug_ago": 0.643625,
+    "rango_ndvi_lug_ago": 3,
+    "ndvi_picco_giu_ago": 0.7391,
+    "f_acqua_solo_pioggia": 0.3652551978213966,
+    "rango_f_acqua_solo_pioggia": 2,
+    "f_acqua_tetto_irriguo": 0.8103937576988138,
+    "rango_f_acqua_tetto_irriguo": 3
+   },
+   "2022": {
+    "ndvi_lug_ago": 0.60905,
+    "rango_ndvi_lug_ago": 2,
+    "ndvi_picco_giu_ago": 0.6651,
+    "f_acqua_solo_pioggia": 0.3764838161133637,
+    "rango_f_acqua_solo_pioggia": 3,
+    "f_acqua_tetto_irriguo": 0.7651589310757853,
+    "rango_f_acqua_tetto_irriguo": 2
+   }
+  },
+  "n_anni": 22
+ },
+ "istat": {
+  "anni": [
+   2006,
+   2022
+  ],
+  "scenario_rappresentativo": "tetto_irriguo",
+  "confronti": [
+   {
+    "coltura": "mais",
+    "scenario": "solo_pioggia",
+    "simulazione": "monosuccessione",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5440708062369188,
+     "pearson_ic95": [
+      0.08588550861685933,
+      0.8122962242870997
+     ],
+     "pearson_p": 0.02395949429595762,
+     "spearman": 0.7377450980392158,
+     "spearman_ic95": [
+      0.34053690191898184,
+      0.911501092263278
+     ],
+     "spearman_p": 0.0007238246704990691,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.2735329806023161
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7906396108107479,
+     "pearson_ic95": [
+      0.4850288606844441,
+      0.9241486552890483
+     ],
+     "pearson_p": 0.00026628737604290616,
+     "spearman": 0.8242326125228052,
+     "spearman_ic95": [
+      0.49351290915708246,
+      0.94670853046464
+     ],
+     "spearman_p": 8.612592771923983e-05,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5305210990619894
+    }
+   },
+   {
+    "coltura": "mais",
+    "scenario": "solo_pioggia",
+    "simulazione": "media_rotazioni",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5560538993376768,
+     "pearson_ic95": [
+      0.10291451633940181,
+      0.8180602801760795
+     ],
+     "pearson_p": 0.02045791369410148,
+     "spearman": 0.7647058823529413,
+     "spearman_ic95": [
+      0.39012994871122625,
+      0.9221113616174155
+     ],
+     "spearman_p": 0.00034961095004698475,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.30012851556245784
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.8024866724289441,
+     "pearson_ic95": [
+      0.509431703698807,
+      0.9287414959292644
+     ],
+     "pearson_p": 0.00018321412892917418,
+     "spearman": 0.8242326125228052,
+     "spearman_ic95": [
+      0.49351290915708246,
+      0.94670853046464
+     ],
+     "spearman_p": 8.612592771923983e-05,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5575281336749731
+    }
+   },
+   {
+    "coltura": "mais",
+    "scenario": "tetto_irriguo",
+    "simulazione": "monosuccessione",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.7011062534204314,
+     "pearson_ic95": [
+      0.33251259305691844,
+      0.8838937933256661
+     ],
+     "pearson_p": 0.0017146933009260918,
+     "spearman": 0.806372549019608,
+     "spearman_ic95": [
+      0.47272847855891953,
+      0.937810247998783
+     ],
+     "spearman_p": 9.237187552774259e-05,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.39289803908403176
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.8334532745838219,
+     "pearson_ic95": [
+      0.5755241528304105,
+      0.9405662598638975
+     ],
+     "pearson_p": 6.0617789654792244e-05,
+     "spearman": 0.8109385381272761,
+     "spearman_ic95": [
+      0.4645820898079077,
+      0.9420983881712365
+     ],
+     "spearman_p": 0.0001381795252081875,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.6178852615343978
+    }
+   },
+   {
+    "coltura": "mais",
+    "scenario": "tetto_irriguo",
+    "simulazione": "media_rotazioni",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.6624532924824431,
+     "pearson_ic95": [
+      0.2667397000230299,
+      0.8670312333937321
+     ],
+     "pearson_p": 0.003759950572282177,
+     "spearman": 0.7990196078431374,
+     "spearman_ic95": [
+      0.4575810848106036,
+      0.9351011279195015
+     ],
+     "spearman_p": 0.0001193970638438656,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.38858141595433116
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.801411223387188,
+     "pearson_ic95": [
+      0.5071968452490316,
+      0.9283261616647337
+     ],
+     "pearson_p": 0.0001897300379064731,
+     "spearman": 0.803552941240871,
+     "spearman_ic95": [
+      0.4489164314645605,
+      0.9395008704689146
+     ],
+     "spearman_p": 0.0001769382819267012,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.6207893711627848
+    }
+   },
+   {
+    "coltura": "mais",
+    "scenario": "irrigazione_libera",
+    "simulazione": "monosuccessione",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5336692054318659,
+     "pearson_ic95": [
+      0.07131784130693065,
+      0.8072500489445708
+     ],
+     "pearson_p": 0.027360779214089654,
+     "spearman": 0.5405421721320017,
+     "spearman_ic95": [
+      0.044110719223464954,
+      0.822889825538266
+     ],
+     "spearman_p": 0.025074352521979204,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.2670127680039504
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7812709521446143,
+     "pearson_ic95": [
+      0.46606231530246883,
+      0.9204891022559468
+     ],
+     "pearson_p": 0.0003521765833667815,
+     "spearman": 0.7784419118270937,
+     "spearman_ic95": [
+      0.3976863806062317,
+      0.9304740600765621
+     ],
+     "spearman_p": 0.00038220308663843277,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5506755311358739
+    }
+   },
+   {
+    "coltura": "mais",
+    "scenario": "irrigazione_libera",
+    "simulazione": "media_rotazioni",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5338420208507788,
+     "pearson_ic95": [
+      0.07155827241455963,
+      0.8073342156850408
+     ],
+     "pearson_p": 0.02730138571875393,
+     "spearman": 0.5405421721320017,
+     "spearman_ic95": [
+      0.044110719223464954,
+      0.822889825538266
+     ],
+     "spearman_p": 0.025074352521979204,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.2670898339022335
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7811427769879193,
+     "pearson_ic95": [
+      0.46580482233005377,
+      0.920438865012188
+     ],
+     "pearson_p": 0.0003534934678487783,
+     "spearman": 0.7784419118270937,
+     "spearman_ic95": [
+      0.3976863806062317,
+      0.9304740600765621
+     ],
+     "spearman_p": 0.00038220308663843277,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5504249578232492
+    }
+   },
+   {
+    "coltura": "soia",
+    "scenario": "solo_pioggia",
+    "simulazione": "monosuccessione",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.34283809764642836,
+     "pearson_ic95": [
+      -0.16499511797099695,
+      0.7069837280542272
+     ],
+     "pearson_p": 0.1779337798809827,
+     "spearman": 0.35294117647058826,
+     "spearman_ic95": [
+      -0.16943932494954603,
+      0.7205020851516992
+     ],
+     "spearman_p": 0.16465797331641724,
+     "autocorr_lag1_x": -0.09321171543372743,
+     "autocorr_lag1_y": -0.25988243022243634
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.5172059556890833,
+     "pearson_ic95": [
+      0.02891352202087799,
+      0.8062129908557836
+     ],
+     "pearson_p": 0.04020123763558903,
+     "spearman": 0.5332873754708631,
+     "spearman_ic95": [
+      0.013765829228943387,
+      0.8260873662566466
+     ],
+     "spearman_p": 0.03339908698893776,
+     "autocorr_lag1_x": -0.4363918241491918,
+     "autocorr_lag1_y": -0.5226689679878703
+    }
+   },
+   {
+    "coltura": "soia",
+    "scenario": "solo_pioggia",
+    "simulazione": "media_rotazioni",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.3396727883806165,
+     "pearson_ic95": [
+      -0.1684780329028605,
+      0.7051873039908646
+     ],
+     "pearson_p": 0.18223563345599464,
+     "spearman": 0.35294117647058826,
+     "spearman_ic95": [
+      -0.16943932494954603,
+      0.7205020851516992
+     ],
+     "spearman_p": 0.16465797331641724,
+     "autocorr_lag1_x": -0.09321171543372743,
+     "autocorr_lag1_y": -0.25542822071552274
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.519682413811544,
+     "pearson_ic95": [
+      0.032297120876661645,
+      0.8073951992288596
+     ],
+     "pearson_p": 0.039091132724879185,
+     "spearman": 0.5558842981603065,
+     "spearman_ic95": [
+      0.04274869951347624,
+      0.836961074093283
+     ],
+     "spearman_p": 0.025361555353579108,
+     "autocorr_lag1_x": -0.4363918241491918,
+     "autocorr_lag1_y": -0.5197384828140069
+    }
+   },
+   {
+    "coltura": "soia",
+    "scenario": "tetto_irriguo",
+    "simulazione": "monosuccessione",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.27269498016322535,
+     "pearson_ic95": [
+      -0.23931691770490177,
+      0.6660420120056733
+     ],
+     "pearson_p": 0.2896245216184943,
+     "spearman": 0.29411764705882354,
+     "spearman_ic95": [
+      -0.22789017473117137,
+      0.6848007152098792
+     ],
+     "spearman_p": 0.2518444167529263,
+     "autocorr_lag1_x": -0.09321171543372743,
+     "autocorr_lag1_y": -0.23958537368543673
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.4120080687799833,
+     "pearson_ic95": [
+      -0.10517831506334188,
+      0.7537679154305947
+     ],
+     "pearson_p": 0.11279994174310495,
+     "spearman": 0.4745353764783104,
+     "spearman_ic95": [
+      -0.05741153370887274,
+      0.7966188902884258
+     ],
+     "spearman_p": 0.06327840120449939,
+     "autocorr_lag1_x": -0.4363918241491918,
+     "autocorr_lag1_y": -0.49945499964780515
+    }
+   },
+   {
+    "coltura": "soia",
+    "scenario": "tetto_irriguo",
+    "simulazione": "media_rotazioni",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.28254532804623295,
+     "pearson_ic95": [
+      -0.22922974197351292,
+      0.6719382408039609
+     ],
+     "pearson_p": 0.2718503129247757,
+     "spearman": 0.32107843137254904,
+     "spearman_ic95": [
+      -0.20150825113403256,
+      0.701375253183312
+     ],
+     "spearman_p": 0.20889818325093903,
+     "autocorr_lag1_x": -0.09321171543372743,
+     "autocorr_lag1_y": -0.2728040175712182
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.4370536626265814,
+     "pearson_ic95": [
+      -0.0748728637356564,
+      0.7666618377892217
+     ],
+     "pearson_p": 0.09049766958380429,
+     "spearman": 0.5016516837056424,
+     "spearman_ic95": [
+      -0.025266583406686027,
+      0.8104344428201976
+     ],
+     "spearman_p": 0.0477238853044501,
+     "autocorr_lag1_x": -0.4363918241491918,
+     "autocorr_lag1_y": -0.5293101696761834
+    }
+   },
+   {
+    "coltura": "soia",
+    "scenario": "irrigazione_libera",
+    "simulazione": "monosuccessione",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.14735812404569582,
+     "pearson_ic95": [
+      -0.35869166827910476,
+      0.5864653629369283
+     ],
+     "pearson_p": 0.5724884049923225,
+     "spearman": 0.21678114872788598,
+     "spearman_ic95": [
+      -0.3001320976091793,
+      0.6352783105139416
+     ],
+     "spearman_p": 0.40330321243472,
+     "autocorr_lag1_x": -0.09321171543372743,
+     "autocorr_lag1_y": -0.0326954880097744
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.32830842145354444,
+     "pearson_ic95": [
+      -0.199935215357554,
+      0.7086801460049296
+     ],
+     "pearson_p": 0.21442967220922204,
+     "spearman": 0.46867875571133466,
+     "spearman_ic95": [
+      -0.06420598296912619,
+      0.7935866991340222
+     ],
+     "spearman_p": 0.06707516422782392,
+     "autocorr_lag1_x": -0.4363918241491918,
+     "autocorr_lag1_y": -0.4318247708122158
+    }
+   },
+   {
+    "coltura": "soia",
+    "scenario": "irrigazione_libera",
+    "simulazione": "media_rotazioni",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.1469584952052651,
+     "pearson_ic95": [
+      -0.3590475364903259,
+      0.5861973155586381
+     ],
+     "pearson_p": 0.5735418360821785,
+     "spearman": -0.06081311337519424,
+     "spearman_ic95": [
+      -0.5264308183187449,
+      0.4328660759230631
+     ],
+     "spearman_p": 0.8166514869026669,
+     "autocorr_lag1_x": -0.09321171543372743,
+     "autocorr_lag1_y": -0.03306191690770442
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.3275329636808201,
+     "pearson_ic95": [
+      -0.20076922857215315,
+      0.7082473693950037
+     ],
+     "pearson_p": 0.21557880319288758,
+     "spearman": 0.4113322955819319,
+     "spearman_ic95": [
+      -0.12819967522784906,
+      0.7629918781931276
+     ],
+     "spearman_p": 0.11345034255000809,
+     "autocorr_lag1_x": -0.4363918241491918,
+     "autocorr_lag1_y": -0.43362894433056304
+    }
+   },
+   {
+    "coltura": "frumento",
+    "scenario": "solo_pioggia",
+    "simulazione": "monosuccessione",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": -0.5024108344319969,
+     "pearson_ic95": [
+      -0.7918409489670373,
+      -0.02869548313132137
+     ],
+     "pearson_p": 0.03985137983724594,
+     "spearman": -0.5184290832720562,
+     "spearman_ic95": [
+      -0.8117364514725455,
+      -0.016277542997205883
+     ],
+     "spearman_p": 0.03300293962662837,
+     "autocorr_lag1_x": 0.11029344146792497,
+     "autocorr_lag1_y": -0.09165588190697146
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": -0.23657690395985131,
+     "pearson_ic95": [
+      -0.6554195873876687,
+      0.2935542502315798
+     ],
+     "pearson_p": 0.3776879322196679,
+     "spearman": -0.06947617004917862,
+     "spearman_ic95": [
+      -0.5468245727680988,
+      0.44195963078030015
+     ],
+     "spearman_p": 0.7982057618267434,
+     "autocorr_lag1_x": -0.5435475587862082,
+     "autocorr_lag1_y": -0.4141847771147842
+    }
+   },
+   {
+    "coltura": "frumento",
+    "scenario": "solo_pioggia",
+    "simulazione": "media_rotazioni",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": -0.48569564265442533,
+     "pearson_ic95": [
+      -0.7834470042122019,
+      -0.00658907322506687
+     ],
+     "pearson_p": 0.04809554638765557,
+     "spearman": -0.5503702116253109,
+     "spearman_ic95": [
+      -0.8277679712265721,
+      -0.05675928496414703
+     ],
+     "spearman_p": 0.022065167468726412,
+     "autocorr_lag1_x": 0.11029344146792497,
+     "autocorr_lag1_y": -0.15616636603127348
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": -0.3146045205200638,
+     "pearson_ic95": [
+      -0.7009897101196305,
+      0.21456200088089802
+     ],
+     "pearson_p": 0.23531734072814448,
+     "spearman": -0.12564839264213157,
+     "spearman_ic95": [
+      -0.5863290181925706,
+      0.3964430037823127
+     ],
+     "spearman_p": 0.6428846703445525,
+     "autocorr_lag1_x": -0.5435475587862082,
+     "autocorr_lag1_y": -0.4178274005418963
+    }
+   }
+  ]
+ },
+ "robustezza_mais": {
+  "confronti": [
+   {
+    "variante": "doppio_power",
+    "scenario": "solo_pioggia",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5440708062369188,
+     "pearson_ic95": [
+      0.08588550861685933,
+      0.8122962242870997
+     ],
+     "pearson_p": 0.02395949429595762,
+     "spearman": 0.7377450980392158,
+     "spearman_ic95": [
+      0.34053690191898184,
+      0.911501092263278
+     ],
+     "spearman_p": 0.0007238246704990691,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.2735329806023161
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7906396108107479,
+     "pearson_ic95": [
+      0.4850288606844441,
+      0.9241486552890483
+     ],
+     "pearson_p": 0.00026628737604290616,
+     "spearman": 0.8242326125228052,
+     "spearman_ic95": [
+      0.49351290915708246,
+      0.94670853046464
+     ],
+     "spearman_p": 8.612592771923983e-05,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5305210990619894
+    }
+   },
+   {
+    "variante": "doppio_power",
+    "scenario": "tetto_irriguo",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.7011062534204314,
+     "pearson_ic95": [
+      0.33251259305691844,
+      0.8838937933256661
+     ],
+     "pearson_p": 0.0017146933009260918,
+     "spearman": 0.806372549019608,
+     "spearman_ic95": [
+      0.47272847855891953,
+      0.937810247998783
+     ],
+     "spearman_p": 9.237187552774259e-05,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.39289803908403176
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.8334532745838219,
+     "pearson_ic95": [
+      0.5755241528304105,
+      0.9405662598638975
+     ],
+     "pearson_p": 6.0617789654792244e-05,
+     "spearman": 0.8109385381272761,
+     "spearman_ic95": [
+      0.4645820898079077,
+      0.9420983881712365
+     ],
+     "spearman_p": 0.0001381795252081875,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.6178852615343978
+    }
+   },
+   {
+    "variante": "doppio_power",
+    "scenario": "irrigazione_libera",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5336692054318659,
+     "pearson_ic95": [
+      0.07131784130693065,
+      0.8072500489445708
+     ],
+     "pearson_p": 0.027360779214089654,
+     "spearman": 0.5405421721320017,
+     "spearman_ic95": [
+      0.044110719223464954,
+      0.822889825538266
+     ],
+     "spearman_p": 0.025074352521979204,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.2670127680039504
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7812709521446143,
+     "pearson_ic95": [
+      0.46606231530246883,
+      0.9204891022559468
+     ],
+     "pearson_p": 0.0003521765833667815,
+     "spearman": 0.7784419118270937,
+     "spearman_ic95": [
+      0.3976863806062317,
+      0.9304740600765621
+     ],
+     "spearman_p": 0.00038220308663843277,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5506755311358739
+    }
+   },
+   {
+    "variante": "singolo_power",
+    "scenario": "solo_pioggia",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5378656015463097,
+     "pearson_ic95": [
+      0.0771713449348313,
+      0.8092906900136275
+     ],
+     "pearson_p": 0.02594646410062636,
+     "spearman": 0.8137254901960784,
+     "spearman_ic95": [
+      0.48813800244465094,
+      0.940493253984579
+     ],
+     "spearman_p": 7.068933644044633e-05,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.3306297287902765
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.8020902348116736,
+     "pearson_ic95": [
+      0.508607418246853,
+      0.9285884301255756
+     ],
+     "pearson_p": 0.0001855940900741619,
+     "spearman": 0.8818402682367646,
+     "spearman_ic95": [
+      0.6311741471405371,
+      0.965725174552476
+     ],
+     "spearman_p": 6.275139994916481e-06,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.6081426636784691
+    }
+   },
+   {
+    "variante": "singolo_power",
+    "scenario": "tetto_irriguo",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.6974240316316209,
+     "pearson_ic95": [
+      0.3260884038702267,
+      0.8823076267045951
+     ],
+     "pearson_p": 0.0018571930633773685,
+     "spearman": 0.7995096536468523,
+     "spearman_ic95": [
+      0.4585826123974568,
+      0.9352824941247001
+     ],
+     "spearman_p": 0.00011741021201246061,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.4829362668381112
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7921545888831981,
+     "pearson_ic95": [
+      0.48812313005847946,
+      0.9247381383062369
+     ],
+     "pearson_p": 0.00025418819447722434,
+     "spearman": 0.7887817474680608,
+     "spearman_ic95": [
+      0.4184127458590405,
+      0.9342276274105581
+     ],
+     "spearman_p": 0.0002817719919380321,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.6494567420600635
+    }
+   },
+   {
+    "variante": "singolo_power",
+    "scenario": "irrigazione_libera",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5339537874492255,
+     "pearson_ic95": [
+      0.0717137973780679,
+      0.8073886437355489
+     ],
+     "pearson_p": 0.027263026597962536,
+     "spearman": 0.5405421721320017,
+     "spearman_ic95": [
+      0.044110719223464954,
+      0.822889825538266
+     ],
+     "spearman_p": 0.025074352521979204,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.2663496256342658
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7809947668145126,
+     "pearson_ic95": [
+      0.4655075489214986,
+      0.9203808478642176
+     ],
+     "pearson_p": 0.0003550191973215078,
+     "spearman": 0.7784419118270937,
+     "spearman_ic95": [
+      0.3976863806062317,
+      0.9304740600765621
+     ],
+     "spearman_p": 0.00038220308663843277,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5500505651218192
+    }
+   },
+   {
+    "variante": "doppio_imerg",
+    "scenario": "solo_pioggia",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.6281326394198906,
+     "pearson_ic95": [
+      0.2112730287490841,
+      0.8516552937465472
+     ],
+     "pearson_p": 0.006931578894441304,
+     "spearman": 0.8137254901960784,
+     "spearman_ic95": [
+      0.48813800244465094,
+      0.940493253984579
+     ],
+     "spearman_p": 7.068933644044633e-05,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.3296226089527894
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.8281388035967298,
+     "pearson_ic95": [
+      0.5639367277834472,
+      0.9385551953288267
+     ],
+     "pearson_p": 7.440382876058158e-05,
+     "spearman": 0.8907029845004508,
+     "spearman_ic95": [
+      0.6543622366774409,
+      0.9685139696381827
+     ],
+     "spearman_p": 3.725465085636688e-06,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5605822553144999
+    }
+   },
+   {
+    "variante": "doppio_imerg",
+    "scenario": "tetto_irriguo",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.7261163335909451,
+     "pearson_ic95": [
+      0.37707078225801355,
+      0.894557085891892
+     ],
+     "pearson_p": 0.0009654492161717852,
+     "spearman": 0.7210301784422534,
+     "spearman_ic95": [
+      0.3111440905862874,
+      0.9047432093991543
+     ],
+     "spearman_p": 0.0010902874800254895,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.41353128743214207
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7829323011272337,
+     "pearson_ic95": [
+      0.46940466234642775,
+      0.9211398387893562
+     ],
+     "pearson_p": 0.0003354711501409459,
+     "spearman": 0.7843503893362178,
+     "spearman_ic95": [
+      0.4094686137192456,
+      0.9326252524085721
+     ],
+     "spearman_p": 0.00032173495928584033,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5355127959169378
+    }
+   },
+   {
+    "variante": "doppio_imerg",
+    "scenario": "irrigazione_libera",
+    "anni": [
+     2006,
+     2022
+    ],
+    "detrend": {
+     "n": 17,
+     "metodo_ic": "fisher",
+     "pearson": 0.5348738081467683,
+     "pearson_ic95": [
+      0.07299487511165428,
+      0.807836498273425
+     ],
+     "pearson_p": 0.026948846836991655,
+     "spearman": 0.5405421721320017,
+     "spearman_ic95": [
+      0.044110719223464954,
+      0.822889825538266
+     ],
+     "spearman_p": 0.025074352521979204,
+     "autocorr_lag1_x": -0.13058466794218673,
+     "autocorr_lag1_y": -0.26679542518819255
+    },
+    "differenze_prime": {
+     "n": 16,
+     "metodo_ic": "fisher",
+     "pearson": 0.7809101221864808,
+     "pearson_ic95": [
+      0.4653375750494076,
+      0.9203476660355636
+     ],
+     "pearson_p": 0.00035589417956203396,
+     "spearman": 0.7784419118270937,
+     "spearman_ic95": [
+      0.3976863806062317,
+      0.9304740600765621
+     ],
+     "spearman_p": 0.00038220308663843277,
+     "autocorr_lag1_x": -0.6292954227021206,
+     "autocorr_lag1_y": -0.5492169297443226
+    }
+   }
+  ]
+ },
+ "figure": {
+  "smap": "reports/figure/validazione_smap_anomalie.png",
+  "ndvi": "reports/figure/validazione_ndvi_stress.png",
+  "istat": "reports/figure/validazione_istat_rese.png",
+  "caso_2022": "reports/figure/validazione_caso_2022.png"
+ },
+ "tabelle": [
+  "validation_smap_mensile.csv",
+  "validation_ndvi_annuale.csv",
+  "validation_istat.csv"
+ ],
+ "non_validato": [
+  "azoto (concime, assorbimento, mineralizzazione)",
+  "humus",
+  "lisciviazione dei nitrati",
+  "percolazione e ruscellamento"
+ ]
+}

@@ -5,7 +5,7 @@
 _meta:
   descrizione: "Azoto (bilancio di massa del suolo) e humus (Hénin-Dupuis) per mais da granella, soia e frumento tenero in Pianura Padana"
   compilato_il: "2026-11-11"
-  rivisto_il: "2026-11-12 (decisioni del responsabile dopo l'implementazione di nitrogen.py: soia senza concime e deficit_n, tetto e biomassa della cover proporzionali all'N assorbito, passo 2 che chiude il bilancio); 2026-11-12 (correzioni dopo reports/params_review.md: fissazione soia, coppia n_assorbito/NHI soia, efficienza del concime, cover crop nelle equazioni, strato dell'humus, k2 per C/N > 12, credito di precessione)"
+  rivisto_il: "2026-11-12 (decisioni del responsabile dopo l'implementazione di nitrogen.py: soia senza concime e deficit_n, tetto e biomassa della cover proporzionali all'N assorbito, passo 2 che chiude il bilancio); 2026-11-12 (correzioni dopo reports/params_review.md: fissazione soia, coppia n_assorbito/NHI soia, efficienza del concime, cover crop nelle equazioni, strato dell'humus, k2 per C/N > 12, credito di precessione); 2026-11-12 (verifica del motore: soglie di C/N di k2 in suolo.k2_soglie_cn, riparto sulla traspirazione del bilancio idrico a doppio coefficiente, limiti aggiornati e misura della cover rifatta)"
   convenzioni:
     resa: "Le rese (t/ha) a cui si applicano i coefficienti per tonnellata sono di granella all'umidità commerciale (mais 14%, soia e frumento 13%, come in crops.yaml). Le tabelle ER (Allegato 6) non dichiarano l'umidità; la tabella MAS della Lombardia dice 'granella = all'umidità commerciale'. La soia in Salvagiotti et al. (2008) è al 13% di umidità."
     humus: "H è lo stock di sostanza organica (SO) del suolo in t SO/ha nello STRATO DELL'HUMUS, unico per tutto il motore: spessore suolo.profondita_humus (0,20 m), con SO% e densità apparente presi da soil.yaml (strati_soilgrids.s0_30.sostanza_organica e .densita_apparente). H = SO% / 100 x profondita_humus x 10000 x densita_apparente (t/ha)."
@@ -71,9 +71,10 @@ _meta:
          alla terminazione, immobilizzazioni) torna a N_min in modo uniforme nei suolo.residui.giorni_rilascio
          giorni successivi all'evento (assunzione); N_res = somma dei rilasci non ancora avvenuti.
       2) Coltura: U = resa x n_assorbito(coltura) sul ciclo (resa nota dal bilancio idrico e dai fattori);
-         u_d = U x q_d con q_d = Tr_d / somma sul ciclo di Tr, Tr_d = Ks_d x Kcb_d x ET0_d: traspirazione
-         stimata con il coefficiente basale FAO-56 (Tab. 17, crops.<coltura>.kcb, stessa curva a quattro tratti
-         e stessi punti di passaggio di Kc, correzione climatica di mid/end come Kc) e Ks del bilancio idrico.
+         u_d = U x q_d con q_d = Tr_d / somma sul ciclo di Tr, Tr_d = traspirazione del giorno calcolata dal
+         nucleo idrico (water.py, metodo a doppio coefficiente FAO-56 cap. 7: Tr = Ks x Kcb x ET0 con Kcb di
+         crops.<coltura>.kcb, Tab. 17, stessa curva a quattro tratti e stessi punti di passaggio di Kc, eq. 70
+         su mid/end): una sola definizione di traspirazione nel motore (WaterResult.tr).
          Regola dichiarata come ASSUNZIONE: la biomassa, e con essa l'azoto assorbito, cresce in proporzione
          alla traspirazione (principio della produttivita' dell'acqua di FAO-33 e AquaCrop/FAO-66, ricordato,
          non riletto per questa regola). Alternative per la sensibilita' (rotation.simulate, argomento
@@ -85,7 +86,7 @@ _meta:
            deficit_n_d = u_d - u_suolo - FIX_d (non coperto) ; N_pl += FIX_d
          Controllo normativo sul ciclo: somma FERT x efficienza_concime.minerale_convenzione_normativa <= MAS.
       2bis) Cover: u_cov_d = min(cover_crop.biomassa_e_azoto.n_assorbito x q_d, N_min), q_d = Tr / somma Tr
-         sul periodo della cover, Tr = Ks x Kcb x ET0 con Kcb = cover_crop.acqua.kcb.ini costante (come kc); N_min -> N_cov. Il tetto 0,70 x N_min del passo a fine segmento
+         sul periodo della cover, Tr = traspirazione del nucleo idrico (Ks x Kcb x ET0 con Kcb = cover_crop.acqua.kcb.ini costante); N_min -> N_cov. Il tetto 0,70 x N_min del passo a fine segmento
          non si usa piu': il limite nasce dal bilancio giornaliero (N_min presente ogni giorno).
       3) Lisciviazione giornaliera: L_d = N_min x (1 - exp(-D_d / ((1 - anion_excl) x SAT_mm))), D_d =
          percolazione profonda del giorno (SWAT eq. 4:2.1.2 e 4:2.1.8, formulata per il passo giornaliero;
@@ -124,12 +125,16 @@ _meta:
     - "Fosforo e potassio non sono modellati."
     - "Soia senza concime: se N_disp + FIX < U il fabbisogno non coperto è riportato come deficit_n (con indicatore), ma la resa non viene ridotta; l'asportazione e l'N dei residui si calcolano sull'assorbimento coperto U_eff."
     - "Concime: copre ogni giorno la parte di assorbimento che il suolo non copre (distribuzione frazionata ideale che segue la domanda). L'azoto del concime esposto tra distribuzione e assorbimento (dosi in blocco, lisciviazione dopo la concimazione) non è rappresentato, se non attraverso la perdita esplicita PERD_F = FERT x (1 - recupero_apparente)."
-    - "Ripartizione giornaliera dell'assorbimento proporzionale alla traspirazione stimata Ks x Kcb x ET0 (assunzione dichiarata). Kcb serve solo a questo riparto: il bilancio idrico resta a Kc singolo. La concentrazione di N nella biomassa e' trattata come costante nel ciclo (in campo e' piu' alta nelle prime fasi): l'assorbimento precoce e' sottostimato. Con ETa/ET0 (Kc singolo, evaporazione inclusa) il frumento assorbiva il 45% in nov-feb, con la traspirazione il 7%."
-    - "Cover: assorbimento proporzionale a Ks x Kcb x ET0 con Kcb costante, cioe' all'ET0 (alta a settembre-ottobre e a marzo, bassa d'inverno); la crescita della copertura nel tempo non e' rappresentata. A parita' di drenaggio la riduzione della lisciviazione (mediana 26%) resta sotto il 56-70% pubblicato: l'assorbimento non e' concentrato nell'autunno, quando drena di piu', e 51 kg N/ha sono una parte dell'N minerale presente a fine estate."
+    - "Ripartizione giornaliera dell'assorbimento proporzionale alla traspirazione Ks x Kcb x ET0 calcolata dal bilancio idrico a doppio coefficiente (assunzione dichiarata; dal 2026-11-12 il bilancio idrico e il riparto usano la stessa traspirazione). La concentrazione di N nella biomassa e' trattata come costante nel ciclo (in campo e' piu' alta nelle prime fasi): l'assorbimento precoce e' sottostimato. Con ETa/ET0 (Kc singolo, evaporazione inclusa) il frumento assorbiva il 45% in nov-feb, con la traspirazione il 7%."
+    - "Cover: assorbimento proporzionale a Ks x Kcb x ET0 con Kcb costante, cioe' all'ET0 (alta a settembre-ottobre e a marzo, bassa d'inverno); la crescita della copertura nel tempo non e' rappresentata. Misura del 2026-11-12 (doppio coefficiente e CN di AquaCrop; punto pilota, solo pioggia, mediana delle annate, stesso intervallo con e senza cover): il drenaggio e' praticamente uguale (dopo il mais 65 mm nudo, 68 con cover; dopo il frumento 76 e 75), quindi la riduzione della lisciviazione e' tutta un effetto di intercettazione. Lisciviazione per mm drenato ridotta del 51% dopo il mais (10,4 -> 5,5 kg N/ha) e del 62% dopo il frumento (15,1 -> 5,6), con irrigazione libera 43% e 58%. Dopo il mais la riduzione resta sotto il 56-70% pubblicato perche' l'N minerale alla semina della cover e' quasi nullo (mediana 4,4 kg N/ha: il concime non resta nel suolo) e la lisciviazione da intercettare e' solo quella dell'N mineralizzato in autunno-inverno; la cover raggiunge comunque il tetto di 51 kg N/ha. Dopo il frumento (N minerale alla semina 21,6 kg N/ha) la riduzione sta nell'intervallo pubblicato. Nessun parametro e' stato tarato su questo risultato."
     - "Rilascio dei residui e delle immobilizzazioni uniforme in giorni_rilascio (assunzione, senza dipendenza da temperatura e umidita')."
     - "La frazione lisciviata usa SAT_mm dell'intero profilo del motore (1,5 m), non della sola zona radicale del segmento."
     - "Il MAS non viene ridotto per rese sotto la resa di riferimento (la nota 112 regola solo il superamento)."
     - "Cover: biomassa e humus proporzionali all'N assorbito (C/N costante) è un'assunzione; n_assorbito della segale è derivato, non misurato."
+    - "Lisciviazione probabilmente sottostimata (circa 4-25 kg N/ha/anno nelle rotazioni del punto pilota; per il mais irriguo in pianura padana la letteratura riporta in genere alcune decine di kg): il concime copre la domanda giorno per giorno e non passa mai dall'N minerale, la quota persa del concime e' contata a parte in PERD_F e non nella lisciviazione, e la SAT dell'intero profilo sta al denominatore della frazione lisciviata."
+    - "Un solo strato per la lisciviazione (SWAT eq. 4:2.1.2 sul profilo intero di 1,5 m): rispetto allo strato 0-30 cm la lisciviazione per mm drenato e' diluita di circa 5 volte; la SAT dello strato o della zona radicale va esplorata in sensibilita'."
+    - "Falda e risalita capillare non modellate (soil._meta.limiti): la percolazione e quindi la lisciviazione sono probabilmente sovrastimate dove la falda e' superficiale, mentre lo stress idrico del mais in asciutto e' sovrastimato."
+    - "L'azoto non limita la resa: lo scenario e' 'azoto non limitante, con costo e rischio ambientale espliciti' (concime, PERD_F, superamento del MAS, deficit_n della soia, lisciviazione). Le rotazioni povere di azoto si distinguono per concime e MAS, non per resa; le penalita' di ristoppio possono contenere un effetto azoto gia' rappresentato dal credito di precessione (variante f_rotazione = 1 in sensibilita')."
 
 # =============================================================================
 # COLTURE
@@ -348,6 +353,24 @@ frumento:
 # =============================================================================
 
 suolo:
+  k2_soglie_cn:
+    # soglie del C/N dell'humus che scelgono la colonna di k2 (humus.k2_from_params)
+    inferiore:
+      valore: 9
+      unita: "-"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B1, Tab. 1, intestazioni delle colonne C/N<9 | C/N 9-12 | C/N>12, pp. 53-54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "C/N < 9 -> k2.cn_basso; 9 <= C/N <= 12 -> k2.per_tessitura. Prima era scritta nel codice (verifica del motore, errore 5). Tabella non riaperta in questa sessione: e' la stessa tabella da cui sono derivate le voci k2 (lette in una sessione precedente)."
+      verificato: false
+    superiore:
+      valore: 12
+      unita: "-"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B1, Tab. 1, intestazioni delle colonne C/N<9 | C/N 9-12 | C/N>12, pp. 53-54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "C/N > 12 -> k2.cn_alto. Vedi 'inferiore'."
+      verificato: false
   k2:
     per_tessitura:
       tendenzialmente_sabbioso:

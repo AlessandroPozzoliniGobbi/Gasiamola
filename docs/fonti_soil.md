@@ -128,3 +128,15 @@ il rapporto ERSAF è quello della sezione 3. Grandezze ricalcolate con `fieldwis
 acqua disponibile 0–150 cm 213,6 mm; tau AquaCrop dello strato superficiale 0,568; gruppo idrologico invariato (C).
 `tests/test_soil.py::test_yaml_inputs_match_soilgrids_cache` è stato adattato: per lo strato 0–30 la SO non deve più
 coincidere con la cache SoilGrids, ma il valore SoilGrids deve stare nell'intervallo della voce.
+
+## 7. Aggiornamento 2026-11-12 – verifica del motore (ruscellamento e doppio coefficiente)
+
+**Raes D., Steduto P., Hsiao T.C., Fereres E. (2026). AquaCrop Version 7.3 Reference Manual, Chapter 3**, riletto
+(PDF scaricato e convertito in testo), sez. 3.7.4, pp. 3-61/3-63:
+- eq. 3.7e-f e frase "The initial abstraction (Ia) in Eq. 3.7e is fixed at 0.05 S" → `ruscellamento.aquacrop.ia_su_s`;
+- tab. 3.7a: gruppo C, Ksat 346-36 mm/day, CN default AMC II = 72 → `ruscellamento.aquacrop.cn` (Ksat 0-30 cm = 215 mm/g);
+- testo: il CN del suolo non deve considerare uso e copertura (gestione del campo) → `ruscellamento.metodo_cn`;
+- eq. 3.7g-h (CN AMC I e III da CN AMC II), usate da `water.cn_amc_aquacrop` con la correzione opzionale per l'umidità.
+
+**Allen et al. (1998), FAO-56 cap. 7**, https://www.fao.org/4/x0490e/x0490e0c.htm, riletto: tab. 20 (fw: pioggia e
+aspersione 1,0; goccia 0,3-0,4) → `evaporazione.fw`.

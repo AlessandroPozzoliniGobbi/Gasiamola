@@ -1,7 +1,7 @@
 _meta:
   descrizione: "Suolo del punto pilota (lat 45.2, lon 10.0, provincia di Cremona): ingressi SoilGrids 2.0, proprieta' idrauliche Saxton e Rawls (2006), profilo simulato, evaporazione, ruscellamento, drenaggio, condizione iniziale"
   compilato_il: "2026-11-11"
-  rivisto_il: "2026-11-12 (sostanza organica 0-30 cm da ERSAF e grandezze derivate ricalcolate)"
+  rivisto_il: "2026-11-12 (sostanza organica 0-30 cm da ERSAF e grandezze derivate ricalcolate); 2026-11-12 (verifica del motore: CN di AquaCrop come default, Ia/S parametro, fw per il doppio coefficiente)"
   dati: "SoilGrids 250 m v2.0 via REST (https://rest.isric.org/soilgrids/v2.0/properties/query), scaricato il 2026-11-11T16:25:34Z, sha256 812148f6...1ff1c; aggregati per spessore in data/processed/lat45.200_lon10.000/soilgrids_agg.csv"
   calcolo: "fc, wp, sat, ksat e acqua disponibile sono calcolati da fieldwise.soil (Saxton e Rawls 2006, coefficienti nel codice con il numero di equazione); tests/test_soil.py verifica che i valori qui coincidano con il ricalcolo (tolleranza 5e-4 m3/m3, 0,5% su ksat, 0,5 mm su acqua disponibile)"
   scelte:
@@ -13,6 +13,7 @@ _meta:
     - "Falda e risalita capillare ignorate. Nella bassa pianura cremonese centrale ERSAF indica suoli limitati dalla falda e/o da orizzonti sabbiosi mediamente tra 110 e 150 cm (Media Pianura: falda tra 85 e 170 cm). In questi suoli la falda d'estate rifornisce la zona radicale per risalita capillare e d'inverno puo' limitare il drenaggio. Ignorarla fa sbagliare il modello in una direzione nota: sovrastima lo stress idrico e il fabbisogno irriguo delle colture a radici profonde (mais, soia) negli anni secchi, sovrastima la percolazione profonda (e quindi la lisciviazione dei nitrati) e sottostima l'umidita' del profilo profondo. L'errore e' maggiore per le rotazioni con mais e minore per i cereali autunno-vernini, che crescono quando la domanda evapotraspirativa e' bassa."
     - "La sostanza organica SoilGrids dello strato 0-30 cm (3,56%) e' circa 1,5 volte quella misurata da ERSAF nei seminativi della zona (2,33%): si usa ERSAF, SoilGrids resta in intervallo. Il dato ERSAF e' una media di Focus Area (deviazione standard 4,7 g/kg di C), non una misura del punto pilota."
     - "Saxton e Rawls (2006) sono regressioni su orizzonti A USA; l'errore tipico delle pedotransfer sulla singola stima di fc e wp e' dell'ordine di qualche punto percentuale in volume."
+    - "Ruscellamento con il CN applicato alla pioggia giornaliera di prodotti a griglia (massimo giornaliero della serie 46 mm): le intensita' sono smussate. Il CN di AquaCrop non dipende dalla copertura; i CN per copertura del NEH (cn.*) restano come alternativa per la sensibilita'."
     - "Un solo profilo per tutto il campo: nessuna variabilita' spaziale. La tessitura misurata nel sito sperimentale di Luignano (circa 5 km dal punto) e' franco-sabbiosa (sabbia 56%, argilla 10%), molto piu' grossolana della media SoilGrids."
 
 strati_soilgrids:
@@ -477,15 +478,64 @@ evaporazione:
     nota: "Classe del punto: loam (franco). Punto medio dell'intervallo. Lo spessore dello strato evaporante Ze e la tabella per tessitura stanno in crops.yaml (suolo_nudo): questo e' lo stesso numero, scelto per la classe del punto."
     verificato: true
     intervallo: [8, 10]
+  fw:
+    valore: 1.0
+    unita: "-"
+    fonte: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). FAO Irrigation and Drainage Paper 56"
+    riferimento: "Cap. 7, Tabella 20 (fw): Precipitation 1.0, Sprinkler irrigation 1.0, Basin/Border 1.0; Furrow 0.3-1.0; Trickle 0.3-0.4; eq. 75 few = min(1 - fc, fw)"
+    url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
+    nota: "Frazione di superficie bagnata da pioggia e irrigazione, usata dal metodo a doppio coefficiente (water.py, eq. 75 e 77). Il motore usa un solo fw per pioggia e irrigazione: 1,0 vale per la pioggia e per l'irrigazione per aspersione o a scorrimento; con la goccia (0,3-0,4) servirebbe la media pesata della tab. 20 e un De separato per la parte irrigata, non implementati."
+    verificato: true
+    intervallo: [0.3, 1.0]
 
 ruscellamento:
+  metodo_cn:
+    valore: "aquacrop"
+    unita: "-"
+    fonte: "Raes D., Steduto P., Hsiao T.C., Fereres E. (2026). AquaCrop Version 7.3 Reference Manual, Chapter 3 Calculation procedures. FAO"
+    riferimento: "Sez. 3.7.4, p. 3-61/3-62: 'The user can specify a CN value different from the default, but should thereby not consider the effect of land use and cover, since these effects are considered when specifying the field management'"
+    url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+    nota: "Seleziona il Curve Number del motore (water.soil_from_params): 'aquacrop' = un solo CN del suolo (aquacrop.cn) con Ia = aquacrop.ia_su_s x S, indipendente dalla copertura (default, fonte FAO, verifica E.1); 'neh_copertura' = CN per classe di copertura (cn.*) con Ia = neh.ia_su_s x S (alternativa per la sensibilita'). I CN e i rapporti Ia/S delle due famiglie non vanno mescolati."
+    verificato: true
+    sensibilita: true
+  aquacrop:
+    cn:
+      valore: 72
+      unita: "-"
+      fonte: "Raes D., Steduto P., Hsiao T.C., Fereres E. (2026). AquaCrop Version 7.3 Reference Manual, Chapter 3 Calculation procedures. FAO"
+      riferimento: "Sez. 3.7.4, Tab. 3.7a (p. 3-61): gruppo C, Ksat dello strato superficiale 346-36 mm/day, CN default per AMC II = 72 (con Ia = 5% di S)"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+      nota: "Ksat dello strato 0-30 cm = 8,97 mm/h = 215 mm/giorno (profilo.strato_superficiale) -> gruppo C. Il manuale: i CN di default sono la media dei quattro gruppi per il complesso 'small grain' in buone condizioni idrologiche del NEH (USDA 2004). Vale per tutte le superfici (coltura, cover, suolo nudo)."
+      verificato: true
+      sensibilita: true
+      intervallo: [61, 77]
+    ia_su_s:
+      valore: 0.05
+      unita: "-"
+      fonte: "Raes D., Steduto P., Hsiao T.C., Fereres E. (2026). AquaCrop Version 7.3 Reference Manual, Chapter 3 Calculation procedures. FAO"
+      riferimento: "Sez. 3.7.4, eq. 3.7e-f (p. 3-61): 'The initial abstraction (Ia) in Eq. 3.7e is fixed at 0.05 S. Recent research (Hawkins et al., 2002) found that this may be a more appropriate value for Ia than the previous assumed value of 0.20S'"
+      url: "https://www.fao.org/docs/devbuildingforwardbetterlibraries/default-document-library/chapter3aquacropv73.pdf"
+      nota: "Rapporto Ia/S da usare con aquacrop.cn. Con CN 72 e Ia = 0,2 S il ruscellamento sarebbe circa un decimo: CN e Ia/S vanno cambiati insieme."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.05, 0.2]
+  neh:
+    ia_su_s:
+      valore: 0.2
+      unita: "-"
+      fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 10 Estimation of Direct Runoff from Storm Rainfall"
+      riferimento: "Eq. 10-9 e 10-11, Ia = 0,2 S (tabella 10-1 per Ia = 0,2 S)"
+      url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930608/7300.pdf"
+      nota: "Rapporto Ia/S da usare con i CN per copertura (cn.*). Fonte non riaperta in questa sessione: il valore e' quello gia' verificato nella voce 'metodo'."
+      verificato: false
+      sensibilita: true
   metodo:
     valore: "SCS Curve Number, Q = (P - Ia)^2 / (P - Ia + S), S = 25400/CN - 254 mm, Ia = 0,2 S"
     unita: "-"
     fonte: "USDA NRCS (2004). National Engineering Handbook Part 630 Hydrology, Chapter 10 Estimation of Direct Runoff from Storm Rainfall"
     riferimento: "Eq. 10-9 e 10-11; tabella 10-1 (CN per Ia = 0,2 S)"
     url: "https://directives.nrcs.usda.gov/sites/default/files2/1712930608/7300.pdf"
-    nota: "AquaCrop v7.3 (cap. 3, eq. 3.7e-f) usa la stessa equazione ma con Ia = 0,05 S e CN diversi (tab. 3.7a); i CN di NEH tab. 9-1 valgono per Ia = 0,2 S e non vanno mescolati con Ia = 0,05 S."
+    nota: "Forma dell'equazione per entrambe le famiglie di CN (metodo_cn). AquaCrop v7.3 (cap. 3, eq. 3.7e-f) usa la stessa equazione con Ia = 0,05 S e CN del solo suolo (tab. 3.7a, default del motore); i CN di NEH tab. 9-1 (cn.*) valgono per Ia = 0,2 S e non vanno mescolati con Ia = 0,05 S. Il rapporto Ia/S e' un parametro (aquacrop.ia_su_s, neh.ia_su_s). Il CN e' applicato alla pioggia giornaliera (prassi SWAT; NEH ragiona per evento)."
     verificato: true
   gruppo_idrologico:
     valore: "C"

@@ -24,19 +24,27 @@ _meta:
     durata_minima_giorni); i requisiti del premio SRA06 (requisiti_sra06) non decidono il calendario ma producono
     un'avvertenza se non rispettati. Non conta ai fini dell'avvicendamento (rotation_rules) e non interrompe un
     ristoppio. Azoto e humus seguono nitrogen._meta.equazioni (passo 3bis e humus_henin_dupuis): a passo giornaliero
-    l'assorbimento della segale e' n_assorbito x (ETa/ET0 del giorno normalizzato sul periodo della cover),
+    l'assorbimento della segale e' n_assorbito x (traspirazione del giorno calcolata dal nucleo idrico,
+    T = Ks x Kcb x ET0, normalizzata sul periodo della cover; rotation.simulate, riparto 'traspirazione'),
     limitato ogni giorno dall'N minerale presente (il tetto 0,70 x N_min della versione a fine segmento non si
     usa piu'), e sottratto alla lisciviazione; la biomassa prodotta e'
     proporzionale all'N assorbito, SS_cov = biomassa_secca x U_cov / n_assorbito (C/N costante), e SS_cov
     sostituisce biomassa_secca nell'immobilizzazione e nell'humus; alla terminazione l'N della biomassa passa
     a N_res e torna a N_min in nitrogen.suolo.residui.giorni_rilascio giorni; npd_per_t_ss x SS_cov (negativo per la segale) e' immobilizzato da N_min, con efficienza_campo
     solo se positivo; humus formato = humus.coefficiente_isoumico x C(SS_cov) x 1,724. Acqua: radici lineari
-    da acqua.profondita_radicale_iniziale a acqua.profondita_radicale_max lungo l'intervallo coperto; Curve
-    Number della classe acqua.classe_curve_number.
+    da acqua.profondita_radicale_iniziale a acqua.profondita_radicale_max lungo l'intervallo coperto;
+    evapotraspirazione con il doppio coefficiente di FAO-56 cap. 7 (Kcb = acqua.kcb.ini costante, altezza
+    acqua.altezza per eq. 72 e 76; acqua.kc serve solo al metodo a Kc singolo, in sensibilita'); Curve Number:
+    quello del suolo di AquaCrop (soil.ruscellamento.metodo_cn), la classe acqua.classe_curve_number vale solo
+    con i CN per copertura del NEH.
   limiti: >-
     Biomassa, C/N e Npd vengono da 2 anni di prove in 4 aziende lombarde (BENCO/COCROP), non da Cremona; i
     valori sono medie e dipendono molto da data di semina e piovosita' autunnale. L'N assorbito e' derivato;
     il coefficiente isoumico e' quello generico dei sovesci (Mémento 2007), non specifico della segale.
+    Con Kcb ini costante 0,15 (= Kc min di crops.suolo_nudo) l'eq. 76 da' una frazione coperta quasi nulla: la
+    cover evapora come il suolo nudo e traspira 0,15 ET0, quindi il suo effetto sul drenaggio invernale e'
+    piccolo e probabilmente sottostimato (una segale vera copre il suolo da fine inverno). L'effetto della cover
+    sulla lisciviazione e' piccolo anche perche' il concime non passa mai dall'N minerale (nitrogen._meta.limiti).
 
 specie:
   nome:
@@ -92,7 +100,7 @@ acqua:
       fonte: "Allen, Pereira, Raes, Smith (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56"
       riferimento: "Cap. 7, Tabella 17 (Kcb per colture non stressate, clima sub-umido), righe Barley, Oats, Winter Wheat (Kcb ini 0.15)"
       url: "https://www.fao.org/4/x0490e/x0490e0c.htm"
-      nota: "Segale non tabulata: per analogia con i cereali autunno-vernini (orzo, avena, frumento autunnale con copertura < 10%). Il motore usa Kcb ini costante, come kc (la segale e' terminata prima della levata); il riparto dell'assorbimento segue quindi Ks x ET0."
+      nota: "Segale non tabulata: per analogia con i cereali autunno-vernini (orzo, avena, frumento autunnale con copertura < 10%). Il motore usa Kcb ini costante, come kc (la segale e' terminata prima della levata): traspirazione T = Ks x Kcb x ET0 del nucleo idrico (metodo a doppio coefficiente), che e' anche il peso del riparto dell'assorbimento di N."
       verificato: true
       sensibilita: true
       intervallo: [0.15, 0.5]
@@ -114,6 +122,14 @@ acqua:
       nota: "Per analogia; non usato dal motore."
       verificato: true
       sensibilita: true
+  altezza:
+    valore: 0.3
+    unita: "m"
+    nota: "Altezza media della segale nel periodo della cover, costante; entra nell'eq. 72 (Kc max) e nell'eq. 76 (frazione coperta) di FAO-56 cap. 7."
+    verificato: false
+    assunzione: true
+    motivazione: "Nessuna fonte letta con l'altezza della segale da cover. La segale e' terminata prima della levata (vedi kc), quando la pianta e' un cespo di foglie basso: 0,3 m e' una stima di quell'altezza; l'estremo alto 1,0 m e' l'altezza del frumento in FAO-56 tab. 12. Con Kcb = Kc min l'altezza cambia solo Kc max (termine (h/3)^0,3), di qualche centesimo."
+    intervallo: [0.1, 1.0]
   profondita_radicale_iniziale:
     valore: 0.3
     unita: "m"

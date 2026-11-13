@@ -540,3 +540,111 @@ def test_300_simulazioni_in_meno_di_5_secondi(ctx, pars):
     assert set(esiti) == {rt.ESITO_OK}
     print(f"\n300 simulazioni: {dt:.2f} s")
     assert dt < 5.0, f"{dt:.2f} s"
+
+
+# =============================================================================
+# 11) Curve di coltura dentro la catena di rotazione (mais, doppio coefficiente)
+# =============================================================================
+# Una curva di Kc invertita nella catena non era rilevata: qui si guarda dentro `dettaglio=True`.
+
+def _mais_in_rotazione(ctx, rot, anno, scenario):
+    """(inp, res, indici dei giorni del mais valutato) per la prima coltura 'mais' del ciclo valutato."""
+    rc = rt.build_calendar(ctx, rot, anno)
+    out = rt.simulate(ctx, rot, anno, scenario, calendario=rc, dettaglio=True)
+    assert out["esito"] == rt.ESITO_OK, out.get("motivo")
+    inp = rt._daily_inputs(ctx, rc)                         # stesse serie passate al nucleo idrico
+    res = out["acqua"]
+    k = next(i for i, s in enumerate(out["segmenti"])
+             if s.crop == "mais" and s.cycle == rc.n_avviamento)
+    idx = np.nonzero(res.segment == k)[0]
+    assert idx.size > 60
+    return out, inp, res, idx
+
+
+@pytest.fixture(scope="module", params=["mais > soia > frumento", "mais > mais > mais"])
+def mais_libero(request, ctx):
+    rot = rt.Rotation.from_label(request.param)
+    ys = rt.start_years(ctx, rot)
+    anno = ys[len(ys) // 2]
+    return _mais_in_rotazione(ctx, rot, anno, SCEN_LIBERA)
+
+
+def test_mais_kcb_basso_alla_semina_massimo_in_piena_stagione_cala_alla_raccolta(ctx, mais_libero):
+    _, inp, res, idx = mais_libero
+    kcb = inp.kcb[idx]
+    n = len(idx)
+    d = max(5, n // 15)
+    ini, fine = float(kcb[:d].mean()), float(kcb[-d:].mean())
+    mid = float(kcb.max())
+    mid_pos = int(np.argmax(kcb)) / (n - 1)
+    kcb_ini = fparams.get(ctx.p, "crops.mais.kcb.ini")
+    kcb_mid = fparams.get(ctx.p, "crops.mais.kcb.mid")
+    kcb_end = fparams.get(ctx.p, "crops.mais.kcb.end")
+    assert ini < 0.5 * mid, (ini, mid)                      # basso alla semina
+    assert ini == pytest.approx(kcb_ini, abs=0.1)
+    assert mid >= kcb_mid - 0.05                            # massimo in piena stagione (eq. 70: puo' salire col clima)
+    assert 0.25 < mid_pos < 0.85, mid_pos                   # ... e in mezzo al ciclo, non agli estremi
+    assert fine < 0.75 * mid, (fine, mid)                   # cala verso la raccolta
+    assert fine == pytest.approx(kcb_end, abs=0.15)
+    assert kcb[-1] < kcb[np.argmax(kcb)] and kcb[0] < kcb[np.argmax(kcb)]
+    # forma: non decrescente fino al massimo, non crescente da piena stagione in poi
+    i_max = int(np.argmax(kcb))
+    assert np.all(np.diff(kcb[:i_max + 1]) >= -1e-9)
+    j = int(np.nonzero(kcb >= kcb.max() - 1e-9)[0][-1])
+    assert np.all(np.diff(kcb[j:]) <= 1e-9)
+
+
+def test_mais_traspirazione_potenziale_normalizzata_segue_il_kcb(ctx, mais_libero):
+    """In irrigazione libera Ks ~ 1, quindi tr / ET0 riproduce la curva del Kcb (nei giorni con ET0 > 0)."""
+    _, inp, res, idx = mais_libero
+    ok = inp.et0[idx] > 0.3
+    tr_n = res.tr[idx][ok] / inp.et0[idx][ok]
+    assert np.all(tr_n <= inp.kcb[idx][ok] + 1e-9)          # mai oltre Kcb
+    assert np.mean(tr_n >= inp.kcb[idx][ok] - 1e-6) > 0.95    # quasi sempre uguale (Ks = 1)
+    n = len(tr_n)
+    d = max(5, n // 15)
+    assert tr_n[:d].mean() < 0.5 * tr_n.max()
+    assert tr_n[-d:].mean() < 0.75 * tr_n.max()
+    assert 0.25 < np.argmax(tr_n) / (n - 1) < 0.85
+
+
+def test_mais_profondita_radicale_cresce_nel_ciclo(ctx, mais_libero):
+    _, inp, res, idx = mais_libero
+    zr = inp.zr[idx]
+    zr_ini = fparams.get(ctx.p, "crops.mais.zr_ini")
+    zr_max = fparams.get(ctx.p, "crops.mais.zr_max")
+    assert np.all(np.diff(zr) >= -1e-12)                    # non diminuisce mai
+    assert zr[-1] > zr[0] + 0.5                             # cresce davvero
+    assert zr[0] == pytest.approx(zr_ini, abs=0.1)
+    assert zr[-1] == pytest.approx(min(zr_max, ctx.soil.depth), abs=1e-6)
+    assert zr[len(zr) // 4] < zr[-1]                        # ancora in crescita a un quarto del ciclo
+
+
+def test_mais_traspirazione_maggiore_dell_evaporazione_in_irrigazione_libera(ctx, mais_libero):
+    out, inp, res, idx = mais_libero
+    tr, ev = float(res.tr[idx].sum()), float(res.ev[idx].sum())
+    assert tr > ev, (tr, ev)
+    assert tr > 2.0 * ev, (tr, ev)                          # copertura piena: la traspirazione domina
+    c = next(c for c in out["colture"] if c["coltura"] == "mais")
+    assert c["traspirazione"] > c["evaporazione"]
+    assert c["traspirazione"] + c["evaporazione"] == pytest.approx(c["eta"], rel=1e-9)
+
+
+@pytest.mark.parametrize("scenario", rt.SCENARI)
+def test_residuo_idrico_della_rotazione(ctx, msf, anno_centrale, scenario):
+    out = rt.simulate(ctx, msf, anno_centrale, scenario, dettaglio=True)
+    assert abs(out["residui"]["acqua_mm"]) <= 0.01
+    res = out["acqua"]
+    assert abs(_wbal(res)) <= 0.01
+    assert float(np.max(np.abs(_wbal_day(res)))) <= 0.01
+    assert res.metodo_et == "doppio"                        # la catena usa il doppio coefficiente
+
+
+def _wbal(res):
+    from fieldwise import water as _w
+    return _w.water_balance_residual(res)
+
+
+def _wbal_day(res):
+    from fieldwise import water as _w
+    return _w.water_balance_daily_residual(res)

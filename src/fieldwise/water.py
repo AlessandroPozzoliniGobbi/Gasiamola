@@ -10,8 +10,8 @@ superficie, ...) e attraversa TUTTA la rotazione in un unico ciclo senza mai
 azzerare lo stato. Il nucleo `_kernel` usa solo scalari e array ed e' compilato
 con numba (`@njit`); senza numba gira in Python puro con lo stesso codice.
 
-Nessun numero agronomico vive qui: suolo, CN, REW, Ze, Kc max, umidita' iniziale,
-Kc, radici e p vengono da params/*.yaml. Nel codice restano solo le costanti
+Nessun numero agronomico vive qui: suolo, CN, Ia/S, REW, Ze, Kc max, Kc min, Kcb del
+suolo nudo, fw, umidita' iniziale, Kc, Kcb, radici e p vengono da params/*.yaml. Nel codice restano solo le costanti
 interne delle equazioni pubblicate, con il numero dell'equazione (D9).
 
 Modello (scelte dichiarate)
@@ -21,11 +21,20 @@ De [mm] esaurimento dello strato evaporante superficiale (spessore Ze, contenuto
 dentro lo strato 1; non e' un serbatoio separato, e' una variabile diagnostica
 della parte alta di W1). Acqua immagazzinata S = W1 + W2.
 
-Passi di ogni giorno i:
- 1. Ruscellamento RO con il Curve Number SCS applicato alla pioggia giornaliera
-    (NRCS NEH 630 cap. 10, eq. 10-9 e 10-11, Ia = 0,2 S). Opzionale: CN corretto
+Due metodi di evapotraspirazione (argomento `metodo_et` di `run_water_balance`):
+'doppio' (FAO-56 cap. 7, default del motore di rotazione) e 'singolo' (Kc singolo,
+cap. 6; resta per i test esistenti e per l'analisi di sensibilita'). Passi 1-6 sotto
+descrivono il metodo singolo; il metodo doppio e' descritto dopo.
+
+Passi di ogni giorno i (metodo singolo):
+ 1. Ruscellamento RO con il Curve Number applicato alla pioggia giornaliera
+    (NRCS NEH 630 cap. 10, eq. 10-9 e 10-11; AquaCrop v7.3 eq. 3.7e-f), Ia = r S con
+    r = SoilWaterParams.ia_ratio (soil.yaml: 0,05 con il CN unico di AquaCrop, default;
+    0,2 con i CN per copertura del NEH). Applicare il CN alla pioggia giornaliera e'
+    prassi (SWAT), non NEH, che ragiona per evento. Opzionale: CN corretto
     per l'umidita' dello strato 1 interpolando tra ARC I (a wp) e ARC III (a fc),
-    con ARC II a meta' (regola di soil.yaml, da AquaCrop v7.3 sez. 3.7.4).
+    con ARC II a meta' (regola di soil.yaml, da AquaCrop v7.3 sez. 3.7.4); ARC I e III
+    dalla tab. 10-1 del NEH o, con il CN di AquaCrop, dalle eq. 3.7g-h.
  2. Infiltrazione P - RO nello strato 1; l'eccesso oltre la capacita' di campo
     drena nello stesso giorno nello strato 2 e da questo sotto il profilo
     (percolazione profonda DP). FAO-56 cap. 8, eq. 88 e testo 'Deep percolation'.
@@ -46,15 +55,48 @@ Passi di ogni giorno i:
     (sopra wp) di ciascuno nella zona radicale: nessuno strato scende sotto wp.
     Lo strato evaporante perde la quota Ze/z1 del prelievo dallo strato 1
     (prelievo uniforme nello strato).
-    Suolo nudo (cap. 7, formulazione piu' semplice citabile): Kcb = 0 e
-    E = Kr Kc_max ET0 (eq. 71 con few = 1 e Kcb = 0, come indicato nel testo di
-    FAO-56 per il suolo nudo), Kr = 1 se De <= REW, altrimenti
+    Suolo nudo: Kcb = 0 e E = Kr Kc_max ET0 (eq. 71 con few = 1 e Kcb = 0). E'
+    l'alternativa citata accanto a Kcb = 0,15 nell'es. di FAO-56 cap. 7 (vedi
+    crops.suolo_nudo.kcb_suolo_nudo); il metodo doppio usa invece Kcb = 0,15 dal YAML.
+    Kr = 1 se De <= REW, altrimenti
     Kr = (TEW - De) / (TEW - REW) (eq. 74), TEW = 1000 (theta_FC - 0,5 theta_WP) Ze
     (eq. 73); E tolta allo strato evaporante (De, eq. 77) e quindi allo strato 1.
     Nei giorni di suolo nudo ETc = Kc_max ET0 (evaporazione potenziale) e Ks = 1.
     E non supera l'acqua sopra il limite inferiore dello strato 1 (vedi sotto).
  6. Esaurimento dello strato evaporante: De diminuisce con l'acqua infiltrata
     (eq. 77, la pioggia bagna prima la superficie) e vale 0 quando W1 >= FC1.
+ Scarto dichiarato del metodo singolo: Ks e Kr sono calcolati con Dr e De DOPO la
+ pioggia e l'irrigazione del giorno (FAO-56 usa Dr,i-1 e De,i-1; lo ammette se l'acqua
+ cade presto nella giornata, es. 38). Il metodo singolo resta com'era per confronto.
+
+Metodo a doppio coefficiente (FAO-56 cap. 7), per TUTTE le superfici
+---------------------------------------------------------------------
+Serie Kcb (crops.yaml / cover_crop.yaml; sul suolo nudo crops.suolo_nudo.kcb_suolo_nudo),
+Kc max del giorno (eq. 72, con u2, RHmin e altezza h del giorno) e frazione coperta fc
+(eq. 76, con Kc min = crops.suolo_nudo.kc_min) arrivano in DailyInputs.
+ a. Inizio giornata: Kr da De,i-1 (eq. 74, 'Kr = 1 when De,i-1 <= REW'); few =
+    min(1 - fc, fw) (eq. 75, fw = soil.evaporazione.fw, tab. 20); Ke = min(Kr (Kc max
+    - Kcb), few Kc max) (eq. 71); ETc potenziale (Kcb + Ke) ET0 (eq. 69) per correggere p
+    (tab. 22); Ks da Dr,i-1 (eq. 84, 86), come in FAO-56.
+ b. Ruscellamento, infiltrazione e drenaggio come nei passi 1-2; De diminuisce di
+    P - RO (fw = 1 per la pioggia) e di I/fw (eq. 77).
+ c. Irrigazione come nel passo 4 (decisa sul deficit della zona radicale dopo la
+    pioggia); nei giorni irrigati Ks si ricalcola con il Dr dopo l'irrigazione
+    (irrigazione a inizio giornata, FAO-56 es. 38).
+ d. Traspirazione T = Ks Kcb ET0 (lo stress agisce solo su T), dalla zona radicale con
+    il riparto del passo 5; sul suolo nudo (nessuna radice) il termine Kcb ET0
+    ('evaporazione diffusiva' dell'es. di FAO-56) viene dallo strato 1 con Ks = 1,
+    limitato dall'acqua sopra wp1: scelta dichiarata. La quota Ze/z1 di T dallo strato
+    1 entra in De (termine Te dell'eq. 77).
+ e. Evaporazione E = Ke ET0, con De + E/few <= TEW (eq. 77-78) ed E <= W1 - W1_min;
+    De aumenta di E/few (eq. 77).
+ f. Uscite: tr = T, ev = E, ETa = T + E = (Ks Kcb + Ke) ET0; ETc = Kcb ET0 + E =
+    (Kcb + Ke) ET0 con il Ke effettivo (lo stress non riduce E): ETc - ETa e' la sola
+    traspirazione persa per stress, e la resa FAO-33 usa sum(ETa)/sum(ETc).
+ Limiti del metodo doppio qui: un solo fw per pioggia e irrigazione (aspersione); De
+ descrive la frazione esposta e bagnata, quindi non vale il limite De <= FC1 - W1 del
+ metodo singolo (restano 0 <= De <= TEW, De = 0 a W1 >= FC1 e il limite inferiore sotto);
+ Kc max giornaliero (eq. 72 con u2 e RHmin del giorno invece della media del periodo).
 
 Coerenza tra De e W1 (limite inferiore dello strato 1)
 ------------------------------------------------------
@@ -121,7 +163,10 @@ class SoilWaterParams:
 
     z1, z2: spessori [m]; fc*, wp*, sat*: contenuti idrici [m3/m3];
     ze [m] spessore dello strato evaporante; rew, tew [mm]; kc_max [-];
-    cn_ii, cn_i, cn_iii: Curve Number per classe (ARC II, I, III), tuple di 3.
+    cn_ii, cn_i, cn_iii: Curve Number per classe (ARC II, I, III), tuple di 3 (con il
+    metodo 'aquacrop' i tre valori sono il CN unico del suolo);
+    ia_ratio: rapporto Ia/S del Curve Number; metodo_cn: 'aquacrop' | 'neh_copertura';
+    kc_min (eq. 76), kcb_bare (Kcb del suolo nudo), fw (eq. 75, tab. 20) del doppio coefficiente.
     """
     z1: float
     z2: float
@@ -139,6 +184,11 @@ class SoilWaterParams:
     cn_i: tuple
     cn_iii: tuple
     frazione_iniziale: float
+    ia_ratio: float
+    metodo_cn: str
+    kc_min: float
+    kcb_bare: float
+    fw: float
 
     @property
     def fc1_mm(self) -> float:
@@ -188,28 +238,57 @@ def tew_fao56(fc: float, wp: float, ze: float) -> float:
     return 1000.0 * (fc - 0.5 * wp) * ze
 
 
-def soil_from_params(p: dict | None = None) -> SoilWaterParams:
+def cn_amc_aquacrop(cn_ii: float) -> tuple[float, float]:
+    """CN per AMC I e AMC III da CN(AMC II). AquaCrop v7.3 cap. 3 (Smedema e Rycroft 1983):
+    eq. 3.7g CN_I = -16.91 + 1.348 CN - 0.01379 CN^2 + 0.0001172 CN^3;
+    eq. 3.7h CN_III = 2.5838 + 1.9449 CN - 0.014216 CN^2 + 0.000045829 CN^3; entrambi in [0, 100]."""
+    c = float(cn_ii)
+    cn1 = -16.91 + 1.348 * c - 0.01379 * c ** 2 + 0.0001172 * c ** 3          # eq. 3.7g
+    cn3 = 2.5838 + 1.9449 * c - 0.014216 * c ** 2 + 0.000045829 * c ** 3      # eq. 3.7h
+    return min(max(cn1, 0.0), 100.0), min(max(cn3, 0.0), 100.0)
+
+
+def soil_from_params(p: dict | None = None, metodo_cn: str | None = None) -> SoilWaterParams:
     """Costruisce i parametri idrici dal dizionario di `fieldwise.params.load_params()`.
 
-    REW da soil.yaml (evaporazione.rew, vale per il punto pilota); Ze e Kc_max da
+    REW e fw da soil.yaml (evaporazione); Ze, Kc_max, Kc_min e Kcb del suolo nudo da
     crops.yaml (suolo_nudo); TEW calcolata con eq. 73 dai theta dello strato 1.
+    Curve Number secondo `metodo_cn` (default soil.ruscellamento.metodo_cn):
+    'aquacrop' = CN unico del suolo (tab. 3.7a) con Ia/S = aquacrop.ia_su_s, uguale per
+    tutte le superfici; 'neh_copertura' = CN per classe di copertura (NEH tab. 9-1) con
+    Ia/S = neh.ia_su_s e ARC I/III della tab. 10-1.
     """
     p = _params.load_params() if p is None else p
     g = _params.get
+    rr = "soil.ruscellamento"
+    metodo_cn = str(g(p, f"{rr}.metodo_cn")) if metodo_cn is None else metodo_cn
     z1, z2 = (float(x) for x in g(p, "soil.profilo.spessore_strati"))
     s1, s2 = "soil.profilo.strato_superficiale", "soil.profilo.strato_profondo"
     fc1, wp1, sat1 = (float(g(p, f"{s1}.{k}")) for k in ("fc", "wp", "sat"))
     fc2, wp2, sat2 = (float(g(p, f"{s2}.{k}")) for k in ("fc", "wp", "sat"))
     ze = float(g(p, "crops.suolo_nudo.ze"))
-    cn_ii = tuple(float(g(p, f"soil.ruscellamento.cn.{k}")) for k in _CN_KEYS)
-    cn_i = tuple(float(x) for x in g(p, "soil.ruscellamento.umidita_antecedente.arc_i"))
-    cn_iii = tuple(float(x) for x in g(p, "soil.ruscellamento.umidita_antecedente.arc_iii"))
+    if metodo_cn == "aquacrop":
+        cn2 = float(g(p, f"{rr}.aquacrop.cn"))
+        cn1, cn3 = cn_amc_aquacrop(cn2)
+        cn_ii, cn_i, cn_iii = (cn2,) * 3, (cn1,) * 3, (cn3,) * 3
+        ia_ratio = float(g(p, f"{rr}.aquacrop.ia_su_s"))
+    elif metodo_cn == "neh_copertura":
+        cn_ii = tuple(float(g(p, f"{rr}.cn.{k}")) for k in _CN_KEYS)
+        cn_i = tuple(float(x) for x in g(p, f"{rr}.umidita_antecedente.arc_i"))
+        cn_iii = tuple(float(x) for x in g(p, f"{rr}.umidita_antecedente.arc_iii"))
+        ia_ratio = float(g(p, f"{rr}.neh.ia_su_s"))
+    else:
+        raise ValueError(f"metodo_cn sconosciuto: {metodo_cn!r} (ammessi 'aquacrop', 'neh_copertura')")
     return SoilWaterParams(
         z1=z1, z2=z2, fc1=fc1, wp1=wp1, sat1=sat1, fc2=fc2, wp2=wp2, sat2=sat2,
         ze=ze, rew=float(g(p, "soil.evaporazione.rew")), tew=tew_fao56(fc1, wp1, ze),
         kc_max=float(g(p, "crops.suolo_nudo.kc_max")),
         cn_ii=cn_ii, cn_i=cn_i, cn_iii=cn_iii,
         frazione_iniziale=float(g(p, "soil.umidita_iniziale.frazione_acqua_disponibile")),
+        ia_ratio=ia_ratio, metodo_cn=metodo_cn,
+        kc_min=float(g(p, "crops.suolo_nudo.kc_min")),
+        kcb_bare=float(g(p, "crops.suolo_nudo.kcb_suolo_nudo")),
+        fw=float(g(p, "soil.evaporazione.fw")),
     )
 
 
@@ -318,6 +397,38 @@ def p_adjusted(p_tab, etc):
     return np.clip(p_tab + 0.04 * (5.0 - np.asarray(etc, dtype=float)), 0.1, 0.8)
 
 
+def kc_max_eq72(kc_max_base, kcb, u2, rhmin, h):
+    """Limite superiore di Kc dopo una bagnatura. FAO-56 eq. 72:
+    Kc max = max({1.2 + [0.04 (u2 - 2) - 0.004 (RHmin - 45)] (h/3)^0.3}, {Kcb + 0.05}),
+    con 1.2 = `kc_max_base` (crops.suolo_nudo.kc_max). u2 [m/s], RHmin [%] e h [m] del
+    giorno (array); il testo dell'eq. 72 non pone limiti a u2 e RHmin."""
+    kcb = np.asarray(kcb, dtype=float)
+    h = np.maximum(np.asarray(h, dtype=float), 0.0)
+    clim = (0.04 * (np.asarray(u2, float) - 2.0) - 0.004 * (np.asarray(rhmin, float) - 45.0)) \
+        * (h / 3.0) ** 0.3                                                          # eq. 72
+    return np.maximum(kc_max_base + clim, kcb + 0.05)                               # eq. 72
+
+
+def cover_fraction_eq76(kcb, kc_max, kc_min, h):
+    """Frazione di suolo coperta (o ombreggiata) dalla vegetazione. FAO-56 eq. 76:
+    fc = ((Kcb - Kc min) / (Kc max - Kc min))^(1 + 0.5 h), 0 <= fc <= 0.99, con
+    Kcb - Kc min >= 0.01 'for numerical stability' (testo dell'eq. 76)."""
+    kcb = np.asarray(kcb, dtype=float)
+    kc_max = np.asarray(kc_max, dtype=float)
+    h = np.maximum(np.asarray(h, dtype=float), 0.0)
+    num = np.maximum(kcb - kc_min, 0.01)                                            # eq. 76, nota
+    den = np.maximum(kc_max - kc_min, 0.01)
+    return np.clip((num / den) ** (1.0 + 0.5 * h), 0.0, 0.99)                       # eq. 76
+
+
+def plant_height(frac, h_max, f_dev):
+    """Altezza della coltura [m]: lineare da 0 alla semina a h_max a fine fase di sviluppo,
+    poi costante (stessa convenzione di `root_depth`). FAO-56 usa in eq. 72 'mean maximum
+    plant height during the period of calculation' e da' solo h max (tab. 12): la legge di
+    crescita e' una scelta dichiarata."""
+    return root_depth(frac, 0.0, h_max, f_dev)
+
+
 def crop_daily_curves(p: dict, crop: str, n_days: int, z_profile: float | None = None,
                       fasi_giorni=None, u2_mid: float | None = None,
                       rhmin_mid: float | None = None, u2_end: float | None = None,
@@ -381,13 +492,14 @@ def cn_class(name: str) -> int:
 # =============================================================================
 
 @njit(cache=True)
-def _scs_runoff(p_mm, cn):
+def _scs_runoff(p_mm, cn, ia_ratio):
     """Ruscellamento SCS [mm]. NRCS NEH 630 cap. 10: S = 25400/CN - 254 (eq. 10-11),
-    Ia = 0.2 S, Q = (P - Ia)^2 / (P - Ia + S) per P > Ia (eq. 10-9)."""
+    Q = (P - Ia)^2 / (P - Ia + S) per P > Ia (eq. 10-9); AquaCrop eq. 3.7e-f (stessa forma).
+    Ia = ia_ratio S: 0,2 nel NEH, 0,05 in AquaCrop (soil.yaml ruscellamento)."""
     if cn <= 0.0 or p_mm <= 0.0:
         return 0.0
     s = 25400.0 / cn - 254.0
-    ia = 0.2 * s
+    ia = ia_ratio * s
     if p_mm <= ia:
         return 0.0
     return (p_mm - ia) * (p_mm - ia) / (p_mm - ia + s)
@@ -411,12 +523,31 @@ def _de_consistent(de, w1, fc1mm, tew, taw_below):
 
 
 @njit(cache=True)
+def _de_bounds_dual(de, w1, fc1mm, tew, taw_below):
+    """Limiti di De nel metodo a doppio coefficiente, dove De e' l'esaurimento della
+    frazione esposta e bagnata (eq. 77): 0 <= De <= TEW (eq. 78); De = 0 con lo strato 1 a
+    capacita' di campo; De >= (FC1 - W1) - TAW_sotto (vedi 'Coerenza tra De e W1'). Il
+    limite De <= FC1 - W1 del metodo singolo non vale: la frazione esposta puo' essere piu'
+    asciutta della media del campo."""
+    lo = (fc1mm - w1) - taw_below
+    if de < lo:
+        de = lo
+    if de > tew:
+        de = tew
+    if fc1mm - w1 <= 0.0 or de < 0.0:
+        de = 0.0
+    return de
+
+
+@njit(cache=True)
 def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
-            cn_ii, cn_i, cn_iii, use_amc,
+            cn_ii, cn_i, cn_iii, use_amc, ia_ratio,
             z1, z2, fc1, wp1, fc2, wp2, ze, tew, rew, kc_max,
             w1_0, w2_0, de_0,
             o_etc, o_eta, o_ks, o_kr, o_irr, o_ro, o_dp, o_w1, o_w2, o_de,
-            o_taw, o_raw, o_dr):
+            o_taw, o_raw, o_dr, o_tr, o_ev):
+    """Metodo a Kc singolo (vedi docstring del modulo, passo 5). o_tr = ETa di coltura e
+    cover (T ed E non separate), o_ev = ETa del suolo nudo."""
     n = et0.shape[0]
     fc1mm = 1000.0 * fc1 * z1
     fc2mm = 1000.0 * fc2 * z2
@@ -445,7 +576,7 @@ def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
             else:
                 cn = cn_ii[c] + (cn_iii[c] - cn_ii[c]) * (th - 0.5) / 0.5
         p_mm = rain[i]
-        ro = _scs_runoff(p_mm, cn)
+        ro = _scs_runoff(p_mm, cn, ia_ratio)
         # ---- 2. infiltrazione e drenaggio a cascata (eq. 88)
         inf = p_mm - ro
         w1 += inf
@@ -572,6 +703,215 @@ def _kernel(et0, rain, kc, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
         o_taw[i] = taw
         o_raw[i] = raw
         o_dr[i] = dr
+        if s_type == 2:
+            o_tr[i] = 0.0
+            o_ev[i] = eta
+        else:
+            o_tr[i] = eta
+            o_ev[i] = 0.0
+    return w1, w2, de
+
+
+@njit(cache=True)
+def _cn_of_day(c, w1, z1, wp1, fc1, cn_ii, cn_i, cn_iii, use_amc):
+    """CN del giorno: ARC II, o interpolato tra ARC I (wp) e ARC III (fc) con l'umidita'
+    dello strato 1 (regola di soil.yaml, ARC II a meta' tra wp e fc)."""
+    cn = cn_ii[c]
+    if use_amc:
+        th = (w1 / (1000.0 * z1) - wp1) / (fc1 - wp1)   # 0 a wp, 1 a fc
+        if th < 0.0:
+            th = 0.0
+        if th > 1.0:
+            th = 1.0
+        if th <= 0.5:
+            cn = cn_i[c] + (cn_ii[c] - cn_i[c]) * th / 0.5
+        else:
+            cn = cn_ii[c] + (cn_iii[c] - cn_ii[c]) * (th - 0.5) / 0.5
+    return cn
+
+
+@njit(cache=True)
+def _ks_eq84(dr, raw, taw, p):
+    """FAO-56 eq. 84 con Dr limitato a [0, TAW] (eq. 86)."""
+    if dr > raw and taw > 0.0:
+        d = dr
+        if d > taw:
+            d = taw                          # eq. 86
+        ks = (taw - d) / ((1.0 - p) * taw)   # eq. 84
+        if ks < 0.0:
+            ks = 0.0
+        if ks > 1.0:
+            ks = 1.0
+        return ks
+    return 1.0
+
+
+@njit(cache=True)
+def _kernel_dual(et0, rain, kcb, kcmx, fcov, zr, p_tab, surf, irrigable, seg, cap_seg, cn_cls,
+                 cn_ii, cn_i, cn_iii, use_amc, ia_ratio, fw,
+                 z1, z2, fc1, wp1, fc2, wp2, ze, tew, rew,
+                 w1_0, w2_0, de_0,
+                 o_etc, o_eta, o_ks, o_kr, o_irr, o_ro, o_dp, o_w1, o_w2, o_de,
+                 o_taw, o_raw, o_dr, o_tr, o_ev):
+    """Metodo a doppio coefficiente (FAO-56 cap. 7) per tutte le superfici; vedi docstring
+    del modulo, 'Metodo a doppio coefficiente'."""
+    n = et0.shape[0]
+    fc1mm = 1000.0 * fc1 * z1
+    fc2mm = 1000.0 * fc2 * z2
+    wp1mm = 1000.0 * wp1 * z1
+    wp2mm = 1000.0 * wp2 * z2
+    taw1 = fc1mm - wp1mm                     # eq. 82, strato 1
+    taw2 = fc2mm - wp2mm                     # eq. 82, strato 2
+    taw_below = 1000.0 * (fc1 - wp1) * (z1 - ze)       # eq. 82, strato 1 sotto Ze
+    w1_min = 1000.0 * (wp1 * z1 - 0.5 * wp1 * ze)      # eq. 73: Ze fino a 0,5 theta_WP
+    used = np.zeros(cap_seg.shape[0])
+    w1 = w1_0
+    w2 = w2_0
+    de = de_0
+    for i in range(n):
+        s_type = surf[i]
+        # ---- zona radicale (eq. 82) e coefficienti di inizio giornata
+        z = zr[i]
+        f1 = z / z1
+        if f1 > 1.0:
+            f1 = 1.0
+        if f1 < 0.0:
+            f1 = 0.0
+        f2 = (z - z1) / z2
+        if f2 > 1.0:
+            f2 = 1.0
+        if f2 < 0.0:
+            f2 = 0.0
+        taw = f1 * taw1 + f2 * taw2          # eq. 82
+        dr0 = f1 * (fc1mm - w1) + f2 * (fc2mm - w2)   # Dr,i-1 (eq. 87 per strato)
+        if dr0 < 0.0:
+            dr0 = 0.0
+        # Kr con De,i-1 (eq. 74), Ke (eq. 71, 75)
+        kr = 1.0
+        if de > rew:
+            kr = (tew - de) / (tew - rew)    # eq. 74
+            if kr < 0.0:
+                kr = 0.0
+        few = 1.0 - fcov[i]                  # eq. 75
+        if few > fw:
+            few = fw
+        if few < 0.01:
+            few = 0.01                       # eq. 75: few in [0.01, 1]
+        ke = kr * (kcmx[i] - kcb[i])         # eq. 71
+        if ke > few * kcmx[i]:
+            ke = few * kcmx[i]
+        if ke < 0.0:
+            ke = 0.0
+        etc_p = (kcb[i] + ke) * et0[i]       # eq. 69
+        p = p_tab[i] + 0.04 * (5.0 - etc_p)  # tab. 22, nota
+        if p < 0.1:
+            p = 0.1
+        if p > 0.8:
+            p = 0.8
+        raw = p * taw                        # eq. 83
+        # Ks con Dr,i-1 (eq. 84); il suolo nudo non ha zona radicale: Ks = 1
+        ks = 1.0
+        if s_type != 2:
+            ks = _ks_eq84(dr0, raw, taw, p)
+        # ---- 1. ruscellamento (CN)
+        cn = _cn_of_day(cn_cls[i], w1, z1, wp1, fc1, cn_ii, cn_i, cn_iii, use_amc)
+        p_mm = rain[i]
+        ro = _scs_runoff(p_mm, cn, ia_ratio)
+        # ---- 2. infiltrazione e drenaggio a cascata (eq. 88)
+        inf = p_mm - ro
+        w1 += inf
+        de -= inf                            # eq. 77 (fw = 1 per la pioggia, tab. 20)
+        dp = 0.0
+        if w1 > fc1mm:
+            w2 += w1 - fc1mm
+            w1 = fc1mm
+        if w2 > fc2mm:
+            dp += w2 - fc2mm
+            w2 = fc2mm
+        dr = f1 * (fc1mm - w1) + f2 * (fc2mm - w2)
+        if dr < 0.0:
+            dr = 0.0
+        # ---- 3. irrigazione (Dr > RAW -> I = Dr, entro il tetto del segmento)
+        irr = 0.0
+        if s_type == 0 and irrigable[i] != 0 and dr > raw and taw > 0.0:
+            k = seg[i]
+            left = cap_seg[k] - used[k]
+            irr = dr
+            if irr > left:
+                irr = left
+            if irr < 0.0:
+                irr = 0.0
+            if irr > 0.0:
+                used[k] += irr
+                w1 += irr
+                de -= irr / fw               # eq. 77, termine I/fw
+                if w1 > fc1mm:
+                    w2 += w1 - fc1mm
+                    w1 = fc1mm
+                if w2 > fc2mm:
+                    dp += w2 - fc2mm
+                    w2 = fc2mm
+                dr = f1 * (fc1mm - w1) + f2 * (fc2mm - w2)
+                if dr < 0.0:
+                    dr = 0.0
+                # irrigazione a inizio giornata (FAO-56 es. 38): Ks con il Dr dopo l'irrigazione
+                ks = _ks_eq84(dr, raw, taw, p)
+        de = _de_bounds_dual(de, w1, fc1mm, tew, taw_below)
+        # ---- 4. traspirazione T = Ks Kcb ET0 (eq. 80-81 sul solo Kcb), dalla zona radicale;
+        #      sul suolo nudo il termine Kcb ET0 viene dallo strato 1
+        g1 = f1
+        g2 = f2
+        if s_type == 2:
+            g1 = 1.0
+            g2 = 0.0
+        t = ks * kcb[i] * et0[i]
+        a1 = w1 - wp1mm
+        if a1 < 0.0:
+            a1 = 0.0
+        a1 *= g1
+        a2 = w2 - wp2mm
+        if a2 < 0.0:
+            a2 = 0.0
+        a2 *= g2
+        avail = a1 + a2
+        if t > avail:
+            t = avail
+        if avail > 0.0:
+            t1 = t * a1 / avail
+            t2 = t - t1
+        else:
+            t1 = 0.0
+            t2 = 0.0
+        w1 -= t1
+        w2 -= t2
+        de += t1 * ze / z1                   # eq. 77, termine Te (prelievo uniforme nello strato 1)
+        # ---- 5. evaporazione E = Ke ET0 (eq. 71) dalla frazione esposta e bagnata
+        e = ke * et0[i]
+        room = few * (tew - de)              # eq. 77-78: De + E/few <= TEW
+        if e > room:
+            e = room
+        if e > w1 - w1_min:                  # limite inferiore dello strato 1 (eq. 73)
+            e = w1 - w1_min
+        if e < 0.0:
+            e = 0.0
+        w1 -= e
+        de += e / few                        # eq. 77, termine E/few
+        de = _de_bounds_dual(de, w1, fc1mm, tew, taw_below)
+        o_etc[i] = kcb[i] * et0[i] + e       # eq. 69 con Ke effettivo
+        o_eta[i] = t + e                     # eq. 80 nella forma Ks Kcb + Ke
+        o_ks[i] = ks
+        o_kr[i] = kr
+        o_irr[i] = irr
+        o_ro[i] = ro
+        o_dp[i] = dp
+        o_w1[i] = w1
+        o_w2[i] = w2
+        o_de[i] = de
+        o_taw[i] = taw
+        o_raw[i] = raw
+        o_dr[i] = dr0 if irr == 0.0 else dr
+        o_tr[i] = t
+        o_ev[i] = e
     return w1, w2, de
 
 
@@ -586,7 +926,13 @@ class DailyInputs:
     et0, rain [mm/g]; kc [-] (ignorato sul suolo nudo); zr [m]; p_tab [-];
     surface: SURF_CROP / SURF_COVER / SURF_BARE; irrigable: 1 se la coltura del
     giorno e' irrigabile; segment: indice del segmento 0..nseg-1; cn_class:
-    CN_ROW_CROPS / CN_SMALL_GRAIN / CN_BARE.
+    CN_ROW_CROPS / CN_SMALL_GRAIN / CN_BARE (conta solo con metodo_cn 'neh_copertura').
+
+    Facoltativi, per il metodo a doppio coefficiente (FAO-56 cap. 7): kcb [-] basale del
+    giorno per tutte le superfici (sul suolo nudo crops.suolo_nudo.kcb_suolo_nudo);
+    kc_max [-] dell'eq. 72 (default: max(soil.kc_max, Kcb + 0.05), eq. 72 senza termine
+    climatico); fc [-] frazione coperta dell'eq. 76 (default: eq. 76 con h = 0). Senza
+    kcb la serie si simula solo con il metodo a Kc singolo.
     """
     et0: np.ndarray
     rain: np.ndarray
@@ -597,10 +943,16 @@ class DailyInputs:
     irrigable: np.ndarray
     segment: np.ndarray
     cn_class: np.ndarray
+    kcb: np.ndarray | None = None
+    kc_max: np.ndarray | None = None
+    fc: np.ndarray | None = None
 
     def __post_init__(self):
         n = len(self.et0)
-        for name in ("rain", "kc", "zr", "p_tab", "surface", "irrigable", "segment", "cn_class"):
+        for name in ("rain", "kc", "zr", "p_tab", "surface", "irrigable", "segment", "cn_class",
+                     "kcb", "kc_max", "fc"):
+            if getattr(self, name) is None:
+                continue
             if len(getattr(self, name)) != n:
                 raise ValueError(f"DailyInputs: '{name}' ha lunghezza diversa da et0 ({n})")
         if n and (np.any(~np.isfinite(self.et0)) or np.any(~np.isfinite(self.rain))):
@@ -611,9 +963,13 @@ class DailyInputs:
 class WaterResult:
     """Uscite giornaliere [mm o -] e stato iniziale/finale.
 
-    etc, eta, ks, kr, irr, runoff, dp, w1, w2, de, taw, raw, dr (Dr prima dell'ET,
-    dopo pioggia e irrigazione); theta_e = contenuto idrico volumetrico dello
-    strato evaporante (Ze) a fine giorno; storage = w1 + w2.
+    etc, eta, ks, kr, irr, runoff, dp, w1, w2, de, taw, raw, dr (Dr usato per Ks:
+    metodo singolo dopo pioggia e irrigazione; metodo doppio Dr,i-1 di inizio giornata, o
+    dopo l'irrigazione nei giorni irrigati); tr, ev = traspirazione ed evaporazione
+    (metodo doppio: tr = Ks Kcb ET0, ev = Ke ET0, eta = tr + ev; metodo singolo: tr = ETa
+    di coltura e cover, ev = ETa del suolo nudo); theta_e = contenuto idrico volumetrico
+    dello strato evaporante (Ze) a fine giorno (nel metodo doppio, della frazione esposta);
+    storage = w1 + w2; metodo_et = 'doppio' | 'singolo'.
     """
     etc: np.ndarray
     eta: np.ndarray
@@ -628,11 +984,14 @@ class WaterResult:
     taw: np.ndarray
     raw: np.ndarray
     dr: np.ndarray
+    tr: np.ndarray
+    ev: np.ndarray
     theta_e: np.ndarray
     rain: np.ndarray
     segment: np.ndarray
     state0: WaterState
     state_end: WaterState
+    metodo_et: str = "singolo"
     extra: dict = field(default_factory=dict)
 
     @property
@@ -650,7 +1009,8 @@ def _cap_array(irr_cap, nseg: int) -> np.ndarray:
 
 
 def run_water_balance(inp: DailyInputs, soil: SoilWaterParams, state0: WaterState,
-                      irr_cap=math.inf, use_amc: bool = False) -> WaterResult:
+                      irr_cap=math.inf, use_amc: bool = False,
+                      metodo_et: str | None = None) -> WaterResult:
     """Bilancio idrico giornaliero su tutta la serie, in un unico ciclo.
 
     irr_cap: tetto irriguo netto [mm] per segmento (scalare = stesso tetto per
@@ -659,28 +1019,50 @@ def run_water_balance(inp: DailyInputs, soil: SoilWaterParams, state0: WaterStat
     chiamata. Nell'architettura del motore una rotazione intera e' una sola
     chiamata, quindi il tetto vale per segmento lungo tutta la rotazione; chiamate
     separate per pezzi della stessa coltura raddoppierebbero il tetto.
-    use_amc: correzione del CN con l'umidita' dello strato 1 (soil.yaml regola_umidita).
+    use_amc: correzione del CN con l'umidita' dello strato 1 (soil.yaml regola_umidita); con
+    metodo_cn 'aquacrop' i CN di AMC I e III vengono dalle eq. 3.7g-h (cn_amc_aquacrop); la
+    pesatura con la profondita' dell'eq. 3.7i non serve perche' lo strato 1 (0-0,3 m) e'
+    uniforme.
+    metodo_et: 'doppio' (FAO-56 cap. 7, richiede inp.kcb) o 'singolo' (Kc singolo, cap. 6);
+    default 'doppio' se inp.kcb e' dato, altrimenti 'singolo'.
     """
+    if metodo_et is None:
+        metodo_et = "doppio" if inp.kcb is not None else "singolo"
+    if metodo_et not in ("doppio", "singolo"):
+        raise ValueError(f"metodo_et sconosciuto: {metodo_et!r} (ammessi 'doppio', 'singolo')")
+    if metodo_et == "doppio" and inp.kcb is None:
+        raise ValueError("metodo_et='doppio' richiede DailyInputs.kcb")
     n = len(inp.et0)
     seg = np.ascontiguousarray(inp.segment, dtype=np.int64)
     nseg = int(seg.max()) + 1 if n else 0
     cap = _cap_array(irr_cap, max(nseg, 1))
-    out = {k: np.empty(n) for k in ("etc", "eta", "ks", "kr", "irr", "runoff", "dp",
-                                     "w1", "w2", "de", "taw", "raw", "dr")}
+    keys = ("etc", "eta", "ks", "kr", "irr", "runoff", "dp", "w1", "w2", "de", "taw", "raw",
+            "dr", "tr", "ev")
+    out = {k: np.empty(n) for k in keys}
+    o = [out[k] for k in keys]
     f = lambda a: np.ascontiguousarray(a, dtype=np.float64)  # noqa: E731
     i8 = lambda a: np.ascontiguousarray(a, dtype=np.int64)   # noqa: E731
-    w1, w2, de = _kernel(
-        f(inp.et0), f(inp.rain), f(inp.kc), f(inp.zr), f(inp.p_tab),
-        i8(inp.surface), i8(inp.irrigable), seg, f(cap), i8(inp.cn_class),
-        f(soil.cn_ii), f(soil.cn_i), f(soil.cn_iii), bool(use_amc),
-        soil.z1, soil.z2, soil.fc1, soil.wp1, soil.fc2, soil.wp2,
-        soil.ze, soil.tew, soil.rew, soil.kc_max,
-        float(state0.w1), float(state0.w2), float(state0.de),
-        out["etc"], out["eta"], out["ks"], out["kr"], out["irr"], out["runoff"], out["dp"],
-        out["w1"], out["w2"], out["de"], out["taw"], out["raw"], out["dr"])
+    cn_args = (f(soil.cn_ii), f(soil.cn_i), f(soil.cn_iii), bool(use_amc), float(soil.ia_ratio))
+    st0 = (float(state0.w1), float(state0.w2), float(state0.de))
+    if metodo_et == "singolo":
+        w1, w2, de = _kernel(
+            f(inp.et0), f(inp.rain), f(inp.kc), f(inp.zr), f(inp.p_tab),
+            i8(inp.surface), i8(inp.irrigable), seg, f(cap), i8(inp.cn_class), *cn_args,
+            soil.z1, soil.z2, soil.fc1, soil.wp1, soil.fc2, soil.wp2,
+            soil.ze, soil.tew, soil.rew, soil.kc_max, *st0, *o)
+    else:
+        kcb = f(inp.kcb)
+        kcmx = f(np.maximum(soil.kc_max, kcb + 0.05) if inp.kc_max is None else inp.kc_max)  # eq. 72
+        fcov = f(cover_fraction_eq76(kcb, kcmx, soil.kc_min, 0.0) if inp.fc is None else inp.fc)
+        w1, w2, de = _kernel_dual(
+            f(inp.et0), f(inp.rain), kcb, kcmx, fcov, f(inp.zr), f(inp.p_tab),
+            i8(inp.surface), i8(inp.irrigable), seg, f(cap), i8(inp.cn_class), *cn_args,
+            float(soil.fw), soil.z1, soil.z2, soil.fc1, soil.wp1, soil.fc2, soil.wp2,
+            soil.ze, soil.tew, soil.rew, *st0, *o)
     theta_e = soil.fc1 - out["de"] / (1000.0 * soil.ze)
     return WaterResult(theta_e=theta_e, rain=np.asarray(inp.rain, float), segment=seg,
-                       state0=state0.copy(), state_end=WaterState(w1, w2, de), **out)
+                       state0=state0.copy(), state_end=WaterState(w1, w2, de),
+                       metodo_et=metodo_et, **out)
 
 
 def water_balance_residual(res: WaterResult) -> float:
@@ -699,14 +1081,14 @@ def water_balance_daily_residual(res: WaterResult) -> np.ndarray:
 
 
 def aggregate_segments(res: WaterResult) -> dict[str, np.ndarray]:
-    """Somme per segmento: days, rain, eta, etc, irr, runoff, dp [mm] e
+    """Somme per segmento: days, rain, eta, etc, irr, runoff, dp, tr, ev [mm] e
     storage_end [mm] (acqua nel profilo all'ultimo giorno del segmento).
     Indici = numero del segmento; segmenti senza giorni hanno days = 0."""
     seg = res.segment
     nseg = int(seg.max()) + 1 if seg.size else 0
     agg = {"days": np.bincount(seg, minlength=nseg).astype(float)}
     for k, arr in (("rain", res.rain), ("eta", res.eta), ("etc", res.etc), ("irr", res.irr),
-                   ("runoff", res.runoff), ("dp", res.dp)):
+                   ("runoff", res.runoff), ("dp", res.dp), ("tr", res.tr), ("ev", res.ev)):
         agg[k] = np.bincount(seg, weights=arr, minlength=nseg)
     end = np.full(nseg, np.nan)
     st = res.storage

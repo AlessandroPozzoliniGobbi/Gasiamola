@@ -68,11 +68,14 @@ def soil_cn(p: dict) -> float:
 
 def k2_from_params(p: dict, classe: str | None = None, cn: float | None = None) -> float:
     """k2 [1/anno] da nitrogen.suolo.k2 secondo _meta.equazioni.k2_suolo:
-    C/N < 9 -> cn_basso; 9-12 -> per_tessitura; > 12 -> cn_alto (soglie del metodo ER,
-    Allegato 2 Tab. 1, colonne C/N<9, 9-12, >12)."""
+    C/N < inferiore -> cn_basso; inferiore-superiore -> per_tessitura; > superiore -> cn_alto.
+    Le soglie (9 e 12, colonne della Tab. 1 dell'Allegato 2 del metodo ER) stanno in
+    nitrogen.suolo.k2_soglie_cn."""
     classe = texture_class(p) if classe is None else classe
     cn = soil_cn(p) if cn is None else float(cn)
-    tab = "cn_basso" if cn < 9.0 else ("cn_alto" if cn > 12.0 else "per_tessitura")
+    lo = float(_params.get(p, "nitrogen.suolo.k2_soglie_cn.inferiore"))
+    hi = float(_params.get(p, "nitrogen.suolo.k2_soglie_cn.superiore"))
+    tab = "cn_basso" if cn < lo else ("cn_alto" if cn > hi else "per_tessitura")
     return float(_params.get(p, f"nitrogen.suolo.k2.{tab}.{classe}"))
 
 

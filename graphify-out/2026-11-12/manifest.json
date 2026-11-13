@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "PLAN.md": {
-    "mtime": 1794491710.7897322,
-    "seen": 1794494040.3334248,
-    "ast_hash": "c1c64196987bad857d0564fb0d374cce",
+    "mtime": 1794495066.822058,
+    "seen": 1794495452.610292,
+    "ast_hash": "f19857c18a862440b898a3048f86137b",
     "semantic_hash": ""
   },
   "docs/fonti_crops.md": {
@@ -138,9 +138,9 @@
     "semantic_hash": ""
   },
   "params/nitrogen.yaml": {
-    "mtime": 1794494179.437845,
-    "seen": 1794494194.754753,
-    "ast_hash": "5d3691e0a7c8772faa19d857acb91c8d",
+    "mtime": 1794495414.6192029,
+    "seen": 1794495452.610296,
+    "ast_hash": "02f8629d22b869d89aaa8c2fccc46684",
     "semantic_hash": ""
   },
   "requirements.txt": {
@@ -180,9 +180,9 @@
     "semantic_hash": ""
   },
   "params/cover_crop.yaml": {
-    "mtime": 1794494497.9543984,
-    "seen": 1794494937.74016,
-    "ast_hash": "0dd57486ee459d62eab3c906d06df8cf",
+    "mtime": 1794495414.6198993,
+    "seen": 1794495452.610295,
+    "ast_hash": "d6f869f65c26f7e4fb2c60634cd728cf",
     "semantic_hash": ""
   },
   "params/heat.yaml": {
@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "src/fieldwise/water.py": {
-    "mtime": 1794491824.3811066,
-    "seen": 1794494040.3334148,
-    "ast_hash": "5e9645a3512c47a30c8997194ca610e1",
+    "mtime": 1794495309.5502472,
+    "seen": 1794495452.61028,
+    "ast_hash": "184bc3102aeff4cc3cfa2afffdbcd93e",
     "semantic_hash": ""
   },
   "reports/params_review.md": {
@@ -240,21 +240,21 @@
     "semantic_hash": ""
   },
   ".omc/state/idle-notif-cooldown.json": {
-    "mtime": 1794494818.8313284,
-    "seen": 1794494937.740077,
-    "ast_hash": "9e75b0a506d8066fb7cb64115f1afa36",
+    "mtime": 1794495070.7562258,
+    "seen": 1794495452.6102028,
+    "ast_hash": "94d70880f6b1f6ec580d8e17d2d29c50",
     "semantic_hash": ""
   },
   ".omc/state/sessions/16781da1-d404-42cb-90db-c173feefdc0b/pre-tool-advisory-throttle.json": {
-    "mtime": 1794494909.5427876,
-    "seen": 1794494937.740134,
-    "ast_hash": "e06bf629d550ef24b67210cc570f9323",
+    "mtime": 1794495314.0220597,
+    "seen": 1794495452.610271,
+    "ast_hash": "a15dd499191f6feb2549e44003066900",
     "semantic_hash": ""
   },
   ".omc/state/sessions/16781da1-d404-42cb-90db-c173feefdc0b/subagent-tracking-state.json": {
-    "mtime": 1794494815.4172776,
-    "seen": 1794494937.740134,
-    "ast_hash": "28782096e9d5d254f13e65f3f9447343",
+    "mtime": 1794495052.411309,
+    "seen": 1794495452.610271,
+    "ast_hash": "4460800a5e830b6693679855098e6ee5",
     "semantic_hash": ""
   },
   "tests/test_water.py": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   ".omc/state/sessions/16781da1-d404-42cb-90db-c173feefdc0b/mission-state.json": {
-    "mtime": 1794494723.3912804,
-    "seen": 1794494937.740133,
-    "ast_hash": "db4ff033ca34d5e7f3a29818232cc457",
+    "mtime": 1794495052.309236,
+    "seen": 1794495452.61027,
+    "ast_hash": "2f9ce27b272acd29438a4cc161caf349",
     "semantic_hash": ""
   },
   "src/fieldwise/humus.py": {
@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "src/fieldwise/nitrogen.py": {
-    "mtime": 1794494151.1838763,
-    "seen": 1794494194.754733,
-    "ast_hash": "d1c3f5371e3bf1280f50c4bd42c1f4b1",
+    "mtime": 1794495424.3831773,
+    "seen": 1794495452.610276,
+    "ast_hash": "bd189a3046135f42d1b329d1552ab49e",
     "semantic_hash": ""
   },
   "src/fieldwise/phenology.py": {
@@ -948,9 +948,9 @@
     "semantic_hash": ""
   },
   "src/fieldwise/rotation.py": {
-    "mtime": 1794494721.6440337,
-    "seen": 1794494937.740142,
-    "ast_hash": "f4267c8a9cb06f28b567cf3b51994317",
+    "mtime": 1794495319.6358976,
+    "seen": 1794495452.610278,
+    "ast_hash": "9221a7b6d48cff0dfa0be588164429fe",
     "semantic_hash": ""
   },
   "tests/test_humus.py": {

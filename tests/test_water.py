@@ -151,9 +151,21 @@ class TestChiusura:
         for cap in (math.inf, 0.0, 80.0):
             res = w.run_water_balance(inp, soil, w.initial_water_state(soil), irr_cap=cap)
             self._check(res)
-        # la stagione sintetica attiva davvero ruscellamento, percolazione e irrigazione
+        # la stagione sintetica attiva davvero ruscellamento e irrigazione (qualunque sia il
+        # metodo di ruscellamento di default); la percolazione dipende dal metodo, quindi si
+        # verifica nella variante costruita apposta qui sotto
         res = w.run_water_balance(inp, soil, w.initial_water_state(soil, 0.5))
-        assert res.runoff.sum() > 0 and res.dp.sum() > 0 and res.irr.sum() > 0
+        assert res.runoff.sum() > 0 and res.irr.sum() > 0
+
+    @pytest.mark.parametrize("metodo_cn", ["aquacrop", "neh_copertura"])
+    def test_stagione_mais_percolazione(self, pars, metodo_cn):
+        """Pioggia abbondante su suolo a capacita' di campo: percolazione > 0 e bilancio chiuso,
+        con entrambi i metodi di ruscellamento (non dipende dal default)."""
+        sl = w.soil_from_params(pars, metodo_cn=metodo_cn)
+        inp = maize_inputs(sl, pars, rain_scale=2.0)
+        res = w.run_water_balance(inp, sl, w.initial_water_state(sl, 1.0), irr_cap=0.0)
+        self._check(res)
+        assert res.dp.sum() > 0 and res.runoff.sum() > 0 and res.irr.sum() == 0
 
     def test_tre_anni_piu_segmenti(self, soil, pars):
         inp = three_year_inputs(soil, pars)

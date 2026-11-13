@@ -60,3 +60,13 @@ Data di accesso per tutte le fonti: 2026-11-11. "Letto" = pagina o PDF aperto e 
 - Articoli Terra e Vita / Il Contoterzista / Edagricole sulle reti varietali di soia e frumento: il download restituisce HTML (bloccato).
 - core.ac.uk (Danuso et al.) e ScienceDirect S1161030126001966 (mais nel Nord Italia): HTTP 403.
 - Schede della Provincia di Vicenza (soia, frumento, mais): HTTP 404.
+
+## Aggiornamento 2026-11-12 – doppio coefficiente nel motore
+
+**Allen et al. (1998), FAO-56 cap. 7**, https://www.fao.org/4/x0490e/x0490e0c.htm, riletto per il metodo a doppio
+coefficiente (eq. 69, 71, 72, 74, 75, 76, 77-78): "Kc min the minimum Kc for dry bare soil with no ground cover
+[≈ 0.15 - 0.20]", "Kc min ordinarily has the same value as the Kcb ini used for annual crops", es. 32 con
+Kc min = 0,15 → `suolo_nudo.kc_min`; Kr con De,i-1 (eq. 74); h dell'eq. 72 = "mean maximum plant height during the
+period of calculation". `suolo_nudo.kcb_suolo_nudo` (0,15) ora è usato dal motore.
+La legge di crescita dell'altezza (lineare fino a fine sviluppo) e l'altezza della segale da cover
+(`cover_crop.acqua.altezza`, 0,3 m) sono assunzioni dichiarate.
