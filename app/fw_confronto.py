@@ -90,7 +90,7 @@ def _fattori(vs: list[dict]):
     fig.update_layout(barmode="group", height=360, margin=dict(t=30, b=10),
                       yaxis_title="resa mantenuta (100% = nessuna perdita)", yaxis_range=[0, 112],
                       legend=dict(orientation="h", y=-0.25))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     for i, v in enumerate(vs):
         lim = v["valori"].get("fattore_limitante")
         if lim in ET["fattori"]:
@@ -133,7 +133,7 @@ def _compromesso(r: dict, stato: dict, vs: list[dict]):
 
     fig.update_layout(height=460, margin=dict(t=20, b=10), xaxis_title=titolo(x), yaxis_title=titolo(y),
                       legend=dict(orientation="h", y=-0.22))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(f"Rotazioni confrontate: {len(pf)}; non dominate (nessun'altra è migliore o pari su tutti e due "
                f"gli indicatori e meglio su almeno uno): {int(pf['non_dominata'].sum())}. "
                f"Un punto non dominato non è per forza la scelta giusta: dipende da cosa conta di più per te.")
@@ -150,7 +150,7 @@ def _distribuzione(r: dict, stato: dict, vs: list[dict]):
                     text=[f"annata {a}" for a in d["anno_valutato"]], hovertemplate="%{y:.0f}% %{text}<extra></extra>")
     fig.update_layout(height=420, margin=dict(t=20, b=10), showlegend=False,
                       yaxis_title="resa media della rotazione (% del potenziale)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     a0, a1 = r["meta"].get("anni_valutati", [None, None])
     st.caption(f"Ogni punto è una simulazione con il meteo realmente avvenuto nelle annate dal {a0} al {a1}: "
                "mostra quanto può variare la resa da un'annata all'altra. "
@@ -190,7 +190,7 @@ def mostra(stato: dict):
             _scheda(v, stato, conf["n_confrontate"])
 
     st.subheader("Gli indicatori a confronto")
-    st.dataframe(_tabella(vs), use_container_width=True)
+    st.dataframe(_tabella(vs), width="stretch")
     st.caption("Valori mediani su tutte le annate storiche. La resa è in % del potenziale della coltura.")
 
     st.subheader("Perché una rotazione perde resa")
@@ -211,6 +211,6 @@ def mostra(stato: dict):
                           "Disciplinare": [stato_conformita(row, stato["regime"]) for row in p.to_dict("records")],
                           "Irrigazione (mm)": p["irrigazione_mm"].round(0),
                           "Resa mediana": [pct(x) for x in p["resa_rel_mediana"]]})
-        st.dataframe(t, hide_index=True, use_container_width=True)
+        st.dataframe(t, hide_index=True, width="stretch")
         st.caption("Il punteggio è relativo alle rotazioni confrontate: serve solo a ordinare.")
     return r

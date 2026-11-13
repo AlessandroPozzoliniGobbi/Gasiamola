@@ -63,7 +63,7 @@ def _grafici(lat: float, lon: float, out: dict):
                           row=r, col=1)
         fig.add_annotation(x=t0 + (t1 - t0) / 2, y=1.0, yref="paper", text=s.crop, showarrow=False, yanchor="bottom")
     fig.update_layout(height=900, barmode="stack", margin=dict(t=60, b=10), legend=dict(orientation="h", y=-0.06))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption("Le fasce verdi sono i periodi in cui la coltura è in campo.")
 
 
@@ -113,9 +113,9 @@ def mostra(stato: dict, risultato: dict | None):
     c[4].metric("Humus", f"{num(ind['humus_variazione_anno'], 2)} t/ha/anno")
 
     st.subheader("Calendario")
-    st.dataframe(_calendario(out), hide_index=True, use_container_width=True)
+    st.dataframe(_calendario(out), hide_index=True, width="stretch")
     st.subheader("Giorno per giorno")
     _grafici(stato["lat"], stato["lon"], out)
     st.subheader("Azoto per coltura")
-    st.dataframe(_azoto(out), hide_index=True, use_container_width=True)
+    st.dataframe(_azoto(out), hide_index=True, width="stretch")
     st.caption("Il bilancio dell'azoto non è stato confrontato con misure: leggilo come un ordine di grandezza.")

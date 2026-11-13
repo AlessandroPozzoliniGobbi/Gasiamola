@@ -125,6 +125,14 @@ def meteo_giornaliero(lat: float, lon: float) -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner=False)
+def anni_affidabili() -> tuple[int, int]:
+    """Primo e ultimo anno con pioggia affidabile (quelli usati dall'ensemble) nel punto pilota."""
+    m = meteo_giornaliero(*PILOTA)
+    y = pd.to_datetime(m.loc[m["rain_trusted"].astype(bool), "date"]).dt.year
+    return int(y.min()), int(y.max())
+
+
+@st.cache_data(show_spinner=False)
 def validazione() -> dict | None:
     return _leggi_json(_processato(*PILOTA) / "validation_summary.json")
 
