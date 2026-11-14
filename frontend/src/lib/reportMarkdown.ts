@@ -1,11 +1,12 @@
 import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS } from "./analysisStorage";
 import { REPORT_METRICS, formatMetric, labelRotation, type CompletedReport, type RotationResult } from "./reportTypes";
 
-function outcomeMd(title: string, outcome: RotationResult): string {
-  const rows = REPORT_METRICS.map((metric) =>
+function outcomeMd(title: string, outcome: RotationResult, includeEconomics: boolean): string {
+  const rows = REPORT_METRICS.filter((metric) => includeEconomics || metric.key !== "grossMarginEurHa").map((metric) =>
     `| ${metric.label} | ${formatMetric(metric.key, outcome.metrics[metric.key] ?? null)} |`).join("\n");
-  const evidence = outcome.evidence.map((s) => `- ${s}`).join("\n") || "- Not available";
-  const risks = outcome.risks.map((s) => `- ${s}`).join("\n") || "- Not available";
+  const visible = (items: string[]) => includeEconomics ? items : items.filter((s) => !/partial gross margin|economic margin/i.test(s));
+  const evidence = visible(outcome.evidence).map((s) => `- ${s}`).join("\n") || "- Not available";
+  const risks = visible(outcome.risks).map((s) => `- ${s}`).join("\n") || "- Not available";
   return `## ${title}: ${labelRotation(outcome.label)}\n\n` +
     `Relative ranking score: ${outcome.score?.toFixed(3) ?? "Not available"} (not a confidence estimate).\n\n` +
     `| Indicator | Result |\n| --- | --- |\n${rows}\n\n` +
@@ -15,9 +16,13 @@ function outcomeMd(title: string, outcome: RotationResult): string {
 export function renderReportMarkdown(report: CompletedReport): string {
   const mode = report.engine.sourceMode === "pilot_reference"
     ? "**PILOT REFERENCE ONLY:** This simulation uses Cremona soil and weather, not this field's local conditions."
-    : "Simulation of the Cremona pilot-point ensemble.";
+    : report.engine.sourceMode === "local_estimate"
+      ? "**LOCATION-CONDITIONED ESTIMATE:** This experimental analysis uses local gridded weather and soil predictions, not measurements at field scale."
+      : "Simulation of the Cremona pilot-point ensemble.";
   const point = report.field.representativePoint;
-  const priorities = PRIORITY_KEYS.map((key) => `- ${PRIORITY_LABELS[key]}: ${report.inputs.priorities[key]} / 10`).join("\n");
+  const includeEconomics = report.inputs.advancedEconomics === true;
+  const priorities = PRIORITY_KEYS.filter((key) => includeEconomics || key !== "profitto")
+    .map((key) => `- ${PRIORITY_LABELS[key]}: ${report.inputs.priorities[key]} / 10`).join("\n");
   const sections = [
     `# FIELDWISE — Analysis Report\n\n**Field:** ${report.field.name} (#${report.field.number})\n\n` +
     `**Created:** ${report.createdAt}\n\n**Report ID:** ${report.id}\n\n${mode}\n`,
@@ -28,12 +33,12 @@ export function renderReportMarkdown(report: CompletedReport): string {
     `- Crop cycle: ${report.inputs.rotation.map((r) => CROP_LABELS[r.crop] + (r.coverAfter ? " + rye" : "")).join(" → ")}\n` +
     `- Compared rotations: ${report.results.comparedRotations ?? "Not available"}\n\n` +
     `### Priorities\n${priorities}\n`,
-    outcomeMd("Current rotation", report.results.current),
-    ...report.results.alternatives.map((r, i) => outcomeMd(`Alternative ${i + 1}`, r)),
+    outcomeMd("Current rotation", report.results.current, includeEconomics),
+    ...report.results.alternatives.map((r, i) => outcomeMd(`Alternative ${i + 1}`, r, includeEconomics)),
     `## Scientific context and limitations\n\n${report.engine.methodologyNote ?? "Not provided"}\n\n` +
-    `The indicators compare historical climate years; they are not a forecast. Ranking scores depend on the compared rotations, irrigation scenario and chosen priorities.\n\n` +
-    `Economic margin is partial: crop revenue minus nitrogen fertilizer and irrigation. It excludes seeds, crop protection, machinery, labor and fixed costs.\n`,
-    `## Model notes\n\n${report.results.notes.map((s) => `- ${s}`).join("\n")}\n`,
+    `The indicators compare historical climate years; they are not a forecast. Ranking scores depend on the compared rotations, irrigation scenario and chosen priorities.\n\n`,
+    ...(includeEconomics ? [`Economic analysis uses the engine's fixed assumptions, not user-provided farm prices. Economic margin is partial: crop revenue minus nitrogen fertilizer and irrigation. It excludes seeds, crop protection, machinery, labor and fixed costs.\n`] : []),
+    `## Model notes\n\n${report.results.notes.filter((s) => includeEconomics || !/economic margin/i.test(s)).map((s) => `- ${s}`).join("\n")}\n`,
     `## Reproducibility\n\n- Engine version: ${report.engine.version ?? "Not provided"}\n` +
     `- Dataset period: ${report.engine.dataPeriod ?? "Not provided"}\n` +
     `- Scenario code: ${report.results.scenario}\n\n` +

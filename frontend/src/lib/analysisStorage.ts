@@ -13,6 +13,8 @@ export type AnalysisDraft = {
   rotation: [CropStep, CropStep, CropStep];
   irrigation: IrrigationScenario;
   priorities: Record<PriorityId, number>;
+  /** Opt-in for the current engine's fixed-assumption economic analysis. */
+  advancedEconomics?: boolean;
 };
 
 export const CROP_LABELS: Record<CropId, string> = {
@@ -55,11 +57,13 @@ export function defaultAnalysisDraft(): AnalysisDraft {
     ],
     irrigation: "tetto_irriguo",
     priorities: { resa: 5, rischio: 5, acqua: 5, concime: 5, suolo: 5, profitto: 5 },
+    advancedEconomics: false,
   };
 }
 
 function normalizeAnalysisDraft(draft: AnalysisDraft): AnalysisDraft {
-  return { ...draft, priorities: { ...draft.priorities, profitto: draft.priorities.profitto ?? 5 } };
+  return { ...draft, advancedEconomics: draft.advancedEconomics === true,
+    priorities: { ...draft.priorities, profitto: draft.priorities.profitto ?? 5 } };
 }
 
 export function isAnalysisDraft(value: unknown): value is AnalysisDraft {
@@ -72,6 +76,7 @@ export function isAnalysisDraft(value: unknown): value is AnalysisDraft {
       return CROP_KEYS.includes(item.crop) && typeof item.coverAfter === "boolean";
     });
   return draft.version === 1 && validSteps &&
+    (draft.advancedEconomics === undefined || typeof draft.advancedEconomics === "boolean") &&
     IRRIGATION_KEYS.includes(draft.irrigation as IrrigationScenario) &&
     !!draft.priorities && typeof draft.priorities === "object" &&
     PRIORITY_KEYS.filter((key) => key !== "profitto").every((key) => {

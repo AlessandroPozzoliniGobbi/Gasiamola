@@ -434,3 +434,20 @@
 .referenceOption input{flex:0 0 auto;margin-top:3px;accent-color:#277b4b;width:16px;height:16px}
 .referenceOption strong{font-weight:800}
 .referenceOption small{font-size:11px;color:#54715d}
+
+/* Advanced analysis is opt-in. Retain the page's independently scrolling right column. */
+.advancedSection { border-radius: 15px; }
+.advancedSummary { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; list-style: none; }
+.advancedSummary::-webkit-details-marker { display: none; }
+.advancedSummary > span:first-child { display: flex; flex-direction: column; gap: 4px; }
+.advancedSummary strong { color: #193f2b; font-size: clamp(18px, 1.6vw, 23px); letter-spacing: -.025em; }
+.advancedSummary::after { content: "+"; color: #286c47; font-size: 20px; font-weight: 700; }
+.advancedSection[open] .advancedSummary::after { content: "−"; }
+.advancedBody { margin-top: 17px; border-top: 1px solid #d6e6d3; padding-top: 15px; }
+.advancedToggle { display: flex; align-items: flex-start; gap: 12px; padding: 13px 14px; background: rgba(225,242,222,.8); border: 1px solid #b7d3b3; border-radius: 13px; color: #234c34; cursor: pointer; }
+.advancedToggle input { width: 17px; height: 17px; margin-top: 3px; accent-color: #28794d; }
+.advancedToggle span { display: flex; flex-direction: column; gap: 5px; }
+.advancedToggle strong { font-size: 13px; }
+.advancedToggle small { color: #526e5d; font-size: 11px; line-height: 1.6; }
+.advancedBody .priorityRow { margin-top: 14px; }
+.advancedCaution { color: #7a5523; background: #fef7e8; border: 1px solid #e8cca2; border-radius: 12px; padding: 12px; font-size: 12px; line-height: 1.65; }

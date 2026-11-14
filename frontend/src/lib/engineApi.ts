@@ -31,7 +31,9 @@ export async function analyzeField(field: FieldSnapshot, draft: AnalysisDraft,
         point: field.representativePoint,
         rotation: rotationBackendLabel(draft.rotation),
         scenario: draft.irrigation,
-        priorities: draft.priorities,
+        // Standard reports do not opt into economic ranking; the backend's fixed
+        // economic model is not modified by this display-level selection.
+        priorities: { ...draft.priorities, profitto: draft.advancedEconomics ? draft.priorities.profitto : 0 },
         use_pilot_reference: usePilotReference,
       }),
       signal: controller.signal,

@@ -54,7 +54,8 @@ function OutcomeCard({ result, title, highlight = false }: {
 
 function ComparisonPlot({ report }: { report: CompletedReport }) {
   const [metric, setMetric] = useState<keyof RotationMetrics>("relativeYieldMedian");
-  const selected = REPORT_METRICS.find((m) => m.key === metric)!;
+  const allowedMetrics = REPORT_METRICS.filter((m) => report.inputs.advancedEconomics === true || m.key !== "grossMarginEurHa");
+  const selected = allowedMetrics.find((m) => m.key === metric)!;
   const entries = [
     { label: "Current", result: report.results.current },
     ...report.results.alternatives.slice(0, 2).map((result, index) => ({ label: `Alternative ${index + 1}`, result })),
@@ -74,7 +75,7 @@ function ComparisonPlot({ report }: { report: CompletedReport }) {
         <label className={styles.metricSelector}>
           <span className={styles.srOnly}>Metric to compare</span>
           <select value={metric} onChange={(e) => setMetric(e.target.value as keyof RotationMetrics)}>
-            {REPORT_METRICS.map((m) => <option value={m.key} key={m.key}>{m.shortLabel}</option>)}
+            {allowedMetrics.map((m) => <option value={m.key} key={m.key}>{m.shortLabel}</option>)}
           </select>
         </label>
       </div>
@@ -113,6 +114,8 @@ function BulletSection({ title, items, fallback }: { title: string; items: strin
 
 export default function ReportDashboard({ report, demo = false }: { report: CompletedReport; demo?: boolean }) {
   const [tab, setTab] = useState<Tab>("overview");
+  const showEconomics = report.inputs.advancedEconomics === true;
+  const visibleNotes = (items: string[]) => showEconomics ? items : items.filter((text) => !/partial gross margin|economic margin/i.test(text));
   const best = report.results.alternatives[0] ?? null;
   const outcomes = [report.results.current, ...report.results.alternatives.slice(0, 2)];
   const date = new Date(report.createdAt);
@@ -148,7 +151,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
         </header>
 
         <nav className={styles.tabNavigation} aria-label="Report sections">
-          {TABS.map((item) => <button type="button" key={item.id} onClick={() => setTab(item.id)}
+          {TABS.filter((item) => showEconomics || item.id !== "economics").map((item) => <button type="button" key={item.id} onClick={() => setTab(item.id)}
             className={`${styles.tabButton} ${tab === item.id ? styles.tabActive : ""}`}
             aria-current={tab === item.id ? "page" : undefined}>
             {item.title}{item.id === "economics" && <span className={styles.tabSoon}>{report.results.current.metrics.grossMarginEurHa == null ? "Soon" : "New"}</span>}
@@ -168,8 +171,8 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
           <h2 className={styles.sectionTitle}>At a glance <span>Recommended alternative</span></h2>
           {best ? <MetricCards outcome={best} /> : <p className={styles.muted}>No alternative metrics available.</p>}
           <div className={styles.splitPanels}>
-            <BulletSection title="Why this rotation?" items={best?.evidence ?? []} fallback="No evidence supplied by the model." />
-            <BulletSection title="What to consider" items={best?.risks ?? []} fallback="No risk notes supplied by the model." />
+            <BulletSection title="Why this rotation?" items={visibleNotes(best?.evidence ?? [])} fallback="No evidence supplied by the model." />
+            <BulletSection title="What to consider" items={visibleNotes(best?.risks ?? [])} fallback="No risk notes supplied by the model." />
           </div>
           <button type="button" className={styles.textButton} onClick={() => setTab("compare")}>Explore the full comparison →</button>
         </div>}
@@ -197,14 +200,14 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             </article>)}
           </div>
           <div className={styles.splitPanels}>
-            <BulletSection title="Evidence" items={best?.evidence ?? []} fallback="No evidence available." />
-            <BulletSection title="Risks and limitations" items={best?.risks ?? []} fallback="No specific risk notes available." />
+            <BulletSection title="Evidence" items={visibleNotes(best?.evidence ?? [])} fallback="No evidence available." />
+            <BulletSection title="Risks and limitations" items={visibleNotes(best?.risks ?? [])} fallback="No specific risk notes available." />
           </div>
-          {report.results.notes.length > 0 && <div className={styles.panel}><h3>Model notes</h3>
-            <ul className={styles.noteList}>{report.results.notes.map((n, i) => <li key={i}>{n}</li>)}</ul></div>}
+          {visibleNotes(report.results.notes).length > 0 && <div className={styles.panel}><h3>Model notes</h3>
+            <ul className={styles.noteList}>{visibleNotes(report.results.notes).map((n, i) => <li key={i}>{n}</li>)}</ul></div>}
         </div>}
 
-        {tab === "economics" && <div className={styles.content}>
+        {tab === "economics" && showEconomics && <div className={styles.content}>
           {report.results.current.metrics.grossMarginEurHa == null ? (
             <section className={styles.comingSoon}>
               <span className={styles.economicsIcon} aria-hidden="true">€</span>
@@ -249,7 +252,8 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
               <dl className={styles.detailList}>
                 <div><dt>Rotation</dt><dd>{report.inputs.rotation.map((r) => `${CROP_LABELS[r.crop]}${r.coverAfter ? " + rye" : ""}`).join(" → ")}</dd></div>
                 <div><dt>Irrigation</dt><dd>{IRRIGATION_LABELS[report.inputs.irrigation]}</dd></div>
-                {PRIORITY_KEYS.map((key) => <div key={key}><dt>{PRIORITY_LABELS[key]}</dt><dd>{report.inputs.priorities[key]} / 10</dd></div>)}
+                {PRIORITY_KEYS.filter((key) => showEconomics || key !== "profitto").map((key) => <div key={key}><dt>{PRIORITY_LABELS[key]}</dt><dd>{report.inputs.priorities[key]} / 10</dd></div>)}
+                <div><dt>Economic insights</dt><dd>{showEconomics ? "Included (fixed engine assumptions)" : "Not requested"}</dd></div>
               </dl>
             </section>
             <section className={styles.panel}><h3>Scientific provenance</h3>

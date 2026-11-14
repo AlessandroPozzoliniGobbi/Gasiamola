@@ -13,7 +13,7 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from fieldwise import __version__, config, ensemble, ranking
 from fieldwise.data.cache import CacheMiss
@@ -30,6 +30,9 @@ PRIORITIES = tuple(ranking.PRIORITA.keys())
 
 
 class AnalyzeRequest(BaseModel):
+    # Reject unknown economic or other parameters instead of silently ignoring them.
+    model_config = ConfigDict(extra="forbid")
+
     # GeoJSON order, [longitude, latitude]
     point: tuple[float, float]
     rotation: str = Field(min_length=4, max_length=160)

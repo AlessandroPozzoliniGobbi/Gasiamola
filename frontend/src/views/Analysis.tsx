@@ -101,6 +101,9 @@ export default function Analysis({ fieldId }: Props) {
   const changeIrrigation = (irrigation: IrrigationScenario) => {
     updateDraft((old) => ({ ...old, irrigation }));
   };
+  const changeAdvancedEconomics = (enabled: boolean) => {
+    updateDraft((old) => ({ ...old, advancedEconomics: enabled }));
+  };
   const changePriority = (key: PriorityId, value: number) => {
     updateDraft((old) => ({ ...old, priorities: { ...old.priorities, [key]: value } }));
   };
@@ -108,7 +111,8 @@ export default function Analysis({ fieldId }: Props) {
   const field = state.status === "found" ? state.field : null;
   const point = field ? getLabelPosition(field) : null;
   const hectares = field ? estimateFieldHectares(field) : null;
-  const weightSum = draft ? Object.values(draft.priorities).reduce((a, b) => a + b, 0) : 0;
+  const weightSum = draft ? PRIORITY_KEYS.filter((key) => key !== "profitto" || draft.advancedEconomics === true)
+    .reduce((sum, key) => sum + draft.priorities[key], 0) : 0;
 
   const runAnalysis = async () => {
     if (!field || !point || !draft || weightSum === 0 || running) return;
@@ -247,7 +251,7 @@ export default function Analysis({ fieldId }: Props) {
                   </div>
                   <p className={styles.helper}>Priorities change the ranking of crop rotations, not the scientific simulation. A value of 0 means the priority is excluded.</p>
                   <div className={styles.priorityList}>
-                    {PRIORITY_KEYS.map((key) => (
+                    {PRIORITY_KEYS.filter((key) => key !== "profitto").map((key) => (
                       <div className={styles.priorityRow} key={key}>
                         <label htmlFor={`priority-${key}`}><span>{PRIORITY_LABELS[key]}</span><strong>{draft.priorities[key]} / 10</strong></label>
                         <input id={`priority-${key}`} type="range" min="0" max="10" step="1"
@@ -259,14 +263,40 @@ export default function Analysis({ fieldId }: Props) {
                   </div>
                   {weightSum === 0 && <p className={styles.alert} role="alert">Choose at least one priority above zero before running an analysis.</p>}
                 </section>
+                <section className={styles.formCard} aria-label="Advanced analysis settings">
+                  <details className={styles.advancedSection}>
+                    <summary className={styles.advancedSummary}>
+                      <span><span className={styles.cardEyebrow}>05 / OPTIONAL FEATURES</span><strong>Advanced Analysis</strong></span>
+                      <span className={styles.subtleTag}>{draft.advancedEconomics ? "Enabled" : "Optional"}</span>
+                    </summary>
+                    <div className={styles.advancedBody}>
+                      <p className={styles.helper}>Economic analysis is optional. The current backend supports a partial gross margin using fixed commodity prices and assumed nitrogen and irrigation costs.</p>
+                      <label className={styles.advancedToggle}>
+                        <input type="checkbox" checked={draft.advancedEconomics === true}
+                          onChange={(event) => changeAdvancedEconomics(event.target.checked)} />
+                        <span><strong>Include economic analysis</strong><small>Show Economics in the report and apply your economic-margin weight to the ranking score. Pareto criteria remain defined by the engine.</small></span>
+                      </label>
+                      {draft.advancedEconomics && <>
+                        <div className={styles.priorityRow}>
+                          <label htmlFor="priority-profitto"><span>{PRIORITY_LABELS.profitto}</span><strong>{draft.priorities.profitto} / 10</strong></label>
+                          <input id="priority-profitto" type="range" min="0" max="10" step="1"
+                            value={draft.priorities.profitto}
+                            style={{ "--priority-fill": `${draft.priorities.profitto * 10}%` } as CSSProperties}
+                            onChange={(event) => changePriority("profitto", Number(event.target.value))} />
+                        </div>
+                        <p className={styles.advancedCaution}>This version does not accept custom crop prices or farming costs from the website. The report uses the engine&apos;s predefined economic assumptions; a personalized financial assessment requires the updated economic input/output contract.</p>
+                      </>}
+                    </div>
+                  </details>
+                </section>
                 <section className={styles.submitCard} aria-labelledby="ready-heading">
                   <div>
-                    <p className={styles.cardEyebrow}>05 / RUN ANALYSIS</p>
+                    <p className={styles.cardEyebrow}>06 / RUN ANALYSIS</p>
                     <h2 id="ready-heading">Your configuration is ready</h2>
                     <p>These settings are saved locally for this field. You can edit them anytime.</p>
                   </div>
                   <div className={styles.summaryChips}>
-                    <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>6 priorities</span>
+                    <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>{draft.advancedEconomics ? "Advanced economics" : "Standard analysis"}</span>
                   </div>
                   <label className={styles.referenceOption}>
                     <input type="checkbox" checked={usePilotReference} onChange={(e) => setUsePilotReference(e.target.checked)} />

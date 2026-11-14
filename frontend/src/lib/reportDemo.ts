@@ -19,7 +19,7 @@ export function createDemoReport(): CompletedReport {
     createdAt: "2026-11-14T12:00:00.000Z",
     field: { id: "demo-field", name: "Example Field", number: 1,
       areaHectares: 4.2, polygonCoordinates: null, representativePoint: [10.0, 45.2] },
-    inputs: defaultAnalysisDraft(),
+    inputs: { ...defaultAnalysisDraft(), advancedEconomics: true },
     engine: { version: null, dataPeriod: null,
       methodologyNote: "Demo display only. No simulation or data validation was performed." },
     results: {
