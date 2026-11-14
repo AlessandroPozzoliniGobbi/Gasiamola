@@ -336,3 +336,99 @@
 @media (prefers-reduced-motion: reduce) {
   .chapterLink, .primaryLink, .overviewLink { transition: none; }
 }
+
+/* V10 — LANDSCAPE ART DIRECTION
+   The illustrated environment is shared with the Home visual language.
+   Content remains legible on a translucent, paper-like surface. */
+.projectShell {
+  background-color: #e6f0dd;
+  background-image:
+    linear-gradient(180deg, rgba(247, 252, 246, .31), rgba(244, 248, 237, .13) 55%, rgba(248, 248, 237, .23)),
+    url("/illustrations/fieldwise-atlas.svg");
+  background-repeat: no-repeat;
+  background-position: center center, center bottom;
+  background-size: cover;
+}
+.projectHeader .headerTitle { color: #193d2b; text-shadow: 0 1px 0 rgba(255,255,255,.58); }
+.projectHeader .headerDescription { color: #466a51; }
+.projectShell .chapterNav {
+  border-color: rgba(142, 180, 139, .55);
+  background: rgba(232, 242, 226, .88);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 11px 28px rgba(36, 76, 42, .09);
+}
+.projectShell .chapterLink:hover { background: rgba(209, 230, 208, .85); }
+.projectShell .chapterActive,
+.projectShell .chapterActive:hover { background: #fffcf3; }
+.projectShell .contentCard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(175, 207, 166, .75);
+  background: linear-gradient(134deg,
+    rgba(255, 254, 247, .94) 0%,
+    rgba(246, 251, 240, .90) 56%,
+    rgba(234, 245, 226, .86) 100%);
+  -webkit-backdrop-filter: blur(11px);
+  backdrop-filter: blur(11px);
+  box-shadow: 0 17px 55px rgba(30, 76, 44, .10);
+}
+.projectShell .contentCard::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -76px;
+  bottom: -148px;
+  width: min(42%, 450px);
+  aspect-ratio: 1;
+  background: url("/illustrations/fieldwise-sprig.svg") center/contain no-repeat;
+  opacity: .19;
+  pointer-events: none;
+}
+.projectShell .overviewHighlight {
+  padding: clamp(10px, 1.6vh, 15px) clamp(12px, 1.25vw, 19px);
+  border: 1px solid rgba(194, 220, 186, .67);
+  border-radius: 14px;
+  background: linear-gradient(115deg, rgba(227, 240, 217, .59), rgba(249, 251, 241, .44));
+}
+.projectShell .overviewHighlights { border-left: 0; padding-left: 0; }
+.projectShell .overviewHighlight:nth-child(2) { background: linear-gradient(115deg, rgba(229, 236, 214, .67), rgba(250, 251, 237, .50)); }
+.projectShell .overviewHighlight:nth-child(3) { background: linear-gradient(115deg, rgba(217, 235, 220, .66), rgba(249, 251, 239, .48)); }
+.projectShell .overviewFooter { border-top-color: rgba(152, 188, 147, .49); }
+.projectShell .overviewNumber { color: #5c9c69; }
+.projectShell .draftArea {
+  border-color: #a4c69e;
+  background: linear-gradient(140deg, rgba(224, 239, 214, .69), rgba(251, 250, 239, .74));
+}
+.projectShell .topicList li {
+  border-color: #cbdcc3;
+  background: rgba(252, 253, 247, .75);
+}
+@media (min-width: 921px) and (min-height: 550px) {
+  /* V8's single-screen overview remains intact, including its exact height. */
+  .projectShell:has(.overviewCard) .overviewHighlight {
+    padding: clamp(7px, 1.2vh, 12px) 13px;
+  }
+  .projectShell:has(.overviewCard) .overviewHighlights { gap: clamp(6px, 1.2vh, 12px); }
+}
+@media (max-width: 700px) {
+  .projectShell { background-position: center center, 62% bottom; }
+  .projectShell .contentCard::before { width: 240px; right: -100px; bottom: -100px; opacity: .11; }
+}
+
+
+/* V11 — identical typography on Project Overview and all seven chapters.
+   The Overview keeps its special one-screen layout on desktop. */
+.projectShell .headerTitle { font-size: clamp(28px, 2.8vw, 41px); }
+.projectShell .pageTitle {
+  font-size: clamp(30px, 3.3vw, 47px);
+  line-height: 1.11;
+  letter-spacing: -.055em;
+}
+@media (max-width: 920px) {
+  .projectShell .pageTitle { font-size: clamp(34px, 5.2vw, 45px); }
+}
+@media (max-width: 700px) {
+  .projectShell .headerTitle { font-size: clamp(34px, 8vw, 42px); }
+}

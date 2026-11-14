@@ -30,7 +30,7 @@ export default function ReportsHistory() {
     finally { setRemovingId(null); }
   }
 
-  return <main className={styles.page}>
+  return <main className={`${styles.page} ${styles.historyPage}`}>
     <div className={styles.container}>
       <div className={styles.historyIntro}>
         <span className={styles.eyebrow}>FIELDWISE / SAVED REPORTS</span>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 950" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustrated landscape with farmland, contour lines, roots and a fossil">
+ <defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f9fcf7"/><stop offset=".64" stop-color="#eaf4e7"/><stop offset="1" stop-color="#d8e9cf"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#fae8ab" stop-opacity=".70"/><stop offset="1" stop-color="#f6e9ae" stop-opacity="0"/></radialGradient>
+  <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#eceddc"/><stop offset=".44" stop-color="#ebdfc9"/><stop offset="1" stop-color="#dce6d3"/></linearGradient>
+  <linearGradient id="hills" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c1dcb0"/><stop offset="1" stop-color="#a8c99e"/></linearGradient>
+  <pattern id="seeds" width="73" height="58" patternUnits="userSpaceOnUse"><circle cx="13" cy="21" r="1.4" fill="#739a79" opacity=".34"/><circle cx="57" cy="42" r="1" fill="#9e9675" opacity=".3"/></pattern>
+ </defs>
+ <rect width="1600" height="950" fill="url(#sky)"/>
+ <ellipse cx="1310" cy="141" rx="320" ry="245" fill="url(#sun)"/>
+ <circle cx="1310" cy="144" r="76" fill="#f5e3ab" opacity=".62"/>
+ <g fill="none" stroke="#9bb6a4" stroke-opacity=".28" stroke-width="2.1" stroke-linecap="round">
+  <path d="M-110 60 C180 -10 360 130 615 58 S1020 -40 1300 35 1560 43 1710 15"/>
+  <path d="M-90 100 C200 30 360 180 620 112 S1040 5 1310 86 1550 92 1700 61"/>
+  <path d="M-125 142 C190 78 375 215 628 157 S1065 54 1330 130 1570 145 1740 112"/>
+  <path d="M-130 187 C210 123 390 268 670 205 S1090 106 1340 171 1570 196 1740 160"/>
+ </g>
+ <g fill="#fbfcf5" opacity=".48"><path d="M105 154 q48 -53 102 -15 q27 -25 57 11 q32 -8 58 18 q-120 9 -217 -14Z"/><path d="M1010 88 q45 -40 89 -6 q40 -31 77 9 q35 -10 60 20 q-120 5 -226 -23Z"/></g>
+ <!-- Far-off terrain: repeated organic bands from the homepage illustration. -->
+ <path d="M0 414 C258 351 432 412 654 375 S1170 395 1600 338 V950 H0Z" fill="#d9e9cd"/>
+ <path d="M0 473 C215 409 404 488 670 428 S1165 459 1600 410 V950 H0Z" fill="#c5ddb8"/>
+ <path d="M0 542 C240 467 465 564 740 475 S1275 529 1600 466 V950 H0Z" fill="url(#hills)"/>
+ <path d="M0 626 C285 561 430 659 706 565 S1230 617 1600 543 V950 H0Z" fill="#b2d0a4"/>
+ <path d="M0 688 C240 610 552 699 845 605 S1365 665 1600 595 V950 H0Z" fill="#cfdec0"/>
+ <!-- Crop rows: gently curving hand-drawn lines. -->
+ <g fill="none" stroke="#8ab486" stroke-width="4" stroke-opacity=".47">
+  <path d="M-30 488 C170 442 390 509 650 456 S1105 462 1630 430"/>
+  <path d="M-30 519 C170 472 418 543 696 480 S1190 502 1630 450"/>
+  <path d="M-35 561 C185 501 443 593 742 511 S1250 544 1630 483"/>
+  <path d="M-40 603 C190 534 465 630 760 543 S1260 582 1630 516"/>
+  <path d="M-40 648 C202 571 491 677 820 581 S1300 627 1630 548"/>
+  <path d="M-42 696 C220 610 518 724 847 625 S1360 663 1630 589"/>
+ </g>
+ <!-- Quiet botanical illustrations in the margins. -->
+ <g fill="none" stroke="#5f9670" stroke-opacity=".43" stroke-width="3.3" stroke-linecap="round">
+  <path d="M108 588 Q111 520 113 446"/><path d="M112 535 Q72 503 61 486 Q93 480 112 520"/><path d="M112 502 Q148 477 160 448 Q135 451 113 489"/><path d="M108 565 Q69 547 56 524 Q83 519 109 549"/>
+  <path d="M1480 558 Q1477 484 1487 405"/><path d="M1482 500 Q1440 474 1430 453 Q1462 455 1483 484"/><path d="M1484 471 Q1521 442 1531 422 Q1504 421 1486 455"/><path d="M1480 540 Q1512 515 1520 494 Q1499 496 1481 526"/>
+ </g>
+ <!-- Soil cross section stays low so the readable UI floats above it. -->
+ <path d="M0 739 C220 698 410 781 700 722 S1170 778 1600 714 V950 H0Z" fill="url(#ground)"/>
+ <path d="M0 775 C270 733 480 819 715 756 S1230 814 1600 749" fill="none" stroke="#aeab85" stroke-width="3" opacity=".42"/>
+ <path d="M0 837 C285 786 464 863 721 802 S1200 874 1600 802" fill="none" stroke="#a4a387" stroke-width="2" opacity=".35"/>
+ <rect y="743" width="1600" height="207" fill="url(#seeds)"/>
+ <!-- Root networks -->
+ <g fill="none" stroke="#928767" stroke-width="2.5" stroke-opacity=".36" stroke-linecap="round">
+  <path d="M110 729 q12 55 4 126 m0 -56 q-42 4 -55 37 m57 -19 q28 17 43 53"/>
+  <path d="M380 752 q0 65 -20 134 m5 -38 q-41 -1 -58 23 m59 -37 q24 13 40 46"/>
+  <path d="M1280 751 q-10 64 -2 150 m-6 -79 q-40 18 -51 41 m54 -10 q31 5 55 40"/>
+  <path d="M1500 738 q2 64 21 130 m-15 -56 q35 3 47 33 m-44 -22 q-37 20 -45 53"/>
+ </g>
+ <!-- A restrained fossil echoing the homepage's prehistoric artwork. -->
+ <g transform="translate(905 802) rotate(-6)" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".45">
+   <path d="M-35 55 q95 -50 227 -19 q51 9 98 -21" stroke="#a79a7c" stroke-width="11"/>
+   <path d="M-35 55 q95 -50 227 -19 q51 9 98 -21" stroke="#eee1c5" stroke-width="6"/>
+   <g stroke="#c9b99a" stroke-width="5"><path d="M43 31 l-12 -29 M43 31 l4 33 M70 24 l-12 -34 M70 24 l6 37 M99 24 l-11 -37 M99 24 l6 42 M130 25 l-4 -34 M130 25 l10 41 M164 30 l13 -27 M164 30 l-3 42"/></g>
+   <ellipse cx="291" cy="12" rx="31" ry="19" fill="#e7dbbf" stroke="#9b8f76" stroke-width="3"/><circle cx="298" cy="8" r="4" fill="#ad987a"/><path d="M276 23 l27 5" stroke="#9b8f76" stroke-width="2"/>
+ </g>
+</svg>

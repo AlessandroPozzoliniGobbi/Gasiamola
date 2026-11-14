@@ -126,3 +126,266 @@
 .processingField{margin-top:12px;padding:9px 19px;background:#ebf6ea;border:1px solid #d4e8d5;border-radius:30px;color:#32704b;font-weight:800;font-size:12px}
 .processingScreen small{font-size:11px;color:#8da18f}
 @media(prefers-reduced-motion:reduce){.processingSpinner{animation-duration:2.5s}}
+
+/* V10 — illustrated Overview, aligned with Home/Project/Analysis.
+   Other report tabs retain their data-first treatment. */
+.overviewPage {
+  background-color: #e9f2e1;
+  background-image:
+    linear-gradient(180deg, rgba(247, 251, 243, .42), rgba(241, 248, 231, .24) 53%, rgba(246, 249, 236, .35)),
+    url("/illustrations/fieldwise-atlas.svg");
+  background-position: center center, center bottom;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.overviewPage .tabNavigation {
+  border-color: rgba(158, 194, 153, .66);
+  background: rgba(232, 243, 225, .89);
+  -webkit-backdrop-filter: blur(11px);
+  backdrop-filter: blur(11px);
+  box-shadow: 0 7px 24px rgba(25, 73, 41, .075);
+}
+.overviewPage .reportHeader h1 { text-shadow: 0 1px 0 rgba(255,255,255,.68); }
+.overviewPage .reportHeader p { color: #52745b; }
+.overviewPage .recommendation {
+  isolation: isolate;
+  min-height: 220px;
+  border: 1px solid rgba(142, 190, 139, .78);
+  background: linear-gradient(107deg,
+    rgba(224, 240, 210, .97) 0%,
+    rgba(245, 247, 221, .93) 61%,
+    rgba(205, 228, 196, .89) 100%);
+  box-shadow: 0 17px 42px rgba(35, 79, 44, .105);
+}
+.overviewPage .recommendation::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: repeating-radial-gradient(ellipse at 100% 145%,
+    transparent 0 32px, rgba(74, 137, 91, .12) 33px 35px, transparent 36px 65px);
+  pointer-events: none;
+}
+.overviewPage .recommendation::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 265px;
+  height: 265px;
+  top: -19px;
+  right: 32px;
+  background: url("/illustrations/fieldwise-sprig.svg") center/contain no-repeat;
+  opacity: .52;
+  pointer-events: none;
+}
+.overviewPage .recommendation > div:first-child { position: relative; z-index: 1; max-width: 75%; }
+.overviewPage .recommendationIcon { display: none; }
+.overviewPage .recommendation p { color: #4d6f54; }
+.overviewPage .metricCard {
+  border-color: rgba(175, 207, 167, .78);
+  background: linear-gradient(152deg, rgba(255, 253, 242, .95), rgba(233, 246, 221, .90));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 25px rgba(37, 80, 42, .06);
+}
+.overviewPage .metricCard:nth-child(2) { background: linear-gradient(150deg, rgba(244, 251, 237, .96), rgba(222, 238, 224, .90)); }
+.overviewPage .metricCard:nth-child(3) { background: linear-gradient(150deg, rgba(253, 248, 235, .96), rgba(234, 238, 216, .90)); }
+.overviewPage .metricCard:nth-child(4) { background: linear-gradient(150deg, rgba(238, 247, 233, .96), rgba(217, 236, 220, .93)); }
+.overviewPage .bulletBox {
+  border-color: rgba(171, 204, 164, .78);
+  background: linear-gradient(150deg, rgba(255, 254, 247, .95), rgba(235, 246, 227, .90));
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+  box-shadow: 0 8px 25px rgba(37, 80, 42, .06);
+}
+.overviewPage .bulletBox:nth-child(2) { background: linear-gradient(150deg, rgba(253, 250, 237, .96), rgba(235, 244, 227, .91)); }
+.overviewPage .footer { color: #507b5b; }
+@media (max-width: 700px) {
+  .overviewPage { background-position: center center, 62% bottom; }
+  .overviewPage .recommendation > div:first-child { max-width: 100%; }
+  .overviewPage .recommendation::after { width: 150px; height: 150px; top: auto; bottom: -70px; right: -25px; opacity: .24; }
+}
+
+
+/* V11 — CONTINUOUS FIELDWISE LANDSCAPE
+   V10 previously scoped the artwork to Overview only. History, demo preview,
+   Compare / Insights / Economics / Details now use the same world. */
+.page {
+  isolation: isolate;
+  background-color: #e7f0dd;
+  background-image:
+    linear-gradient(180deg, rgba(249, 252, 245, .44), rgba(242, 249, 235, .27) 54%, rgba(246, 248, 234, .42)),
+    url("/illustrations/fieldwise-atlas.svg");
+  background-position: center center, center top;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
+}
+.page .eyebrow, .page .smallCaps { color: #2f7650; }
+.page .tabNavigation {
+  border-color: rgba(148, 188, 141, .58);
+  background: rgba(228, 240, 220, .88);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 9px 26px rgba(29, 68, 36, .09);
+}
+.page .tabActive { background: #fffdf6 !important; }
+
+/* The reader's header: parchment rather than an opaque white slab. */
+.page .reportHeader {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(19px, 2.6vw, 29px);
+  border: 1px solid rgba(167, 198, 160, .75);
+  border-radius: 23px;
+  background: linear-gradient(112deg, rgba(255, 253, 243, .91), rgba(237, 247, 228, .87));
+  box-shadow: 0 14px 36px rgba(32, 76, 38, .085);
+  -webkit-backdrop-filter: blur(11px);
+  backdrop-filter: blur(11px);
+}
+.page .reportHeader::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -26px;
+  bottom: -90px;
+  width: 245px;
+  height: 245px;
+  background: url("/illustrations/fieldwise-sprig.svg") center/contain no-repeat;
+  opacity: .17;
+  pointer-events: none;
+}
+
+/* Subtly varied natural-toned chart and narrative cards. */
+.page .panel, .page .bulletBox, .page .outcomeCard, .page .metricCard {
+  border-color: rgba(167, 197, 159, .75);
+  background: linear-gradient(145deg, rgba(255, 253, 244, .94), rgba(236, 246, 228, .89));
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  box-shadow: 0 9px 31px rgba(32, 79, 42, .065);
+}
+.page .outcomeCard:nth-child(2), .page .insightGrid .panel:nth-child(2) {
+  background: linear-gradient(146deg, rgba(239, 250, 231, .94), rgba(217, 237, 213, .92));
+}
+.page .outcomeCard:nth-child(3), .page .insightGrid .panel:nth-child(3) {
+  background: linear-gradient(146deg, rgba(251, 246, 229, .95), rgba(229, 238, 215, .92));
+}
+.page .outcomeHighlight {
+  border-color: rgba(102, 159, 109, .81);
+  box-shadow: 0 10px 30px rgba(35, 99, 52, .095);
+}
+.page .comingSoon {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(147, 186, 143, .77);
+  background: linear-gradient(120deg, rgba(253, 250, 236, .96), rgba(224, 241, 216, .92));
+  box-shadow: 0 12px 36px rgba(29, 78, 40, .09);
+}
+.page .comingSoon::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -77px;
+  bottom: -125px;
+  width: 355px;
+  height: 355px;
+  background: url("/illustrations/fieldwise-sprig.svg") center/contain no-repeat;
+  opacity: .20;
+  pointer-events: none;
+}
+
+/* Reports / History is an illustrated destination, even with zero saved reports. */
+.historyPage .historyIntro {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-bottom: 18px;
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid rgba(167, 200, 160, .70);
+  border-radius: 25px;
+  background: linear-gradient(116deg, rgba(255, 254, 245, .91), rgba(225, 241, 216, .80));
+  box-shadow: 0 16px 39px rgba(33, 83, 41, .075);
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+}
+.historyPage .historyIntro::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: 5%;
+  top: -80px;
+  width: 280px;
+  height: 280px;
+  background: url("/illustrations/fieldwise-sprig.svg") center/contain no-repeat;
+  opacity: .20;
+  transform: rotate(13deg);
+  pointer-events: none;
+}
+.historyPage .historyIntro h1 { margin-top: 8px; }
+.historyPage .historyHeading { padding: 8px 4px 0; }
+.historyPage .historyRow {
+  border-color: rgba(169, 201, 160, .80);
+  background: linear-gradient(125deg, rgba(255, 253, 241, .96), rgba(238, 248, 230, .91));
+  box-shadow: 0 9px 29px rgba(31, 79, 39, .072);
+}
+.historyPage .historyRow:nth-child(even) {
+  background: linear-gradient(128deg, rgba(242, 250, 234, .97), rgba(247, 242, 222, .93));
+}
+.historyPage .historyGlyph { background: #e2f0d9; border-color: #bfd8b9; }
+.historyPage .emptyState {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(162, 196, 154, .82);
+  background: linear-gradient(115deg, rgba(255, 253, 242, .93), rgba(227, 243, 218, .85));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 17px 36px rgba(39, 77, 42, .08);
+}
+.historyPage .emptyState::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 300px;
+  height: 300px;
+  right: -115px;
+  bottom: -150px;
+  background: url("/illustrations/fieldwise-sprig.svg") center/contain no-repeat;
+  opacity: .20;
+  pointer-events: none;
+}
+.historyPage .previewNotice {
+  position: relative;
+  overflow: hidden;
+  border-color: #b8d2ae;
+  background: linear-gradient(100deg, rgba(229, 242, 216, .96), rgba(251, 244, 222, .95));
+  box-shadow: 0 9px 28px rgba(35, 80, 36, .08);
+}
+.historyPage .previewNotice::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-radial-gradient(ellipse at 120% 150%, transparent 0 30px, rgba(74, 136, 78, .10) 31px 33px, transparent 34px 60px);
+}
+.historyPage .previewNotice > * { position: relative; z-index: 1; }
+.historyPage .storageNote { color: #4c7658; }
+
+/* Demo gets the same backgrounds as saved report pages in every tab. */
+.demoPage .demoBanner {
+  border-color: rgba(195, 169, 105, .80);
+  background: linear-gradient(100deg, rgba(255, 248, 221, .94), rgba(242, 242, 218, .91));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+@media (max-width: 700px) {
+  .page { background-position: center center, 62% top; }
+  .page .reportHeader { padding: 20px; }
+  .page .reportHeader::after { width: 160px; height: 160px; bottom: -55px; right: -45px; opacity: .10; }
+  .historyPage .historyIntro { padding: 25px 22px; }
+  .historyPage .historyIntro::after { right: -85px; top: -70px; opacity: .13; }
+  .historyPage .historyIntro h1 { font-size: clamp(29px, 8vw, 41px); }
+  .historyPage .emptyState { min-height: 240px; }
+  .historyPage .emptyState::after { opacity: .10; }
+}

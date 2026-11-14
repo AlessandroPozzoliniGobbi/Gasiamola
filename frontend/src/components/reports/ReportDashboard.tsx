@@ -118,7 +118,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
   const dateLabel = Number.isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${tab === "overview" ? styles.overviewPage : ""} ${demo ? styles.demoPage : ""}`}>
       <div className={styles.container}>
         <div className={styles.topbar}>
           <Link className={styles.backLink} href="/reports">← All reports</Link>

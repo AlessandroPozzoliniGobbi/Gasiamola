@@ -383,3 +383,48 @@
   .mapCard { min-height: 410px; height: auto; }
   .mapPreview .mapShell { flex: 0 0 180px; }
 }
+
+/* V10 — the Analysis workspace sits within the same illustrated fields as Home.
+   The backdrop never changes the read-only map or independent right-panel scroll. */
+.page {
+  background-color: #e5f0dc;
+  background-image:
+    linear-gradient(115deg, rgba(248, 253, 246, .38), rgba(243, 250, 239, .17) 52%, rgba(249, 252, 239, .31)),
+    url("/illustrations/fieldwise-atlas.svg");
+  background-position: center center, center bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.page .mapCard,
+.page .formCard,
+.page .missingCard {
+  border-color: rgba(164, 199, 157, .72);
+  background: linear-gradient(137deg, rgba(255, 254, 247, .95), rgba(243, 249, 235, .89));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(26, 75, 39, .075);
+}
+.page .mapCard { background: linear-gradient(157deg, rgba(251, 253, 242, .97), rgba(230, 242, 219, .91)); }
+.page .formCard:nth-child(2) { background: linear-gradient(132deg, rgba(253, 250, 238, .95), rgba(236, 246, 227, .91)); }
+.page .formCard:nth-child(3) { background: linear-gradient(137deg, rgba(245, 251, 239, .96), rgba(226, 240, 225, .90)); }
+.page .submitCard {
+  border-color: rgba(139, 186, 138, .77);
+  background: linear-gradient(114deg, rgba(218, 237, 204, .97), rgba(238, 246, 218, .92));
+  box-shadow: 0 12px 31px rgba(32, 83, 40, .085);
+}
+.page .cropCard,
+.page .optionCard,
+.page .rotationSummary {
+  background-color: rgba(251, 253, 245, .80);
+  border-color: rgba(186, 211, 180, .76);
+}
+.page .optionActive { background: rgba(212, 237, 209, .89); }
+.page .rotationSummary { background: rgba(217, 235, 209, .75); }
+.page .subtleTag,
+.page .draftBadge { background: rgba(226, 242, 219, .90); }
+.page .ndviSection { border-top-color: rgba(133, 175, 138, .48); }
+.page .hero h1 { text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.page .mapShell { box-shadow: 0 5px 17px rgba(30, 80, 48, .09); }
+@media (max-width: 700px) {
+  .page { background-position: center center, 65% bottom; }
+}
