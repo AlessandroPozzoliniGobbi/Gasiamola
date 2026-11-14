@@ -1,0 +1,435 @@
+/* MAPPA - foglio unico ripulito, compatibile con Step 7.1
+   Non aggiungere versioni precedenti sotto questo file. */
+
+/* 1. Workspace: la mappa occupa tutto, la sidebar vi si sovrappone. */
+.mapFrame {
+  --map-top-offset: 0px;
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  height: calc(100dvh - var(--map-top-offset) - 4px);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #edf3e9;
+}
+
+.mapArea {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* La sidebar non occupa piu' una colonna alta quanto la mappa. */
+.sidebar {
+  position: absolute;
+  z-index: 20;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 360px;
+  max-width: calc(100% - 28px);
+  height: auto;
+  max-height: calc(100% - 28px);
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  background: #f3f7f0;
+  color: #193d2b;
+  border: 1px solid #bdd4c0;
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(23, 55, 37, .18);
+  scrollbar-color: #b7cdbc transparent;
+  scrollbar-width: thin;
+}
+
+.sidebarIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #193d2b;
+}
+.sectionTitle {
+  margin: 0 0 10px;
+  color: #244d36;
+  font-size: 15px;
+  font-weight: 700;
+}
+.description {
+  margin: 0;
+  color: #56705c;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.sidebarIntro .description { font-size: 12px; }
+
+/* 2. Feedback, file, messaggi. */
+.storageIndicator {
+  position: static;
+  padding: 8px 10px;
+  border: 1px solid #c7dec9;
+  border-radius: 7px;
+  background: #e5f1e6;
+  color: #24543a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.sidebarIntro .storageIndicator { font-size: 11px; padding: 7px 9px; }
+.storageIndicatorSaving,
+.sidebarIntro .storageIndicatorSaving {
+  background: #fff5df;
+  color: #765314;
+  border-color: #e7d79e;
+}
+.storageIndicatorError,
+.sidebarIntro .storageIndicatorError {
+  background: #fff0ed;
+  color: #9b3025;
+  border-color: #e6b2b2;
+}
+.storageHelp { margin: 0 0 9px; font-size: 11.5px; line-height: 1.45; color: #5b7461; }
+.storageActions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 7px; }
+.storageFeedback { margin: 9px 0 0; font-size: 11.5px; line-height: 1.4; }
+.importError { color: #a32626; }
+.importSuccess { color: #245c3b; }
+.visuallyHiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.areaNotice {
+  margin: 0;
+  padding: 9px;
+  border: 1px solid #e7d49c;
+  border-radius: 7px;
+  background: #fff9e9;
+  color: #755214;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.areaNotice p { margin: 6px 0; }
+.areaNotice .compactAction + .compactAction { margin-top: 6px; }
+
+/* 3. Tendine della sidebar. */
+.mapAccordion {
+  display: block;
+  flex: 0 0 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #c3d8c7;
+  border-radius: 10px;
+  background: #fffefa;
+}
+.mapAccordionSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #234a35;
+  list-style: none;
+  user-select: none;
+}
+.mapAccordionSummary::-webkit-details-marker { display: none; }
+.mapAccordionSummary:hover { background: #eaf4e9; }
+.mapAccordionSummary:focus-visible { outline: 2px solid #278052; outline-offset: -2px; }
+.summaryChevron { font-size: 19px; line-height: 14px; transition: transform .18s ease; }
+.mapAccordion[open] .summaryChevron { transform: rotate(180deg); }
+.mapAccordionBody { padding: 0 11px 11px; }
+
+/* 4. Comandi compatti, divisi in due colonne. */
+.toolsColumns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 11px; }
+.toolsColumn { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.toolsColumn + .toolsColumn { border-left: 1px solid #dbe8dd; padding-left: 11px; }
+.toolsColumnTitle {
+  margin: 0 0 2px;
+  color: #5b7461;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.compactZoomRow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.compactZoomButton,
+.compactAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  text-align: center;
+  color: #254b35;
+  border: 1px solid #c9dccc;
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.compactZoomButton { height: 35px; font-size: 16px; }
+.compactAction { width: 100%; min-height: 35px; padding: 6px 7px; font-size: 11.5px; line-height: 1.25; }
+.compactZoomButton:hover:not(:disabled),
+.compactAction:hover:not(:disabled) { background: #edf6ec; border-color: #8bb69a; }
+.compactZoomButton:focus-visible,
+.compactAction:focus-visible { outline: 2px solid #278052; outline-offset: 2px; }
+.compactZoomButton:disabled,
+.compactAction:disabled { cursor: not-allowed; opacity: .42; }
+.compactActive,
+.compactActive:hover:not(:disabled) { background: #dcefe0; color: #17633d; border-color: #75ad87; }
+.toolHint { margin: 11px 0 0; color: #5b7461; font-size: 11px; line-height: 1.4; }
+
+/* Pulsante di apertura della finestra: soltanto con campi disponibili. */
+.fieldsDropdownTrigger,
+.openFieldsButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 43px;
+  padding: 9px 12px;
+  border: 1px solid #c3d8c7;
+  border-radius: 10px;
+  background: #fffefa;
+  color: #234a35;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+.fieldsDropdownTrigger > span:first-child { display: flex; align-items: center; gap: 9px; }
+.fieldsDropdownTrigger:hover,
+.openFieldsButton:hover { background: #eaf4e9; }
+.fieldsDropdownTrigger:focus-visible,
+.openFieldsButton:focus-visible { outline: 2px solid #278052; outline-offset: 2px; }
+.fieldCountBadge {
+  display: grid;
+  place-items: center;
+  min-width: 25px;
+  height: 23px;
+  padding: 0 5px;
+  border-radius: 50px;
+  background: #e2f1e4;
+  color: #20573b;
+  font-size: 11px;
+}
+
+/* 5. Elenco nel flusso della sidebar; trascinando diventa finestra libera. */
+.floatingFields {
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 160px;
+  border: 1px solid #b6d0bc;
+  border-radius: 10px;
+  background: #fffefa;
+  box-shadow: 0 7px 20px rgba(17, 61, 37, .15);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.floatingDocked {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: clamp(180px, 30dvh, 310px);
+  margin-top: -4px;
+  resize: vertical;
+}
+.floatingDetached {
+  position: fixed;
+  z-index: 100;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100dvh - 16px);
+  resize: both;
+  box-shadow: 0 14px 42px rgba(17, 61, 37, .25);
+}
+.floatingMaximized {
+  position: fixed !important;
+  z-index: 100;
+  left: 10px !important;
+  right: 10px !important;
+  top: 10px !important;
+  bottom: 10px !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  resize: none;
+}
+.floatingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 43px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #c7ddcb;
+  background: #e9f2e7;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.floatingHeader:active { cursor: grabbing; }
+.floatingHeading { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 12px; color: #214c34; }
+.floatingHeadingIcon { font-size: 18px; font-weight: bold; color: #214c34; }
+.floatingCount { padding: 2px 6px; border-radius: 20px; background: #d3e9d6; color: #205b3e; font-size: 11px; }
+.floatingButtons { display: flex; gap: 5px; }
+.floatingIconButton {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid #bbd3bf;
+  border-radius: 6px;
+  background: white;
+  color: #214c34;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.floatingIconButton:hover { background: #e1f0e3; }
+.floatingIconButton:focus-visible { outline: 2px solid #278052; outline-offset: 2px; }
+.floatingBody { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 10px; overflow: hidden; }
+.floatingResizeHint { position: absolute; right: 4px; bottom: 0; pointer-events: none; font-size: 14px; color: #8ea0b2; }
+
+/* 6. Elenco e gestione singoli appezzamenti. */
+.fieldPanel { display: flex; flex-direction: column; gap: 12px; min-height: 0; padding-top: 18px; border-top: 1px solid #dbe8dd; }
+.fieldPanel > .sectionTitle { margin: 0; }
+.fieldList { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.fieldRow { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 6px; border: 1px solid #d2dfd5; border-radius: 8px; background: white; }
+.fieldNumber { display: grid; place-items: center; flex: 0 0 26px; height: 26px; border-radius: 5px; background: #dcefe0; color: #205c3b; font-size: 12px; font-weight: 700; }
+.fieldSelectButton { flex: 1; min-width: 0; border: 0; background: transparent; color: #233b2c; text-align: left; font-size: 13px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fieldSelectActive { color: #17633d; font-weight: 700; }
+.fieldIconButton { display: grid; place-items: center; flex: 0 0 26px; height: 27px; border: 1px solid #cbdacb; border-radius: 5px; background: #fff; color: #244d36; cursor: pointer; }
+.fieldIconButton:hover { background: #edf6ec; }
+.fieldEditForm { display: flex; align-items: center; flex: 1; gap: 4px; min-width: 0; }
+.fieldEditInput { flex: 1; min-width: 0; padding: 5px; border: 1px solid #75ad87; border-radius: 4px; color: #24372b; background: white; font-size: 12px; }
+.fieldDeleteButton { color: #b42318; border-color: #e2aaa5; }
+.fieldDeleteButton:hover:not(:disabled) { background: #fff0ef; }
+.fieldButton { width: 100%; padding: 12px; border: 1px solid #cbdacb; border-radius: 6px; background: white; color: #244d36; text-align: left; font-size: 14px; cursor: pointer; }
+.fieldButton:hover { background: #edf6ec; }
+.fieldButtonActive, .fieldButtonActive:hover { background: #e5f1e6; border-color: #75ad87; font-weight: 600; }
+.dangerButton { color: #b42318; border-color: #e2aaa5; }
+.dangerButton:hover:not(:disabled) { background: #fff0ef; }
+.floatingFields .fieldPanel { display: flex; flex: 1; flex-direction: column; gap: 10px; min-height: 0; padding: 0; margin: 0; border: 0; }
+.floatingFields .fieldPanel > .sectionTitle { display: none; }
+.floatingFields .fieldList { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 3px; }
+.floatingFields .fieldPanel > .actionButton { margin-top: auto; }
+.floatingFields .description { font-size: 11.5px; }
+
+/* Pulsanti storici ancora utilizzabili da componenti secondari. */
+.toolbar { display: flex; flex-direction: column; gap: 12px; }
+.buttonRow { display: flex; gap: 8px; }
+.controlButton { width: 48px; height: 44px; border: 1px solid #c9dccc; border-radius: 6px; background: white; color: #244d36; font-size: 18px; font-weight: 600; cursor: pointer; }
+.controlButton:hover { background: #edf6ec; }
+.actionButton { width: 100%; padding: 12px; border: 1px solid #c9dccc; border-radius: 6px; background: white; color: #244d36; font-size: 14px; cursor: pointer; text-align: center; }
+.actionButton:hover { background: #edf6ec; }
+.actionButton:disabled { opacity: .45; cursor: not-allowed; }
+.placeholder { padding-top: 20px; border-top: 1px solid #ddd; }
+.toolbar .placeholder { display: flex; flex-direction: column; gap: 12px; }
+.activeButton, .activeButton:hover { background: #dcefe0; border-color: #75ad87; color: #17633d; font-weight: 600; }
+
+/* 7. Etichette direttamente sopra i poligoni. Il blu resta per contrasto. */
+.fieldLabel { display: flex; align-items: center; justify-content: center; pointer-events: none; border: 2px solid #1d4ed8; color: #1d4ed8; background: rgba(255,255,255,.94); font-family: inherit; font-size: 12px; font-weight: 700; line-height: 1.2; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.24); }
+.fieldLabelCompact { min-width: 28px; height: 28px; border-radius: 50%; padding: 0 5px; }
+.fieldLabelExpanded { min-height: 30px; padding: 5px 9px; border-radius: 8px; }
+.fieldLabelSelected { border-color: #075985; color: #075985; background: rgba(235,250,255,.98); }
+
+/* 8. Cambio cartografia: miniatura tonda in basso a destra. */
+.basemapToggle {
+  position: absolute;
+  bottom: 55px;
+  right: 20px;
+  z-index: 10;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 3px solid white;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  background: #e5e5e5;
+  box-shadow: 0 3px 12px rgba(0,0,0,.3);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.basemapToggle:hover { transform: scale(1.08); box-shadow: 0 5px 16px rgba(0,0,0,.35); }
+.basemapToggle:active { transform: scale(.96); }
+.basemapToggle:focus-visible { outline: 3px solid #278052; outline-offset: 3px; }
+.basemapToggle:disabled { opacity: .5; cursor: not-allowed; }
+.basemapToggleImage { position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+.basemapToggleLabel { position: absolute; bottom: 0; left: 0; right: 0; padding: 7px 2px 9px; background: linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,0)); color: white; font-size: 11px; font-weight: 600; text-align: center; }
+
+/* 9. Responsive. */
+@media (max-width: 900px) and (min-width: 769px) {
+  .sidebar { width: 325px; padding: 12px; gap: 10px; }
+}
+@media (max-width: 768px) {
+  .mapFrame { display: block; }
+  .mapArea { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sidebar {
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    max-width: 380px;
+    height: auto;
+    max-height: min(55dvh, calc(100% - 20px));
+    padding: 12px;
+    border: 1px solid #bdd4c0;
+    border-radius: 12px;
+  }
+  .title { font-size: 19px; }
+  .basemapToggle { width: 64px; height: 64px; bottom: 55px; right: 12px; }
+  .basemapToggleLabel { font-size: 10px; }
+  .floatingDocked {
+    height: min(250px, 32dvh);
+    resize: vertical;
+  }
+  .floatingDetached {
+    left: 8px !important;
+    right: 8px !important;
+    top: auto !important;
+    bottom: 8px !important;
+    width: auto !important;
+    height: min(47dvh, calc(100% - 18px)) !important;
+    resize: none;
+  }
+  .floatingMaximized { inset: 8px !important; height: auto !important; }
+  .floatingHeader { cursor: default; }
+}
+@media (max-width: 390px) {
+  .toolsColumns { gap: 7px; }
+  .toolsColumn + .toolsColumn { padding-left: 7px; }
+  .compactAction { font-size: 10.5px; }
+}
