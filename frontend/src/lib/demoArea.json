@@ -1,0 +1,5 @@
+{
+  "_comment": "Single definition of the analysis area shared by the API (api.py) and the map. pilotPoint is [longitude, latitude] of the engine pilot (fieldwise.config.PILOT_LON/PILOT_LAT); api.py refuses to start if they differ.",
+  "pilotPoint": [10.0, 45.2],
+  "maxDistanceKm": 100
+}

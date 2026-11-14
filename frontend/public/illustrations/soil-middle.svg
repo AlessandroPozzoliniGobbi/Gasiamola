@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="bg" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f8f6ed"/><stop offset=".53" stop-color="#f9f5ec"/><stop offset="1" stop-color="#f4ecdd"/></linearGradient></defs>
+  <rect width="1600" height="620" fill="url(#bg)"/>
+  <!-- Warm layers look like a sliced soil column, but stay quiet behind cards. -->
+  <path d="M0 57q220 15 449-4t403 5t372-3t376 4" fill="none" stroke="#ccad83" stroke-width="2.4" opacity=".30"/>
+  <path d="M0 143q208-22 439 3t409-6t390 2t362-7" fill="none" stroke="#ba9771" stroke-width="2" opacity=".25"/>
+  <path d="M0 495q260 8 440-6t366 1t379 6t415-12" fill="none" stroke="#c49b73" stroke-width="2.5" opacity=".34"/>
+  <path d="M0 555q247-12 450 2t407-1t376-12t367 1" fill="none" stroke="#bb986e" stroke-width="2" opacity=".25"/>
+  <!-- Fine branching roots. -->
+  <g fill="none" stroke="#997753" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round" opacity=".81">
+    <path d="M211-30Q178 87 226 173T213 334T175 641"/>
+    <path d="M212 121Q135 156 122 233T73 377 M229 190Q285 233 291 297T346 395 M211 327Q134 377 137 445T102 549 M193 438Q241 476 249 531T301 623"/>
+    <path d="M135 206Q93 199 64 243 M286 285Q321 272 354 296 M139 456Q91 439 61 460 M242 519Q286 509 319 539" stroke-width="1.9"/>
+    <path d="M1378-30Q1348 64 1369 135T1404 276T1382 431T1401 646"/>
+    <path d="M1366 120Q1302 151 1302 242T1267 351 M1396 248Q1457 272 1484 357T1537 489 M1387 413Q1324 447 1320 511T1272 625 M1395 505Q1435 534 1452 623"/>
+    <path d="M1301 248Q1279 228 1251 241 M1481 354Q1511 337 1543 349 M1320 527Q1290 519 1267 535 M1442 562Q1465 548 1495 553" stroke-width="1.9"/>
+  </g>
+  <!-- Water percolates through soil as soft blue-green drops. -->
+  <g fill="#bad4cb" stroke="#8cb5a9" stroke-width="2" opacity=".77">
+    <path d="M350 150q-17 22-17 32a17 17 0 0 0 34 0q0-10-17-32Z"/>
+    <path d="M1264 410q-16 20-16 29a16 16 0 0 0 32 0q0-9-16-29Z"/>
+    <path d="M83 532q-13 17-13 24a13 13 0 0 0 26 0q0-7-13-24Z"/>
+    <path d="M1506 140q-13 17-13 25a13 13 0 0 0 26 0q0-8-13-25Z"/>
+  </g>
+  <!-- Worm-like curve, stones, and distinct grain clusters. -->
+  <g fill="none" stroke="#b59172" stroke-width="7" stroke-linecap="round" opacity=".68"><path d="M73 102q55-25 90 12t88 4"/></g>
+  <g fill="none" stroke="#e6ccaa" stroke-width="2.4" opacity=".88"><path d="M85 100l10 13m10-19 10 14m11-11 9 13m10-10 8 13m11-7 6 12"/></g>
+  <g fill="#d6bb96" fill-opacity=".71" stroke="#ac9170" stroke-width="2">
+    <path d="M49 350q27-34 63-7l-12 33H62Z"/><path d="M291 458q32-29 55-9l-9 25h-36Z"/>
+    <path d="M1468 98q28-21 52 5l-15 21h-34Z"/><path d="M1284 550q21-26 47-7l-12 24h-31Z"/>
+    <path d="M1531 401q16-18 36-4l-6 18h-24Z"/>
+  </g>
+  <g fill="#ae916d" opacity=".35">
+    <circle cx="116" cy="168" r="3"/><circle cx="318" cy="347" r="4"/><circle cx="47" cy="473" r="3"/><circle cx="211" cy="570" r="2.7"/>
+    <circle cx="1518" cy="218" r="3"/><circle cx="1296" cy="284" r="3.3"/><circle cx="1425" cy="389" r="4"/><circle cx="1554" cy="544" r="3"/>
+    <circle cx="520" cy="572" r="2.8"/><circle cx="1047" cy="571" r="3"/>
+  </g>
+  <path d="M0 600q212-14 413 0t396-2t397 1t394-2v23H0Z" fill="#e9d9c1" opacity=".42"/>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" role="img" aria-labelledby="title desc">
+  <title id="title">FIELDWISE - horizontal logo</title>
+  <desc id="desc">Logo featuring a satellite, sprout and fields, followed by the FIELDWISE name and an editable tagline.</desc>
+  <g transform="translate(20 10) scale(.58)">
+    <g fill="none" stroke="#256f4d" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M92 334C54 213 103 91 217 47c65-25 139-20 198 13"/>
+      <path d="M420 142c28 55 37 121 21 182-17 65-59 119-117 151"/>
+      <g transform="translate(256 155) rotate(-15)">
+        <rect x="-27" y="-34" width="54" height="68" rx="12"/>
+        <path d="M-27 8h-22l-14 17h126L49 8H27"/>
+        <path d="M-49-10h-78v40h78M49-10h78v40H49"/>
+        <path d="M-101-10v40M-75-10v40M75-10v40M101-10v40"/>
+      </g>
+      <path d="M256 219c0 0-3 20-19 27M256 219c0 0 3 20 19 27"/>
+      <path d="M234 262c14 16 30 16 44 0"/>
+      <path d="M224 284c21 23 43 23 64 0"/>
+      <path d="M257 349v-71"/>
+      <path d="M257 317c-28-40-62-38-79-30 6 34 32 57 79 30Z"/>
+      <path d="M257 317c28-40 62-38 79-30-6 34-32 57-79 30Z"/>
+      <path d="M94 385c72-21 132-17 184 13 46 26 91 28 139 15"/>
+      <path d="M115 424c56-31 115-38 176-13 51 21 93 22 126 11"/>
+    </g>
+    <path d="M102 391c58-13 116-7 171 18-35 8-72 24-108 47-26-17-47-39-63-65Z" fill="#dff0d9"/>
+    <path d="M176 456c51-35 96-50 135-45 42 5 78 2 108-10-32 43-78 78-134 97-41-5-78-20-109-42Z" fill="#c6e3bb"/>
+  </g>
+  <text x="360" y="135" fill="#213c30" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700">FIELDWISE</text>
+  <text x="364" y="195" fill="#65786d" font-family="Arial, Helvetica, sans-serif" font-size="30" font-style="italic">[Catch phrase]</text>
+</svg>

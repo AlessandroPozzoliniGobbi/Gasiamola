@@ -1,0 +1,460 @@
+.page {
+  min-height: calc(100dvh - 80px);
+  padding: clamp(23px, 3.5vw, 52px) clamp(16px, 3.4vw, 54px) 85px;
+  background: linear-gradient(180deg, #f5f9f3 0%, #fbfcf8 320px, #fbfcf8 100%);
+  color: #1b3829;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+.page * { box-sizing: border-box; }
+.container { max-width: 1360px; margin: 0 auto; }
+.pageTop { display: flex; justify-content: space-between; gap: 15px; align-items: center; margin-bottom: 25px; }
+.backLink { color: #256f4d; font-size: 13px; font-weight: 750; text-decoration: none; }
+.backLink:hover { text-decoration: underline; }
+.sectionLabel { color: #518066; font-size: 10px; letter-spacing: .15em; font-weight: 800; }
+.hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
+.hero h1 { margin: 0 0 12px; color: #193d2b; font-size: clamp(30px, 3.2vw, 47px); line-height: 1.1; letter-spacing: -.04em; }
+.hero p { margin: 0; max-width: 730px; line-height: 1.6; font-size: 15px; color: #66796a; }
+.draftBadge { white-space: nowrap; padding: 8px 12px; border: 1px solid #d3e4d4; border-radius: 99px; background: #eaf4e8; color: #2b7049; font-size: 11px; font-weight: 700; }
+.mainGrid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: start; gap: clamp(18px, 2.3vw, 31px); }
+.leftColumn, .rightColumn { display: flex; flex-direction: column; gap: 19px; min-width: 0; }
+.leftColumn { position: sticky; top: 105px; }
+.mapCard, .ndviCard, .formCard, .submitCard, .missingCard { padding: clamp(19px, 2.1vw, 27px); background: #fff; border: 1px solid #d7e5d9; border-radius: 20px; box-shadow: 0 6px 26px rgba(20,70,41,.035); }
+.mapCard { padding-bottom: 22px; }
+.cardHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 17px; }
+.cardEyebrow { margin: 0 0 7px; color: #56806a; font-size: 10px; font-weight: 800; letter-spacing: .13em; }
+.cardHeading h2, .submitCard h2 { margin: 0; font-size: clamp(19px, 2vw, 23px); line-height: 1.2; letter-spacing: -.025em; color: #1c4330; }
+.subtleTag { border: 1px solid #d5e6d6; border-radius: 99px; padding: 6px 9px; color: #4e745c; background: #f3f9f2; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.helper { color: #627d69; font-size: 12px; line-height: 1.62; margin: 13px 0 0; }
+.mapShell { position: relative; width: 100%; height: clamp(240px, 30vw, 350px); overflow: hidden; border: 1px solid #d3e3d7; border-radius: 15px; background: #e8f0e8; }
+.mapCanvas { width: 100%; height: 100%; }
+.mapBadge { position: absolute; top: 11px; left: 11px; z-index: 1; background: rgba(255,255,255,.95); border: 1px solid rgba(24,80,46,.1); border-radius: 9px; padding: 7px 10px; color: #194a32; font-size: 11px; font-weight: 750; pointer-events: none; }
+.mapNotice, .mapError, .mapLoading { position: absolute; bottom: 12px; left: 12px; right: 12px; z-index: 1; padding: 9px 11px; border-radius: 9px; color: #4a5b4c; background: rgba(255,255,255,.94); font-size: 11px; line-height: 1.4; pointer-events: none; }
+.mapError { background: #fff1e9; color: #9c3927; }
+.fieldFacts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 18px 0 0; }
+.fieldFacts div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.fieldFacts span { color: #718675; font-size: 11px; }
+.fieldFacts strong { color: #214e35; font-size: 13px; font-weight: 750; overflow-wrap: anywhere; }
+.ndviCard { background: #f9fcf8; }
+.ndviGradient { margin-top: 22px; height: 13px; border-radius: 99px; background: linear-gradient(90deg, #d33e38 0%, #e6ab43 42%, #e3d668 50%, #78b859 75%, #2c8a4b 100%); }
+.ndviTicks { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; color: #657c6c; font-size: 10px; }
+.ndviLabel { display: block; margin: 21px 0 7px; color: #405f4d; font-size: 12px; font-weight: 700; }
+.ndviSlider { width: 100%; accent-color: #2b8254; opacity: .48; cursor: not-allowed; }
+.rotationGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+.cropCard { padding: 13px; border: 1px solid #dde9df; border-radius: 12px; background: #f9fcf8; min-width: 0; }
+.inputLabel { display: block; margin-bottom: 9px; font-size: 12px; font-weight: 750; color: #29533b; }
+.select { width: 100%; min-width: 0; min-height: 38px; padding: 8px 6px; border: 1px solid #c8dccb; border-radius: 8px; background: #fff; color: #1c3c2a; font: inherit; font-size: 12px; }
+.select:focus-visible, .priorityRow input:focus-visible, .optionCard input:focus-visible, .checkboxLabel input:focus-visible { outline: 2px solid #2f8b5b; outline-offset: 2px; }
+.checkboxLabel { display: flex; align-items: flex-start; gap: 7px; margin-top: 12px; font-size: 11px; line-height: 1.4; color: #506c57; cursor: pointer; }
+.checkboxLabel input { margin: 1px 0 0; flex: 0 0 auto; accent-color: #2a8052; }
+.rotationSummary { display: flex; flex-direction: column; gap: 6px; margin-top: 15px; border: 1px solid #d9e7d9; background: #f1f7ef; border-radius: 11px; padding: 13px; }
+.rotationSummary > span { color: #668072; font-size: 10px; font-weight: 750; text-transform: uppercase; letter-spacing: .07em; }
+.rotationSummary strong { color: #21583b; font-size: 13px; font-weight: 750; line-height: 1.55; }
+.optionList { display: grid; gap: 9px; margin-top: 21px; }
+.optionCard { display: flex; gap: 12px; align-items: center; padding: 13px 14px; border: 1px solid #d8e5da; border-radius: 12px; background: #fff; cursor: pointer; }
+.optionActive { background: #edf7ec; border-color: #7fb493; box-shadow: inset 0 0 0 1px #7fb493; }
+.optionCard input { accent-color: #2e8155; width: 15px; height: 15px; flex: 0 0 auto; }
+.optionContent { display: flex; flex-direction: column; gap: 3px; }
+.optionContent strong { color: #244e35; font-size: 13px; }
+.optionContent > span { color: #6a7c6e; font-size: 11px; line-height: 1.4; }
+.priorityList { display: grid; gap: 19px; margin-top: 24px; }
+.priorityRow label { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 13px; color: #2e5840; font-weight: 650; }
+.priorityRow label strong { white-space: nowrap; color: #237345; font-size: 12px; }
+.priorityRow input { width: 100%; margin-top: 11px; accent-color: #2b7c52; cursor: pointer; }
+.alert { padding: 12px 14px; border: 1px solid #e6c9aa; border-radius: 11px; background: #fff8eb; color: #835b26; font-size: 12px; line-height: 1.5; }
+.submitCard { background: #f2f8f0; border-color: #c3ddc7; }
+.submitCard > div:first-child > p:last-child { max-width: 52ch; margin: 10px 0 0; color: #627968; font-size: 13px; line-height: 1.5; }
+.summaryChips { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+.summaryChips span { padding: 7px 10px; border-radius: 99px; border: 1px solid #c8dec9; background: #fff; color: #356047; font-size: 11px; font-weight: 700; }
+.submitActions { display: flex; flex-wrap: wrap; gap: 10px; }
+.resetButton, .runButton { min-height: 46px; padding: 11px 17px; border-radius: 11px; font: inherit; font-size: 13px; font-weight: 750; }
+.resetButton { background: #fff; border: 1px solid #bdd5c4; color: #285d3f; cursor: pointer; }
+.resetButton:hover { background: #e5f0e6; }
+.runButton { background: #c3d8c8; border: 1px solid #b0cdb5; color: #476d53; cursor: not-allowed; }
+.runButton span { margin-left: 7px; font-size: 10px; font-weight: 750; }
+.technicalDetails { margin-top: 15px; padding-top: 15px; border-top: 1px solid #d5e6d6; color: #627968; font-size: 11px; }
+.technicalDetails summary { cursor: pointer; font-weight: 750; }
+.technicalDetails p { overflow-wrap: anywhere; }
+.technicalDetails code { color: #1e6341; }
+.missingCard { max-width: 650px; margin: 50px auto; }
+.missingCard h1 { margin-top: 0; }
+.loadMessage { padding: 35px 0; color: #57745e; }
+@media (max-width: 1020px) {
+  .mainGrid { grid-template-columns: 1fr; }
+  .leftColumn { position: static; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); align-items: start; }
+}
+@media (max-width: 700px) {
+  .page { padding-top: 20px; }
+  .pageTop { margin-bottom: 20px; }
+  .sectionLabel { font-size: 9px; }
+  .hero { display: block; margin-bottom: 22px; }
+  .hero p { margin-bottom: 14px; }
+  .leftColumn { display: flex; }
+  .mapShell { height: 275px; }
+  .rotationGrid { grid-template-columns: 1fr; }
+  .fieldFacts { gap: 12px; }
+  .submitActions > button { flex: 1; }
+}
+
+/* Compact field / NDVI panel. It stays entirely in the left desktop viewport. */
+.mapCard { display: flex; flex-direction: column; min-width: 0; }
+.mapHelper { margin: 7px 0 0; color: #627d69; font-size: 11px; line-height: 1.35; }
+.ndviSection { border-top: 1px solid #dbe8dc; margin-top: 12px; padding-top: 12px; }
+.ndviHeader { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ndviHeader h3 { margin: 0; font-size: 15px; line-height: 1.15; color: #204934; }
+.ndviHeader .cardEyebrow { margin-bottom: 4px; }
+.ndviSection .ndviGradient { margin-top: 12px; height: 11px; }
+.ndviSection .ndviLabel { margin: 10px 0 3px; font-size: 11px; }
+.ndviSection .ndviSlider { display: block; margin: 0; height: 13px; }
+.ndviHint { margin: 5px 0 0; color: #627d69; line-height: 1.35; font-size: 10px; }
+
+@media (min-width: 1021px) {
+  .page {
+    height: calc(100dvh - var(--analysis-nav-height, 79px));
+    min-height: 0;
+    overflow: hidden;
+    padding: 14px clamp(16px, 3vw, 46px) 14px;
+  }
+  .container { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+  .pageTop { flex: 0 0 auto; margin-bottom: 10px; }
+  .hero { flex: 0 0 auto; margin-bottom: 16px; }
+  .hero h1 { font-size: clamp(27px, 2.4vw, 36px); margin-bottom: 5px; }
+  .hero p { font-size: 12px; line-height: 1.45; }
+  .mainGrid {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    align-items: stretch;
+  }
+  .leftColumn { min-height: 0; height: 100%; position: static; overflow-y: auto; }
+  .rightColumn {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 8px 14px 0;
+    scrollbar-gutter: stable;
+  }
+  .mapCard { height: 100%; min-height: 0; padding: 15px; overflow-x: hidden; overflow-y: auto; }
+  .mapCard > .cardHeading { margin-bottom: 10px; flex: 0 0 auto; }
+  .mapShell { flex: 1 1 auto; height: auto; min-height: 130px; }
+  .fieldFacts { flex: 0 0 auto; gap: 8px 12px; padding-top: 11px; }
+  .fieldFacts div { gap: 3px; }
+  .fieldFacts strong { font-size: 12px; }
+  .fieldFacts span { font-size: 10px; }
+  .ndviSection { flex: 0 0 auto; margin-top: 9px; padding-top: 10px; }
+  .ndviSection .ndviGradient { margin-top: 8px; height: 9px; }
+  .ndviSection .ndviLabel { margin-top: 7px; }
+  .ndviHint { font-size: 10px; }
+}
+
+@media (min-width: 1021px) and (max-height: 710px) {
+  .page { padding-top: 8px; padding-bottom: 8px; }
+  .hero { margin-bottom: 9px; }
+  .hero p { font-size: 11px; line-height: 1.25; }
+  .mapCard { padding: 11px; }
+  .mapCard > .cardHeading { margin-bottom: 6px; }
+  .fieldFacts { gap: 5px 9px; padding-top: 7px; }
+  .mapHelper { margin-top: 4px; }
+  .ndviSection { margin-top: 6px; padding-top: 6px; }
+}
+
+@media (max-width: 1020px) {
+  .leftColumn { position: static; display: flex; }
+  .mapShell { height: 310px; flex: 0 0 auto; }
+  .mapCard { height: auto; }
+}
+@media (max-width: 700px) {
+  .mapShell { height: 275px; }
+}
+
+
+/* V4: a compact fixed field panel and a FIELDWISE-styled settings scroll. */
+.heroTagline strong { color: #256f4d; font-weight: 800; }
+
+/* Right-hand scrollbar: subtle sage track and brand-green thumb. */
+.rightColumn {
+  scrollbar-width: thin;
+  scrollbar-color: #8db59a #edf4ee;
+}
+.rightColumn::-webkit-scrollbar { width: 9px; }
+.rightColumn::-webkit-scrollbar-track { background: #edf4ee; border-radius: 999px; }
+.rightColumn::-webkit-scrollbar-thumb {
+  background: #8db59a;
+  border: 2px solid #edf4ee;
+  border-radius: 999px;
+}
+.rightColumn::-webkit-scrollbar-thumb:hover { background: #357b53; }
+
+/* Priority sliders: dynamic green fill and a tactile knob. */
+.priorityRow input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 9px;
+  margin: 13px 0 5px;
+  border: 1px solid #d7e6d9;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    #256f4d 0%,
+    #256f4d var(--priority-fill, 50%),
+    #e9f1e9 var(--priority-fill, 50%),
+    #e9f1e9 100%);
+  cursor: pointer;
+}
+.priorityRow input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #256f4d;
+  box-shadow: 0 1px 5px rgba(18, 66, 39, .25), 0 0 0 1px #9dbca5;
+  transition: box-shadow .16s ease, background-color .16s ease;
+}
+.priorityRow input[type="range"]::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #256f4d;
+  box-shadow: 0 1px 5px rgba(18, 66, 39, .25), 0 0 0 1px #9dbca5;
+  transition: box-shadow .16s ease, background-color .16s ease;
+}
+.priorityRow input[type="range"]:hover::-webkit-slider-thumb {
+  background: #195c3c;
+  box-shadow: 0 1px 7px rgba(18, 66, 39, .3), 0 0 0 3px #dfede0;
+}
+.priorityRow input[type="range"]:hover::-moz-range-thumb {
+  background: #195c3c;
+  box-shadow: 0 1px 7px rgba(18, 66, 39, .3), 0 0 0 3px #dfede0;
+}
+.priorityRow input[type="range"]:focus-visible {
+  outline: 3px solid #9bcaab;
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .priorityRow input[type="range"]::-webkit-slider-thumb,
+  .priorityRow input[type="range"]::-moz-range-thumb { transition: none; }
+}
+
+@media (min-width: 1021px) {
+  /* Make the left column fit without its own scrollbar at ordinary desktop heights. */
+  .page { padding-top: 10px; padding-bottom: 10px; }
+  .pageTop { margin-bottom: 7px; }
+  .hero { margin-bottom: 11px; }
+  .hero h1 { margin-bottom: 3px; }
+  .heroTagline { font-size: 12px; line-height: 1.3; }
+  .leftColumn { overflow: hidden; }
+  .mapCard { overflow: hidden; padding: 12px 14px; }
+  .mapCard > .cardHeading { margin-bottom: 7px; }
+  .mapCard .cardEyebrow { margin-bottom: 4px; }
+  .mapCard .cardHeading h2 { font-size: 18px; }
+  .mapShell { min-height: 105px; }
+  .fieldFacts { gap: 6px 10px; padding-top: 9px; }
+  .fieldFacts div { gap: 2px; }
+  .mapHelper { margin-top: 5px; font-size: 10.5px; line-height: 1.25; }
+  .ndviSection { margin-top: 7px; padding-top: 7px; }
+  .ndviHeader h3 { font-size: 14px; }
+  .ndviSection .ndviGradient { margin-top: 7px; height: 8px; }
+  .ndviSection .ndviTicks { margin-top: 5px; }
+  .ndviSection .ndviLabel { margin: 7px 0 2px; }
+  .ndviSection .ndviSlider { height: 12px; }
+  .ndviHint { margin-top: 3px; line-height: 1.25; }
+}
+/* For unusually short desktop windows, preserve content rather than clipping it. */
+@media (min-width: 1021px) and (max-height: 570px) {
+  .leftColumn { overflow-y: auto; }
+  .mapCard { height: auto; overflow: visible; }
+  .mapShell { flex: 0 0 120px; }
+}
+
+
+/* V4: small map-style selector ABOVE the map, not over the field image. */
+.mapPreview {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  min-height: 0;
+}
+.mapViewToolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  min-height: 26px;
+}
+.mapViewTitle { font-size: 9px; font-weight: 800; letter-spacing: .11em; color: #6c8974; }
+.mapViewOptions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #d5e5d8;
+  border-radius: 9px;
+  background: #f2f7f1;
+}
+.mapViewButton {
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 9px;
+  background: transparent;
+  color: #557460;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.mapViewButton:hover:not(:disabled) { background: #e2eee4; color: #275b3e; }
+.mapViewButton:focus-visible { outline: 2px solid #2f8b5b; outline-offset: 2px; }
+.mapViewButton:disabled { cursor: not-allowed; opacity: .48; }
+.mapViewButton.mapViewActive { background: #fff; color: #256f4d; box-shadow: 0 1px 3px rgba(19, 67, 40, .13); }
+
+@media (min-width: 1021px) {
+  .mapPreview .mapShell { min-height: 100px; }
+  /* The map grows into all free space; all metadata and the NDVI preview stay visible. */
+  .mapCard { padding-top: 10px; padding-bottom: 10px; }
+  .ndviSection { margin-top: 6px; padding-top: 6px; }
+}
+@media (max-width: 1020px) {
+  .mapPreview { flex: 0 0 auto; min-height: 0; }
+  .mapPreview .mapShell { flex: 0 0 auto; height: 310px; }
+}
+@media (max-width: 700px) {
+  .mapPreview .mapShell { height: 275px; }
+}
+@media (min-width: 1021px) and (max-height: 570px) {
+  .mapPreview { flex: 0 0 auto; }
+  .mapPreview .mapShell { flex: 0 0 120px; height: 120px; }
+}
+
+/* V5: the document is viewport-locked on desktop, NOT vertically scrollable.
+   The right-hand form remains independently scrollable. */
+@media (min-width: 1021px) {
+  .page {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 8px clamp(16px, 3vw, 46px);
+  }
+  .container { height: 100%; min-height: 0; }
+  .pageTop { margin-bottom: 5px; }
+  .hero { margin-bottom: 10px; align-items: center; }
+  .hero h1 { margin-bottom: 0; font-size: clamp(27px, 2.4vw, 36px); }
+  .mainGrid { flex: 1 1 0; height: auto; min-height: 0; overflow: hidden; }
+  .leftColumn { height: 100%; min-height: 0; overflow: hidden; }
+  .mapCard { height: 100%; min-height: 0; overflow: hidden; padding: 10px 13px; }
+  .mapCard > .cardHeading { margin-bottom: 5px; }
+  .mapPreview { flex: 1 1 auto; min-height: 0; }
+  .mapPreview .mapShell { flex: 1 1 auto; min-height: 110px; height: auto; }
+  .fieldFacts {
+    grid-template-columns: max-content minmax(85px, .75fr) minmax(155px, 1.5fr);
+    align-items: baseline;
+    gap: 8px 15px;
+    padding-top: 8px;
+  }
+  .fieldFacts div { flex-direction: row; gap: 5px; align-items: baseline; }
+  .fieldFacts span { font-size: 10px; white-space: nowrap; }
+  .fieldFacts strong { font-size: 11px; white-space: nowrap; }
+  .ndviSection { margin-top: 7px; padding-top: 7px; }
+  .ndviHeader h3 { font-size: 14px; }
+  .ndviSection .ndviGradient { margin-top: 7px; height: 8px; }
+  .ndviSection .ndviTicks { margin-top: 3px; }
+  .ndviThreshold { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+  .ndviThreshold .ndviLabel { flex: 0 0 auto; margin: 0; font-size: 10px; }
+  .ndviThreshold .ndviSlider { flex: 1 1 auto; width: auto; min-width: 0; height: 12px; }
+  .ndviHint { margin: 2px 0 0; font-size: 9px; }
+}
+.ndviSubheading { font-size: .78em; color: #5f8069; font-weight: 600; }
+@media (max-width: 1020px) {
+  .ndviThreshold { margin-top: 7px; }
+  .ndviThreshold .ndviLabel { margin: 0 0 3px; }
+}
+@media (min-width: 1021px) and (max-height: 580px) {
+  /* Preserve access to map controls when the browser window is unusually short. */
+  .leftColumn { overflow-y: auto; }
+  .mapCard { min-height: 410px; height: auto; }
+  .mapPreview .mapShell { flex: 0 0 180px; }
+}
+
+/* V10 — the Analysis workspace sits within the same illustrated fields as Home.
+   The backdrop never changes the read-only map or independent right-panel scroll. */
+.page {
+  background-color: #e5f0dc;
+  background-image:
+    linear-gradient(115deg, rgba(248, 253, 246, .38), rgba(243, 250, 239, .17) 52%, rgba(249, 252, 239, .31)),
+    url("/illustrations/fieldwise-atlas.svg");
+  background-position: center center, center bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.page .mapCard,
+.page .formCard,
+.page .missingCard {
+  border-color: rgba(164, 199, 157, .72);
+  background: linear-gradient(137deg, rgba(255, 254, 247, .95), rgba(243, 249, 235, .89));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(26, 75, 39, .075);
+}
+.page .mapCard { background: linear-gradient(157deg, rgba(251, 253, 242, .97), rgba(230, 242, 219, .91)); }
+.page .formCard:nth-child(2) { background: linear-gradient(132deg, rgba(253, 250, 238, .95), rgba(236, 246, 227, .91)); }
+.page .formCard:nth-child(3) { background: linear-gradient(137deg, rgba(245, 251, 239, .96), rgba(226, 240, 225, .90)); }
+.page .submitCard {
+  border-color: rgba(139, 186, 138, .77);
+  background: linear-gradient(114deg, rgba(218, 237, 204, .97), rgba(238, 246, 218, .92));
+  box-shadow: 0 12px 31px rgba(32, 83, 40, .085);
+}
+.page .cropCard,
+.page .optionCard,
+.page .rotationSummary {
+  background-color: rgba(251, 253, 245, .80);
+  border-color: rgba(186, 211, 180, .76);
+}
+.page .optionActive { background: rgba(212, 237, 209, .89); }
+.page .rotationSummary { background: rgba(217, 235, 209, .75); }
+.page .subtleTag,
+.page .draftBadge { background: rgba(226, 242, 219, .90); }
+.page .ndviSection { border-top-color: rgba(133, 175, 138, .48); }
+.page .hero h1 { text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.page .mapShell { box-shadow: 0 5px 17px rgba(30, 80, 48, .09); }
+@media (max-width: 700px) {
+  .page { background-position: center center, 65% bottom; }
+}
+
+/* Engine integration: explicit pilot-reference consent and error feedback. */
+.referenceOption{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin:15px 0 5px;border:1px solid rgba(123,160,125,.55);border-radius:13px;background:rgba(228,242,222,.72);color:#254b32;font-size:12px;line-height:1.55;cursor:pointer}
+.referenceOption input{flex:0 0 auto;margin-top:3px;accent-color:#277b4b;width:16px;height:16px}
+.referenceOption strong{font-weight:800}
+.referenceOption small{font-size:11px;color:#54715d}
+
+/* Advanced analysis is opt-in. Retain the page's independently scrolling right column. */
+.advancedSection { border-radius: 15px; }
+.advancedSummary { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; list-style: none; }
+.advancedSummary::-webkit-details-marker { display: none; }
+.advancedSummary > span:first-child { display: flex; flex-direction: column; gap: 4px; }
+.advancedSummary strong { color: #193f2b; font-size: clamp(18px, 1.6vw, 23px); letter-spacing: -.025em; }
+.advancedSummary::after { content: "+"; color: #286c47; font-size: 20px; font-weight: 700; }
+.advancedSection[open] .advancedSummary::after { content: "−"; }
+.advancedBody { margin-top: 17px; border-top: 1px solid #d6e6d3; padding-top: 15px; }
+.advancedToggle { display: flex; align-items: flex-start; gap: 12px; padding: 13px 14px; background: rgba(225,242,222,.8); border: 1px solid #b7d3b3; border-radius: 13px; color: #234c34; cursor: pointer; }
+.advancedToggle input { width: 17px; height: 17px; margin-top: 3px; accent-color: #28794d; }
+.advancedToggle span { display: flex; flex-direction: column; gap: 5px; }
+.advancedToggle strong { font-size: 13px; }
+.advancedToggle small { color: #526e5d; font-size: 11px; line-height: 1.6; }
+.advancedBody .priorityRow { margin-top: 14px; }
+.advancedCaution { color: #7a5523; background: #fef7e8; border: 1px solid #e8cca2; border-radius: 12px; padding: 12px; font-size: 12px; line-height: 1.65; }
+
+/* V17: real Run Analysis affordance and optional advanced state dot. */
+.runButton:not(:disabled) { cursor:pointer; background:#276f4b; color:#fff; border-color:#276f4b; box-shadow:0 3px 14px rgba(33,96,58,.18); }
+.runButton:not(:disabled):hover { background:#1d593b; transform:translateY(-1px); }
+.runButton:disabled { cursor:not-allowed; opacity:.62; }
+.advancedIndicator { display:inline-block; flex:0 0 auto; width:17px; height:17px; border-radius:50%; border:2px solid #679c77; background:#f8fbf5; box-shadow:0 0 0 4px rgba(73,133,85,.07); margin-right:23px; }
+.advancedIndicatorActive { background:#24794c; border-color:#24794c; box-shadow:inset 0 0 0 3px #f7fcf5,0 0 0 4px rgba(73,133,85,.12); }

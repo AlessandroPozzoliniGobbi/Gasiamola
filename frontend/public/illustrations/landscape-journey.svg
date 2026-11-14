@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 2550" preserveAspectRatio="none" role="img" aria-label="Continuous illustration of sky, farmland, soil, roots and groundwater">
+<defs>
+  <linearGradient id="air" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fbfdf8"/><stop offset=".75" stop-color="#f6faf2"/><stop offset="1" stop-color="#edf5e5"/></linearGradient>
+  <radialGradient id="halo"><stop stop-color="#f9e5ae" stop-opacity=".55"/><stop offset="1" stop-color="#f8e9bd" stop-opacity="0"/></radialGradient>
+  <linearGradient id="earth" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e7dec9"/><stop offset=".28" stop-color="#f0e8da"/><stop offset=".65" stop-color="#e7dfd0"/><stop offset="1" stop-color="#e3e1d5"/></linearGradient>
+  <linearGradient id="upperfield" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dfeccd"/><stop offset="1" stop-color="#bcd7ab"/></linearGradient>
+  <linearGradient id="lowerfield" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d1e2bf"/><stop offset="1" stop-color="#bfcd9c"/></linearGradient>
+  <linearGradient id="aquifer" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c6dcd3" stop-opacity=".52"/><stop offset="1" stop-color="#d2e1d8" stop-opacity=".24"/></linearGradient>
+
+  <g id="fossil-theropod" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- A softly contrasting sediment pocket, integrated into the soil layers. -->
+    <path d="M6 123 Q105 67 249 76 T501 95 Q522 118 490 166 Q360 207 215 195 T14 160Z" fill="#c3aa8d" fill-opacity=".10" stroke="#b99f81" stroke-opacity=".19" stroke-width="2"/>
+    <!-- Tail, spine and long neck. -->
+    <g stroke="#94795c" stroke-width="10">
+      <path d="M155 121Q120 117 96 110T48 99Q20 88 6 67"/>
+      <path d="M148 119Q240 97 331 114Q357 119 380 99L402 80"/>
+    </g>
+    <g stroke="#ecddc0" stroke-width="6.8">
+      <path d="M155 121Q120 117 96 110T48 99Q20 88 6 67"/>
+      <path d="M148 119Q240 97 331 114Q357 119 380 99L402 80"/>
+    </g>
+    <!-- Tail vertebrae. -->
+    <g fill="#f0e2c6" stroke="#9e8263" stroke-width="2.8">
+      <ellipse cx="35" cy="92" rx="4" ry="6" transform="rotate(-27 35 92)"/>
+      <ellipse cx="62" cy="104" rx="4" ry="7" transform="rotate(-17 62 104)"/>
+      <ellipse cx="93" cy="110" rx="4" ry="7" transform="rotate(-7 93 110)"/>
+      <ellipse cx="121" cy="118" rx="5" ry="7"/>
+      <ellipse cx="155" cy="121" rx="7" ry="6"/>
+      <ellipse cx="186" cy="112" rx="6" ry="7"/>
+      <ellipse cx="219" cy="108" rx="6" ry="7"/>
+      <ellipse cx="251" cy="108" rx="6" ry="7"/>
+      <ellipse cx="282" cy="110" rx="6" ry="7"/>
+      <ellipse cx="315" cy="113" rx="6" ry="7"/>
+      <ellipse cx="347" cy="110" rx="5" ry="6"/>
+    </g>
+    <!-- Ribcage: overlapping curved bones rather than a solid animal silhouette. -->
+    <g stroke="#9b8063" stroke-width="4" opacity=".92">
+      <path d="M178 111 Q158 139 188 181"/>
+      <path d="M204 107 Q184 154 215 186"/>
+      <path d="M232 108 Q217 156 244 187"/>
+      <path d="M260 109 Q250 156 272 184"/>
+      <path d="M287 110 Q286 151 298 175"/>
+      <path d="M316 114 Q323 140 316 162"/>
+      <path d="M182 179Q244 193 307 168" stroke-opacity=".55" stroke-width="2.4"/>
+    </g>
+    <!-- Pelvis and two strong hind legs. -->
+    <g stroke="#96785c" stroke-width="10">
+      <path d="M187 132 Q201 154 224 172 L201 208 L181 226"/>
+      <path d="M298 128 Q294 160 318 175 L307 210 L294 227"/>
+    </g>
+    <g stroke="#eadbc1" stroke-width="6">
+      <path d="M187 132 Q201 154 224 172 L201 208 L181 226"/>
+      <path d="M298 128 Q294 160 318 175 L307 210 L294 227"/>
+    </g>
+    <g stroke="#94785b" stroke-width="4.2">
+      <path d="M181 226l-20 8 M181 226l-6 14 M181 226l8 13"/>
+      <path d="M294 227l-15 9 M294 227l1 15 M294 227l14 9"/>
+      <!-- Short forelimbs beneath the shoulder. -->
+      <path d="M345 121l-14 27 21 14 M355 122l-8 28 24 10"/>
+      <path d="M352 162l4 9m-4-9 9 4 M371 160l7 8" stroke-width="2.6"/>
+    </g>
+    <g fill="#eadbc1" stroke="#9a8065" stroke-width="3">
+      <circle cx="224" cy="172" r="8"/><circle cx="201" cy="208" r="6"/>
+      <circle cx="318" cy="175" r="8"/><circle cx="307" cy="210" r="6"/>
+      <circle cx="332" cy="147" r="4"/>
+    </g>
+    <!-- Distinct theropod skull, eye socket, jaws and individual teeth. -->
+    <path d="M398 70Q412 53 441 56L469 67Q484 69 493 81L478 94L443 98L417 91L400 98L391 86Z" fill="#ebdec4" stroke="#967a5e" stroke-width="4"/>
+    <path d="M409 103Q435 118 468 108L488 97Q472 124 445 129L414 121Z" fill="#e5d3b2" stroke="#967a5e" stroke-width="3.5"/>
+    <ellipse cx="435" cy="76" rx="8" ry="6.8" fill="#9c8063"/>
+    <circle cx="455" cy="87" r="3.2" fill="#b29a7a"/>
+    <path d="M431 98l4 9 5-9 6 9 5-10 6 8 5-11 M439 117l4-7 6 9 5-10 6 7" stroke="#98785a" stroke-width="2.2"/>
+    <!-- Eroded fossil fragments near the lower edge. -->
+    <g fill="#e9d8b9" stroke="#b39673" stroke-width="2.2" opacity=".76">
+      <path d="M65 202l11-7 11 4-4 9-12 2Z"/><path d="M408 183l13-5 9 7-8 8-13-2Z"/>
+    </g>
+  </g>
+
+  <g id="fossil-ammonite" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="80" cy="83" rx="80" ry="70" fill="#c4a788" fill-opacity=".11" stroke="#b59c7c" stroke-opacity=".22" stroke-width="2"/>
+    <path d="M135 91c0-39-34-69-74-61-38 8-56 48-38 81 16 30 54 40 81 20 21-15 23-46 4-64-16-14-40-11-50 5-11 17-1 36 14 39 13 2 23-8 21-20-1-8-10-15-19-9" fill="#e8d7b7" stroke="#95775c" stroke-width="4.5"/>
+    <path d="M136 88l-22 0 M133 108l-24-8 M120 124l-20-14 M98 139l-13-22 M76 144l-5-25 M52 138l4-24 M32 123l18-17 M20 103l22-8 M22 82l21 4 M31 62l20 11 M48 43l15 21 M72 30l5 28 M96 35l-4 23 M119 51l-14 19" stroke="#ae9070" stroke-width="2.2" opacity=".65"/>
+    <path d="M55 71q30-19 52 7M53 93q1 28 25 36" stroke="#fff5e6" stroke-width="2.2" opacity=".58"/>
+  </g>
+
+  <g id="fossil-fish" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="167" cy="91" rx="158" ry="66" fill="#b7a48f" fill-opacity=".08" stroke="#b69d84" stroke-opacity=".2" stroke-width="2"/>
+    <!-- Fish skull on the left. -->
+    <path d="M30 91Q43 60 80 59L112 76L112 111L83 125Q48 125 30 91Z" fill="#e8dabe" stroke="#978268" stroke-width="3.5"/>
+    <path d="M30 91l-17-10 5 21Z" fill="#e6d6ba" stroke="#978268" stroke-width="3"/>
+    <circle cx="75" cy="83" r="7" fill="#a08769"/><path d="M41 104q28 13 52 3" stroke="#9f876c" stroke-width="2.6"/>
+    <!-- Backbone, ribs and fins; tail on the right. -->
+    <path d="M111 96Q202 90 283 99" stroke="#998166" stroke-width="9"/>
+    <path d="M111 96Q202 90 283 99" stroke="#ecdfc6" stroke-width="5.5"/>
+    <g stroke="#a68c6b" stroke-width="3.4">
+      <path d="M134 95q-13-29 5-40M134 95q-14 28 4 45"/>
+      <path d="M154 94q-7-43 19-52M154 94q-9 37 17 55"/>
+      <path d="M177 92q-2-43 22-55M177 92q-4 42 21 55"/>
+      <path d="M202 92q3-38 27-51M202 92q-1 42 26 53"/>
+      <path d="M228 93q9-28 23-37M228 93q7 31 23 38"/>
+      <path d="M252 96q8-21 19-28M252 96q9 25 18 27"/>
+    </g>
+    <path d="M166 65l38-44 12 48" fill="#e7d9be" fill-opacity=".7" stroke="#a18b71" stroke-width="3"/>
+    <path d="M193 126l23 32 12-28" fill="#e7d9be" fill-opacity=".7" stroke="#a18b71" stroke-width="3"/>
+    <path d="M281 99Q314 66 327 42Q338 89 319 103Q333 113 334 147Q312 128 281 99Z" fill="#eadac0" stroke="#968069" stroke-width="3.5"/>
+    <g fill="#f2e6d1" stroke="#998064" stroke-width="2.2"><circle cx="137" cy="95" r="4"/><circle cx="175" cy="93" r="4"/><circle cx="204" cy="93" r="4"/><circle cx="230" cy="94" r="4"/><circle cx="254" cy="96" r="4"/></g>
+  </g>
+
+  <g id="fossil-bone" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 33Q1 23 12 12Q25 4 31 20Q42 27 80 29Q116 29 124 17Q138 4 147 15Q157 26 144 36Q157 50 143 59Q130 67 121 51Q80 44 36 50Q24 67 10 58Q-2 48 15 33Z" fill="#eadbc1" stroke="#9c8265" stroke-width="3.5"/>
+    <path d="M37 38q38 8 82-1" stroke="#fbf4e6" stroke-width="3" opacity=".7"/>
+  </g>
+</defs>
+<rect width="1600" height="2550" fill="url(#air)"/>
+<circle cx="1280" cy="170" r="184" fill="url(#halo)"/>
+<circle cx="1280" cy="170" r="54" fill="#f7e7b8" fill-opacity=".73" stroke="#dfc993" stroke-width="2.5"/>
+<g fill="none" stroke="#d2bd8b" stroke-width="2.5" stroke-linecap="round" opacity=".68"><path d="M1280 85v-26 M1280 280v-26 M1195 170h-25 M1390 170h-25 M1220 108l-18 -18 M1358 248l-18 -18 M1220 233l-18 18 M1358 105l-18 18"/></g>
+<g fill="#fff" fill-opacity=".67" stroke="#cfded0" stroke-width="2.5" stroke-linecap="round">
+<path d="M94 189c14-22 43-28 63-18 14-33 51-40 79-26 11 6 18 16 23 27 24-4 43 10 45 30 1 18-12 27-32 27H107c-29 0-33-27-13-40Z"/>
+<path d="M1400 308c13-17 35-22 52-14 10-25 38-30 57-18 7 5 14 11 18 20 20-3 34 10 35 25 1 13-10 23-25 23h-116c-26 0-36-19-21-36Z"/>
+</g>
+<g fill="none" stroke="#8cae9f" stroke-width="3" opacity=".65" stroke-linecap="round"><path d="M105 338C191 301 290 336 365 309 M132 362c74-19 132-14 189-1 M1360 429q88-27 178-12 M1378 454q77-9 143 5"/></g>
+<g fill="none" stroke="#6c9879" stroke-width="3" stroke-linecap="round" opacity=".72"><path d="M968 190q18-19 37-3q17-18 35-2 M1048 241q13-14 27-3q14-14 28-2 M440 245q14-14 28-2q16-14 29-1"/></g>
+<!-- One organic horizon: the landscape becomes earth without a section break. -->
+<path d="M0 630C193 570 364 598 539 623S896 656 1086 613S1402 582 1600 632L1600 940H0Z" fill="url(#upperfield)"/>
+<path d="M0 684C203 630 382 662 562 691S963 690 1132 660S1457 652 1600 680L1600 940H0Z" fill="url(#lowerfield)"/>
+<path d="M0 748C214 713 411 740 601 755S965 740 1154 724S1444 725 1600 759V2550H0Z" fill="url(#earth)"/>
+<path d="M0 748C214 713 411 740 601 755S965 740 1154 724S1444 725 1600 759" fill="none" stroke="#a7b58d" stroke-opacity=".65" stroke-width="3"/>
+<!-- The narrow band at the horizon has organic, non-geometric color. -->
+<path d="M0 785C257 754 405 772 601 797S964 781 1158 775S1447 783 1600 800V875C1307 855 1209 868 1025 882S596 879 391 862S160 866 0 872Z" fill="#d5c9ad" fill-opacity=".34"/>
+<g fill="none" stroke="#94b18a" stroke-width="2" opacity=".55"><path d="M0 661C228 611 387 649 561 673s376 21 562-18 358-9 477 7"/><path d="M-5 711C249 659 409 706 578 720s355 4 541-28 351-7 486 15"/><path d="M53 738l106-74 M305 737l102-66 M576 761l75-71 M841 745l31-49 M1102 726l-12-32 M1433 734l-52-46"/></g>
+<!-- The tractor and wheat belong to the surface, rather than being scattered between panels. -->
+<g transform="translate(115 746) scale(1.08 1.08)" fill="none" stroke="#71916e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity=".84">
+      <path d="M0 0 C-7 -54 -3 -116 7 -166"/><path d="M1 -60 Q-31 -82 -37 -120 Q-8 -106 1 -91 M1 -89 Q25 -113 27 -146 Q10 -129 4 -119" fill="#cee0bb" fill-opacity=".65"/>
+      <path d="M7 -160q-19 -12 -16 -27q20 5 19 23 M9 -161q19 -15 18 -30q-20 5 -18 23 M7 -177q-19 -12 -16 -27q20 5 19 23 M9 -179q17 -14 14 -28q-17 5 -14 23 M6 -195l1 -26" fill="#d9c18c" stroke="#ab9b65" stroke-width="2"/>
+    </g><g transform="translate(214 757) scale(-0.73 0.73)" fill="none" stroke="#71916e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity=".84">
+      <path d="M0 0 C-7 -54 -3 -116 7 -166"/><path d="M1 -60 Q-31 -82 -37 -120 Q-8 -106 1 -91 M1 -89 Q25 -113 27 -146 Q10 -129 4 -119" fill="#cee0bb" fill-opacity=".65"/>
+      <path d="M7 -160q-19 -12 -16 -27q20 5 19 23 M9 -161q19 -15 18 -30q-20 5 -18 23 M7 -177q-19 -12 -16 -27q20 5 19 23 M9 -179q17 -14 14 -28q-17 5 -14 23 M6 -195l1 -26" fill="#d9c18c" stroke="#ab9b65" stroke-width="2"/>
+    </g><g transform="translate(1510 745) scale(-0.77 0.77)" fill="none" stroke="#71916e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity=".84">
+      <path d="M0 0 C-7 -54 -3 -116 7 -166"/><path d="M1 -60 Q-31 -82 -37 -120 Q-8 -106 1 -91 M1 -89 Q25 -113 27 -146 Q10 -129 4 -119" fill="#cee0bb" fill-opacity=".65"/>
+      <path d="M7 -160q-19 -12 -16 -27q20 5 19 23 M9 -161q19 -15 18 -30q-20 5 -18 23 M7 -177q-19 -12 -16 -27q20 5 19 23 M9 -179q17 -14 14 -28q-17 5 -14 23 M6 -195l1 -26" fill="#d9c18c" stroke="#ab9b65" stroke-width="2"/>
+    </g>
+<g transform="translate(1365 667)" stroke="#54745a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<path d="M-85 63h187" fill="none" stroke="#8bb18d" opacity=".8"/>
+<path d="M-43 9h48l22 29h45l8 17H-61l-6-19h24Z" fill="#8cad84"/>
+<path d="M-25 9v-31H6l22 31Z" fill="#eef5eb"/><path d="M-11-22v31 M76 35h20 M48 20h24" fill="none"/>
+<circle cx="-30" cy="57" r="22" fill="#415c4a"/><circle cx="-30" cy="57" r="9" fill="#e4ebdb"/>
+<circle cx="70" cy="57" r="15" fill="#415c4a"/><circle cx="70" cy="57" r="6" fill="#e4ebdb"/>
+</g>
+<!-- Root systems travel across the upper and middle layers. -->
+<g transform="translate(184 771) scale(1 1)" fill="none" stroke="#9e8467" stroke-linecap="round" stroke-linejoin="round" opacity=".66">
+      <path stroke-width="4.5" d="M0 0 C-14 96 27 190 7 292 S-18 473 14 640"/>
+      <g stroke-width="2.9"><path d="M7 132C-42 155 -68 213 -92 286"/><path d="M11 240C65 264 92 330 110 407"/><path d="M0 348C-58 373 -77 454 -89 550"/><path d="M-7 462C54 470 82 540 105 631"/><path d="M13 565C-31 597 -50 654 -58 712"/></g>
+      <g stroke-width="1.7" opacity=".8"><path d="M-40 166Q-70 169 -94 213 M-70 226Q-97 230 -115 271 M-86 272Q-125 285 -135 319"/><path d="M63 283Q91 278 119 323 M96 365Q135 376 143 418"/><path d="M-50 402Q-86 407 -104 447 M-70 469Q-113 470 -138 506 M-85 543Q-112 559 -124 590"/><path d="M36 488Q69 485 94 523 M80 559Q104 564 122 600 M13 604Q37 651 31 696"/></g>
+    </g><g transform="translate(1400 750) scale(-0.92 0.92)" fill="none" stroke="#9e8467" stroke-linecap="round" stroke-linejoin="round" opacity=".66">
+      <path stroke-width="4.5" d="M0 0 C-14 96 27 190 7 292 S-18 473 14 640"/>
+      <g stroke-width="2.9"><path d="M7 132C-42 155 -68 213 -92 286"/><path d="M11 240C65 264 92 330 110 407"/><path d="M0 348C-58 373 -77 454 -89 550"/><path d="M-7 462C54 470 82 540 105 631"/><path d="M13 565C-31 597 -50 654 -58 712"/></g>
+      <g stroke-width="1.7" opacity=".8"><path d="M-40 166Q-70 169 -94 213 M-70 226Q-97 230 -115 271 M-86 272Q-125 285 -135 319"/><path d="M63 283Q91 278 119 323 M96 365Q135 376 143 418"/><path d="M-50 402Q-86 407 -104 447 M-70 469Q-113 470 -138 506 M-85 543Q-112 559 -124 590"/><path d="M36 488Q69 485 94 523 M80 559Q104 564 122 600 M13 604Q37 651 31 696"/></g>
+    </g><g transform="translate(370 857) scale(-0.58 0.58)" fill="none" stroke="#9e8467" stroke-linecap="round" stroke-linejoin="round" opacity=".66">
+      <path stroke-width="4.5" d="M0 0 C-14 96 27 190 7 292 S-18 473 14 640"/>
+      <g stroke-width="2.9"><path d="M7 132C-42 155 -68 213 -92 286"/><path d="M11 240C65 264 92 330 110 407"/><path d="M0 348C-58 373 -77 454 -89 550"/><path d="M-7 462C54 470 82 540 105 631"/><path d="M13 565C-31 597 -50 654 -58 712"/></g>
+      <g stroke-width="1.7" opacity=".8"><path d="M-40 166Q-70 169 -94 213 M-70 226Q-97 230 -115 271 M-86 272Q-125 285 -135 319"/><path d="M63 283Q91 278 119 323 M96 365Q135 376 143 418"/><path d="M-50 402Q-86 407 -104 447 M-70 469Q-113 470 -138 506 M-85 543Q-112 559 -124 590"/><path d="M36 488Q69 485 94 523 M80 559Q104 564 122 600 M13 604Q37 651 31 696"/></g>
+    </g><g transform="translate(1244 895) scale(0.55 0.55)" fill="none" stroke="#9e8467" stroke-linecap="round" stroke-linejoin="round" opacity=".66">
+      <path stroke-width="4.5" d="M0 0 C-14 96 27 190 7 292 S-18 473 14 640"/>
+      <g stroke-width="2.9"><path d="M7 132C-42 155 -68 213 -92 286"/><path d="M11 240C65 264 92 330 110 407"/><path d="M0 348C-58 373 -77 454 -89 550"/><path d="M-7 462C54 470 82 540 105 631"/><path d="M13 565C-31 597 -50 654 -58 712"/></g>
+      <g stroke-width="1.7" opacity=".8"><path d="M-40 166Q-70 169 -94 213 M-70 226Q-97 230 -115 271 M-86 272Q-125 285 -135 319"/><path d="M63 283Q91 278 119 323 M96 365Q135 376 143 418"/><path d="M-50 402Q-86 407 -104 447 M-70 469Q-113 470 -138 506 M-85 543Q-112 559 -124 590"/><path d="M36 488Q69 485 94 523 M80 559Q104 564 122 600 M13 604Q37 651 31 696"/></g>
+    </g>
+<path d="M-20 927 C 336 897 528 957 832 927 S 1344 897 1620 932" fill="none" stroke="#c4b293" stroke-opacity="0.34" stroke-width="3" stroke-linecap="round"/><path d="M-20 1088 C 336 1065 528 1111 832 1088 S 1344 1065 1620 1093" fill="none" stroke="#baa786" stroke-opacity="0.3" stroke-width="3" stroke-linecap="round"/><path d="M-20 1245 C 336 1211 528 1279 832 1245 S 1344 1211 1620 1250" fill="none" stroke="#c6b49c" stroke-opacity="0.39" stroke-width="3" stroke-linecap="round"/><path d="M-20 1450 C 336 1420 528 1480 832 1450 S 1344 1420 1620 1455" fill="none" stroke="#b79d80" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/><path d="M-20 1627 C 336 1593 528 1661 832 1627 S 1344 1593 1620 1632" fill="none" stroke="#c9b5a2" stroke-opacity="0.36" stroke-width="3" stroke-linecap="round"/><path d="M-20 1812 C 336 1788 528 1836 832 1812 S 1344 1788 1620 1817" fill="none" stroke="#b6a48c" stroke-opacity="0.31" stroke-width="3" stroke-linecap="round"/><path d="M-20 2005 C 336 1976 528 2034 832 2005 S 1344 1976 1620 2010" fill="none" stroke="#c0b6a1" stroke-opacity="0.4" stroke-width="3" stroke-linecap="round"/><path d="M-20 2240 C 336 2207 528 2273 832 2240 S 1344 2207 1620 2245" fill="none" stroke="#a2b7a3" stroke-opacity="0.42" stroke-width="3" stroke-linecap="round"/><path d="M-20 2385 C 336 2363 528 2407 832 2385 S 1344 2363 1620 2390" fill="none" stroke="#b8a68e" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/><!-- A subtle aquifer runs beneath the deepest roots. -->
+<path d="M0 2130C228 2088 350 2157 566 2133S955 2082 1157 2112S1454 2142 1600 2102V2274C1409 2309 1205 2260 1002 2279S625 2315 410 2277S156 2277 0 2285Z" fill="url(#aquifer)"/>
+<g fill="none" stroke="#87b7ac" stroke-opacity=".55" stroke-width="3"><path d="M0 2178C222 2140 390 2191 589 2172S956 2152 1153 2173S1431 2189 1600 2164"/><path d="M0 2223C230 2192 421 2237 604 2219S975 2187 1137 2222S1438 2239 1600 2208"/></g>
+<!-- Smaller plants, mineral pockets and stones belong to the same drawn world. -->
+<g stroke="#859b72" stroke-width="3" fill="none" opacity=".63"><path d="M89 808q-7-34-25-48 M89 808q15-37 39-49 M1510 827q-12-36-36-50 M1510 827q12-36 35-48"/><path d="M89 799q-30-35-57-20q12 34 57 20 M91 799q35-36 61-18q-13 33-61 18 M1510 816q-29-35-55-23q15 34 55 23 M1511 815q29-36 56-20q-16 31-56 20" fill="#c7d8b4"/></g>
+<circle cx="193" cy="1103" r="2.0" fill="#d4c4aa" opacity="0.52"/><circle cx="255" cy="2398" r="1.4" fill="#b69d83" opacity="0.43"/><circle cx="1310" cy="1060" r="2.7" fill="#a9ab8d" opacity="0.52"/><circle cx="1487" cy="1375" r="1.4" fill="#c4ae95" opacity="0.27"/><circle cx="1452" cy="2001" r="2.0" fill="#c4ae95" opacity="0.27"/><circle cx="1491" cy="2315" r="3.5" fill="#b69d83" opacity="0.52"/><circle cx="1364" cy="2059" r="3.5" fill="#d4c4aa" opacity="0.43"/><circle cx="275" cy="1720" r="2.0" fill="#a9ab8d" opacity="0.27"/><circle cx="1524" cy="2303" r="2.0" fill="#d4c4aa" opacity="0.37"/><circle cx="1545" cy="1109" r="3.5" fill="#c4ae95" opacity="0.52"/><circle cx="1408" cy="1683" r="2.7" fill="#b69d83" opacity="0.27"/><circle cx="1555" cy="1166" r="2.0" fill="#c4ae95" opacity="0.52"/><circle cx="284" cy="1815" r="2.7" fill="#c4ae95" opacity="0.52"/><circle cx="1568" cy="1061" r="3.5" fill="#a9ab8d" opacity="0.52"/><circle cx="1337" cy="2350" r="3.5" fill="#c4ae95" opacity="0.27"/><circle cx="1379" cy="1258" r="1.4" fill="#b69d83" opacity="0.27"/><circle cx="72" cy="1784" r="1.4" fill="#b69d83" opacity="0.43"/><circle cx="212" cy="2229" r="2.7" fill="#d4c4aa" opacity="0.37"/><circle cx="144" cy="1977" r="2.7" fill="#b69d83" opacity="0.52"/><circle cx="1374" cy="2229" r="3.5" fill="#d4c4aa" opacity="0.37"/><circle cx="130" cy="1925" r="1.4" fill="#d4c4aa" opacity="0.27"/><circle cx="207" cy="965" r="1.4" fill="#d4c4aa" opacity="0.43"/><circle cx="1535" cy="2258" r="1.4" fill="#d4c4aa" opacity="0.52"/><circle cx="117" cy="2030" r="3.5" fill="#c4ae95" opacity="0.52"/><circle cx="1340" cy="2085" r="1.4" fill="#a9ab8d" opacity="0.37"/><circle cx="54" cy="952" r="3.5" fill="#b69d83" opacity="0.37"/><circle cx="141" cy="2182" r="2.0" fill="#a9ab8d" opacity="0.52"/><circle cx="247" cy="1418" r="3.5" fill="#c4ae95" opacity="0.37"/><circle cx="1439" cy="1564" r="3.5" fill="#d4c4aa" opacity="0.43"/><circle cx="1471" cy="1817" r="3.5" fill="#b69d83" opacity="0.43"/><circle cx="139" cy="1053" r="1.4" fill="#d4c4aa" opacity="0.43"/><circle cx="1318" cy="1695" r="2.0" fill="#c4ae95" opacity="0.37"/><circle cx="1414" cy="1084" r="2.7" fill="#a9ab8d" opacity="0.27"/><circle cx="1354" cy="2460" r="2.0" fill="#b69d83" opacity="0.27"/><circle cx="212" cy="2414" r="2.7" fill="#c4ae95" opacity="0.27"/><circle cx="1387" cy="1456" r="2.7" fill="#b69d83" opacity="0.27"/><circle cx="161" cy="1703" r="1.4" fill="#b69d83" opacity="0.37"/><circle cx="188" cy="907" r="2.7" fill="#c4ae95" opacity="0.52"/><circle cx="1511" cy="2103" r="2.0" fill="#d4c4aa" opacity="0.52"/><circle cx="1496" cy="2244" r="3.5" fill="#c4ae95" opacity="0.43"/><circle cx="1317" cy="978" r="2.7" fill="#c4ae95" opacity="0.27"/><circle cx="243" cy="1468" r="2.7" fill="#a9ab8d" opacity="0.27"/><circle cx="87" cy="2337" r="1.4" fill="#b69d83" opacity="0.37"/><circle cx="211" cy="1930" r="3.5" fill="#a9ab8d" opacity="0.43"/><circle cx="226" cy="1710" r="3.5" fill="#a9ab8d" opacity="0.37"/><circle cx="1508" cy="1235" r="2.0" fill="#a9ab8d" opacity="0.27"/><circle cx="1550" cy="893" r="2.7" fill="#c4ae95" opacity="0.37"/><circle cx="75" cy="2143" r="2.7" fill="#c4ae95" opacity="0.43"/><circle cx="1429" cy="975" r="1.4" fill="#a9ab8d" opacity="0.37"/><circle cx="234" cy="2386" r="2.7" fill="#c4ae95" opacity="0.37"/><circle cx="1540" cy="1627" r="3.5" fill="#c4ae95" opacity="0.37"/><circle cx="1383" cy="1184" r="1.4" fill="#c4ae95" opacity="0.52"/><circle cx="49" cy="2488" r="2.7" fill="#c4ae95" opacity="0.43"/><circle cx="81" cy="1142" r="2.7" fill="#b69d83" opacity="0.52"/><circle cx="110" cy="1639" r="1.4" fill="#a9ab8d" opacity="0.52"/><circle cx="163" cy="1543" r="2.0" fill="#a9ab8d" opacity="0.43"/><circle cx="176" cy="1464" r="3.5" fill="#a9ab8d" opacity="0.27"/><circle cx="1521" cy="2100" r="2.0" fill="#b69d83" opacity="0.37"/><circle cx="104" cy="1504" r="1.4" fill="#b69d83" opacity="0.43"/><circle cx="218" cy="990" r="2.0" fill="#a9ab8d" opacity="0.37"/><circle cx="197" cy="1077" r="1.4" fill="#d4c4aa" opacity="0.43"/><circle cx="1365" cy="2123" r="3.5" fill="#d4c4aa" opacity="0.27"/><circle cx="1488" cy="1997" r="2.7" fill="#b69d83" opacity="0.27"/><circle cx="1558" cy="2455" r="2.7" fill="#a9ab8d" opacity="0.37"/><circle cx="1564" cy="1525" r="2.7" fill="#d4c4aa" opacity="0.52"/><circle cx="1405" cy="1502" r="2.0" fill="#c4ae95" opacity="0.43"/><circle cx="225" cy="1699" r="3.5" fill="#a9ab8d" opacity="0.52"/><circle cx="1365" cy="1408" r="2.7" fill="#d4c4aa" opacity="0.43"/><circle cx="1424" cy="1157" r="2.0" fill="#b69d83" opacity="0.43"/><circle cx="1510" cy="1461" r="1.4" fill="#c4ae95" opacity="0.52"/><circle cx="78" cy="1549" r="3.5" fill="#c4ae95" opacity="0.43"/><circle cx="234" cy="982" r="2.7" fill="#c4ae95" opacity="0.37"/><circle cx="1548" cy="1544" r="2.7" fill="#b69d83" opacity="0.27"/><circle cx="1366" cy="2410" r="2.7" fill="#b69d83" opacity="0.37"/><circle cx="1568" cy="2479" r="2.7" fill="#b69d83" opacity="0.37"/><circle cx="35" cy="1963" r="2.7" fill="#a9ab8d" opacity="0.52"/><circle cx="117" cy="1282" r="3.5" fill="#a9ab8d" opacity="0.27"/><circle cx="168" cy="917" r="2.0" fill="#a9ab8d" opacity="0.52"/><circle cx="1480" cy="2207" r="2.7" fill="#d4c4aa" opacity="0.43"/><circle cx="197" cy="1860" r="3.5" fill="#a9ab8d" opacity="0.27"/><circle cx="1434" cy="1844" r="2.0" fill="#c4ae95" opacity="0.43"/><circle cx="234" cy="1909" r="1.4" fill="#d4c4aa" opacity="0.27"/><circle cx="1457" cy="2346" r="1.4" fill="#c4ae95" opacity="0.52"/><circle cx="203" cy="1511" r="1.4" fill="#a9ab8d" opacity="0.43"/><circle cx="226" cy="1941" r="1.4" fill="#d4c4aa" opacity="0.37"/><circle cx="249" cy="1289" r="2.0" fill="#c4ae95" opacity="0.52"/><circle cx="1491" cy="1139" r="2.0" fill="#a9ab8d" opacity="0.37"/><circle cx="103" cy="2352" r="1.4" fill="#c4ae95" opacity="0.43"/><circle cx="1441" cy="1226" r="2.0" fill="#d4c4aa" opacity="0.37"/><circle cx="57" cy="1242" r="3.5" fill="#d4c4aa" opacity="0.27"/><circle cx="1568" cy="1475" r="1.4" fill="#d4c4aa" opacity="0.52"/><circle cx="196" cy="1177" r="3.5" fill="#b69d83" opacity="0.27"/><circle cx="1436" cy="1053" r="1.4" fill="#a9ab8d" opacity="0.37"/><circle cx="246" cy="1044" r="2.0" fill="#a9ab8d" opacity="0.37"/><circle cx="1413" cy="2215" r="2.0" fill="#d4c4aa" opacity="0.52"/><circle cx="1412" cy="1800" r="3.5" fill="#d4c4aa" opacity="0.27"/><circle cx="130" cy="1292" r="2.7" fill="#a9ab8d" opacity="0.27"/><circle cx="134" cy="1212" r="3.5" fill="#b69d83" opacity="0.37"/><circle cx="1452" cy="2187" r="3.5" fill="#b69d83" opacity="0.52"/><circle cx="1444" cy="1927" r="3.5" fill="#a9ab8d" opacity="0.27"/><circle cx="1418" cy="2484" r="3.5" fill="#d4c4aa" opacity="0.27"/><circle cx="197" cy="2289" r="3.5" fill="#d4c4aa" opacity="0.43"/><circle cx="1446" cy="1978" r="1.4" fill="#b69d83" opacity="0.27"/><circle cx="1360" cy="1003" r="3.5" fill="#d4c4aa" opacity="0.27"/><circle cx="193" cy="1173" r="1.4" fill="#d4c4aa" opacity="0.27"/><circle cx="160" cy="1204" r="1.4" fill="#b69d83" opacity="0.43"/><circle cx="1462" cy="2328" r="2.0" fill="#c4ae95" opacity="0.52"/><circle cx="154" cy="2274" r="2.7" fill="#d4c4aa" opacity="0.27"/><circle cx="1399" cy="1861" r="2.0" fill="#b69d83" opacity="0.52"/><circle cx="225" cy="2069" r="3.5" fill="#a9ab8d" opacity="0.52"/><circle cx="47" cy="2355" r="2.7" fill="#a9ab8d" opacity="0.43"/><circle cx="1318" cy="1407" r="2.0" fill="#b69d83" opacity="0.43"/><circle cx="1392" cy="1304" r="3.5" fill="#b69d83" opacity="0.27"/><circle cx="235" cy="1711" r="2.0" fill="#b69d83" opacity="0.43"/><circle cx="1441" cy="2399" r="1.4" fill="#c4ae95" opacity="0.37"/><ellipse cx="136" cy="1064" rx="20" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-20 136 1064)"/><ellipse cx="264" cy="1718" rx="11" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(8 264 1718)"/><ellipse cx="174" cy="1086" rx="7" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-22 174 1086)"/><ellipse cx="1511" cy="1577" rx="7" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(12 1511 1577)"/><ellipse cx="305" cy="1333" rx="20" ry="3" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(0 305 1333)"/><ellipse cx="1471" cy="1457" rx="7" ry="3" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-22 1471 1457)"/><ellipse cx="222" cy="1836" rx="20" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-11 222 1836)"/><ellipse cx="146" cy="1341" rx="15" ry="5" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(19 146 1341)"/><ellipse cx="111" cy="2332" rx="7" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-14 111 2332)"/><ellipse cx="1394" cy="2150" rx="11" ry="8" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-11 1394 2150)"/><ellipse cx="306" cy="2003" rx="7" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(22 306 2003)"/><ellipse cx="1560" cy="2009" rx="15" ry="3" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(21 1560 2009)"/><ellipse cx="35" cy="2200" rx="7" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-3 35 2200)"/><ellipse cx="320" cy="2207" rx="15" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-22 320 2207)"/><ellipse cx="1359" cy="1048" rx="7" ry="3" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(8 1359 1048)"/><ellipse cx="282" cy="1315" rx="7" ry="3" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(17 282 1315)"/><ellipse cx="1345" cy="2070" rx="15" ry="3" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(16 1345 2070)"/><ellipse cx="102" cy="1595" rx="20" ry="8" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-16 102 1595)"/><ellipse cx="191" cy="1455" rx="20" ry="5" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(6 191 1455)"/><ellipse cx="1498" cy="1599" rx="20" ry="5" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-12 1498 1599)"/><ellipse cx="305" cy="1198" rx="11" ry="8" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(3 305 1198)"/><ellipse cx="191" cy="1450" rx="11" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(16 191 1450)"/><ellipse cx="299" cy="1676" rx="15" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(2 299 1676)"/><ellipse cx="1447" cy="2410" rx="11" ry="3" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-3 1447 2410)"/><ellipse cx="125" cy="1066" rx="20" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-14 125 1066)"/><ellipse cx="217" cy="1901" rx="15" ry="8" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(16 217 1901)"/><ellipse cx="1557" cy="2042" rx="20" ry="3" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(18 1557 2042)"/><ellipse cx="1416" cy="2085" rx="15" ry="5" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-8 1416 2085)"/><ellipse cx="1539" cy="1017" rx="20" ry="8" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-7 1539 1017)"/><ellipse cx="218" cy="2135" rx="7" ry="3" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-11 218 2135)"/><ellipse cx="226" cy="1994" rx="20" ry="8" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(1 226 1994)"/><ellipse cx="304" cy="1053" rx="7" ry="3" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-15 304 1053)"/><ellipse cx="202" cy="1926" rx="20" ry="3" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-3 202 1926)"/><ellipse cx="1303" cy="997" rx="11" ry="5" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(4 1303 997)"/><ellipse cx="1367" cy="1193" rx="15" ry="8" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-15 1367 1193)"/><ellipse cx="202" cy="1167" rx="20" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(13 202 1167)"/><ellipse cx="92" cy="1857" rx="20" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(6 92 1857)"/><ellipse cx="1499" cy="2009" rx="15" ry="8" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-19 1499 2009)"/><ellipse cx="117" cy="1824" rx="15" ry="8" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(11 117 1824)"/><ellipse cx="1325" cy="1498" rx="11" ry="3" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(16 1325 1498)"/><ellipse cx="1402" cy="2231" rx="7" ry="8" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(1 1402 2231)"/><ellipse cx="1312" cy="1145" rx="15" ry="5" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(15 1312 1145)"/><ellipse cx="144" cy="1626" rx="20" ry="5" fill="#b49a80" fill-opacity="0.22" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(13 144 1626)"/><ellipse cx="1539" cy="2238" rx="15" ry="5" fill="#b49a80" fill-opacity="0.4" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-6 1539 2238)"/><ellipse cx="1353" cy="1415" rx="15" ry="5" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(-15 1353 1415)"/><ellipse cx="151" cy="2231" rx="15" ry="8" fill="#b49a80" fill-opacity="0.32" stroke="#a28d73" stroke-opacity=".28" stroke-width="1.6" transform="rotate(18 151 2231)"/><g fill="none" stroke="#9a8c74" stroke-width="2" opacity=".35" stroke-linecap="round"><path d="M92 1692q37-17 84 0 M1384 1715q41-15 91-3 M52 1892q45-11 91 2 M1409 1914q46-17 105-6 M60 2375q66-25 128-7 M1402 2432q63-26 139-8"/></g>
+
+<!-- Discreet prehistoric finds, set between text cards and below the root zone. -->
+<g aria-hidden="true">
+  <!-- Large theropod skeleton inside an old sediment layer, unobstructed by the cards. -->
+  <use href="#fossil-theropod" transform="translate(571 1258) scale(.80)" opacity=".87"/>
+  <!-- A coiled ammonite and small fossil fragments, one layer deeper. -->
+  <use href="#fossil-ammonite" transform="translate(148 1828) rotate(-13 80 80) scale(.80)" opacity=".82"/>
+  <use href="#fossil-bone" transform="translate(1371 1369) rotate(27 80 38) scale(.84)" opacity=".69"/>
+  <!-- Ancient aquatic fossil to suggest geological depth. -->
+  <use href="#fossil-fish" transform="translate(986 1848) rotate(-3 169 100) scale(.78)" opacity=".83"/>
+  <use href="#fossil-ammonite" transform="translate(44 2212) rotate(20 80 80) scale(.72)" opacity=".63"/>
+  <use href="#fossil-bone" transform="translate(1443 2254) rotate(-15 80 38) scale(.65)" opacity=".66"/>
+</g>
+</svg>

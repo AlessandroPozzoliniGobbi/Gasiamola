@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="soilBg" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f7faf4"/><stop offset=".38" stop-color="#fbfaf5"/><stop offset="1" stop-color="#f6f0e6"/></linearGradient>
+    <linearGradient id="topBand" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#e3d8bf" stop-opacity=".65"/><stop offset="1" stop-color="#f6efe3" stop-opacity=".06"/></linearGradient>
+  </defs>
+  <rect width="1600" height="620" fill="url(#soilBg)"/>
+  <!-- A soil profile starts below the previous view of the field. -->
+  <path d="M0 20q220-19 404-3t391 0t399-4t406 6v98q-235-15-406-4t-400 0t-400 4T0 111Z" fill="url(#topBand)"/>
+  <path d="M0 20q220-19 404-3t391 0t399-4t406 6" fill="none" stroke="#ad9b78" stroke-width="3" opacity=".55"/>
+  <g fill="none" stroke="#bb9b76" stroke-width="2.2" stroke-linecap="round" opacity=".37">
+    <path d="M0 154q250 21 481-1t426 3t424-3t269-2"/>
+    <path d="M0 490q225-17 453 1t430 0t434-4t283 7"/>
+    <path d="M0 532q272-13 453 7t462-1t429 2t256-2"/>
+  </g>
+  <!-- Left root network, with a little life above the surface. -->
+  <g fill="none" stroke="#79966a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M211 20q-4-30-22-49 M212 20q11-33 28-49"/>
+    <path d="M211 19q-35-35-76-16q19 36 76 16 M213 18q30-34 66-20q-14 36-66 20" fill="#cee0ba" fill-opacity=".7"/>
+  </g>
+  <g fill="none" stroke="#a58668" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M212 20C210 110 222 175 205 247S179 401 207 560"/>
+    <path d="M209 145q-46 29-71 90t-38 111 M205 246q65 34 80 107t7 148 M191 340q-65 18-81 84t-26 125 M200 421q50 11 64 74t23 105"/>
+    <path d="M148 223q-39 6-59 52 M280 336q30 15 39 48 M132 466q-36 11-56 41 M265 511q22 4 35 30 M210 508q-37 26-41 76" stroke-width="2.2"/>
+  </g>
+  <!-- Right-hand roots and shoots form a balancing counterweight. -->
+  <g fill="none" stroke="#829d74" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1390 21q-5-34-30-53 M1390 21q6-34 24-54"/>
+    <path d="M1390 16q-38-35-75-20q18 38 75 20 M1390 16q33-34 72-22q-18 38-72 22" fill="#d5e2c4" fill-opacity=".78"/>
+  </g>
+  <g fill="none" stroke="#a58668" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1390 20Q1402 143 1384 225T1399 390T1386 584"/>
+    <path d="M1395 128q-44 44-57 102t-12 79 M1385 232q67 29 81 97t13 128 M1395 350q-61 34-70 110t-12 120 M1390 448q35 38 42 87t13 66"/>
+    <path d="M1341 227q-33 5-50 30 M1461 332q32 10 42 37 M1329 471q-28 4-43 28 M1425 531q34 1 51 26" stroke-width="2.1"/>
+  </g>
+  <!-- Tiny pebbles, organic texture and seeds. -->
+  <g fill="#d9c4a4" stroke="#bba27f" stroke-width="2" opacity=".83">
+    <path d="M72 365q21-17 44 4l-5 19H74Z"/><path d="M304 221q16-14 31 2l-7 13h-20Z"/>
+    <path d="M1459 504q19-20 44 0l-9 23h-27Z"/><path d="M1284 372q14-13 30 0l-7 16h-20Z"/>
+    <path d="M130 558q15-13 32-1l-7 13h-20Z"/><path d="M1499 242q16-13 30 0l-6 14h-20Z"/>
+  </g>
+  <g fill="#b79a74" opacity=".38">
+    <circle cx="48" cy="217" r="3"/><circle cx="291" cy="277" r="4"/><circle cx="343" cy="395" r="3"/><circle cx="80" cy="447" r="3"/>
+    <circle cx="1320" cy="190" r="3"/><circle cx="1480" cy="315" r="4"/><circle cx="1540" cy="453" r="3"/><circle cx="1284" cy="562" r="4"/>
+    <circle cx="602" cy="564" r="3"/><circle cx="843" cy="583" r="3"/><circle cx="1084" cy="551" r="3"/>
+  </g>
+  <path d="M0 599q252-16 429-5t373 5t393-6t405 3v24H0Z" fill="#e9d8be" fill-opacity=".45"/>
+</svg>
