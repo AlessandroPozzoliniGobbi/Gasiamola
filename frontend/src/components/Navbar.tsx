@@ -9,6 +9,7 @@ import styles from "../styles/Navbar.module.css";
 const navigation = [
   { href: "/", label: "Home" },
   { href: "/progetto", label: "Project" },
+  { href: "/reports", label: "Reports" },
   { href: "/contatti", label: "Team" },
 ];
 
@@ -55,7 +56,7 @@ export default function Navbar() {
         <nav className={styles.navArea} aria-label="Main navigation">
           <div className={styles.links}>
             {navigation.map(({ href, label }) => {
-              const active = pathname === href || (href === "/progetto" && pathname.startsWith("/progetto/"));
+              const active = pathname === href || ((href === "/progetto" || href === "/reports") && pathname.startsWith(`${href}/`));
               return (
                 <Link
                   key={href}

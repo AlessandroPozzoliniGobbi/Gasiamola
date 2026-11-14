@@ -124,3 +124,10 @@
 @media (prefers-reduced-motion: reduce) {
   .brandIcon, .navLink, .settingsLink { transition: none; }
 }
+
+/* Four main links plus Settings: keep mobile navigation compact. */
+@media (max-width: 400px) {
+  .navLink { padding: 0 5px; font-size: 11px; }
+  .settingsLink { flex-basis: 34px; width: 34px; }
+  .links { gap: 0; }
+}
