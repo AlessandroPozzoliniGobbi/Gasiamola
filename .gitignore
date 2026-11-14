@@ -40,3 +40,6 @@ data/raw/gaez/
 uv.lock
 data/raw/ecostress/*/task.json
 data/raw/ecostress/*/*-request.json*
+
+# Dati locali della vecchia struttura backend
+/backend/data/
