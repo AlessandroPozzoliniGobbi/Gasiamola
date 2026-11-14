@@ -1,0 +1,15 @@
+{
+  "file": "anagrafica_precipitazione.json",
+  "source": "arpa",
+  "product": "Stazioni Idro Nivo Meteorologiche",
+  "version": "nf78-nj6b; scaricata il 2026-11-11 (righe: 325)",
+  "url": "https://www.dati.lombardia.it/resource/nf78-nj6b.json",
+  "params": {
+    "$where": "tipologia='Precipitazione'",
+    "$limit": "50000"
+  },
+  "downloaded_at_utc": "2026-11-11T16:19:08+00:00",
+  "bytes": 129158,
+  "sha256": "5e7012185eba54de29aa9e1947ed49b0cccaa0e24342126ae8f9add27aef56c3",
+  "notes": "Anagrafica dei sensori di precipitazione (datastart/datastop = periodo di attivita')."
+}

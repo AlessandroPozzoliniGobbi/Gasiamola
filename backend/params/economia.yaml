@@ -1,0 +1,49 @@
+_meta:
+  descrizione: "Prezzi e costi unitari per il margine su concime e acqua (ranking 'profitto'). Solo i costi che il modello simula: concime azotato e irrigazione. Seme, difesa, meccanizzazione e costi fissi sono esclusi per scelta."
+  compilato_il: "2026-11-14"
+
+prezzi_eur_t:
+  mais:
+    valore: 254.0
+    unita: "EUR/t (granella nazionale comune ibrida, prod. 2026)"
+    fonte: "Borsa Merci Piacenza, seduta del 5 novembre 2026 (riportata da ilPiacenza, 11 novembre 2026); Listino Camera di Commercio Emilia-Romagna n. 21 del 22 ottobre 2026"
+    riferimento: "Granoturco nazionale comune ibrido produzione 2026: 251-257 EUR/t (Piacenza 5/11); 256-262 EUR/t (Emilia-Romagna 22/10)"
+    url: "https://www.ilpiacenza.it/economia/prezzi-all-ingrosso-in-calo-il-grana-padano-granoturco-e-soia-aumenti-per-foraggi-e-farine.html"
+    nota: "Punto medio del range di Piacenza. Piazza vicina, non Cremona: il bollettino CCIAA Cremona non era raggiungibile. Prezzo statico di fine 2026: il margine assoluto cambia con il prezzo, il confronto tra rotazioni dipende dai rapporti tra i prezzi."
+    verificato: false
+    sensibilita: true
+  soia:
+    valore: 505.0
+    unita: "EUR/t (soia nazionale in granella, prod. 2026)"
+    fonte: "Borsa Merci Piacenza, seduta del 5 novembre 2026 (riportata da ilPiacenza, 11 novembre 2026); Listino Camera di Commercio Emilia-Romagna n. 21 del 22 ottobre 2026"
+    riferimento: "Soia in granella: 503-507 EUR/t (Piacenza 5/11); 509-513 EUR/t (Emilia-Romagna 22/10)"
+    url: "https://www.ilpiacenza.it/economia/prezzi-all-ingrosso-in-calo-il-grana-padano-granoturco-e-soia-aumenti-per-foraggi-e-farine.html"
+    nota: "Punto medio del range di Piacenza. Piazza vicina, non Cremona."
+    verificato: false
+    sensibilita: true
+  frumento:
+    valore: 272.0
+    unita: "EUR/t (frumento tenero nazionale, prod. 2026)"
+    fonte: "Listino dei Prezzi all'Ingrosso Cereali, Camera di Commercio Emilia-Romagna, n. 21 del 22 ottobre 2026"
+    riferimento: "Frumento tenero nazionale prod. 2026: 270-274 EUR/t"
+    url: "https://prezzi.emilia.camcom.it/dataentry/site/ingrosso/lists/download/pdf?category=3741"
+    nota: "Punto medio del range. Il listino di Piacenza del 5/11 lo dava stabile senza cifra nel testo letto. Piazza vicina, non Cremona."
+    verificato: false
+    sensibilita: true
+
+azoto_eur_kg_n:
+  valore: 1.4
+  unita: "EUR/kg N"
+  assunzione: true
+  motivazione: "Urea (46% N) intorno a 640 EUR/t in Francia il 2 novembre 2026 (605-745 EUR/t in Germania il 3 novembre), cioe' 637/460 = 1,38 EUR/kg N. Nessun listino italiano aggiornato trovato; l'urea italiana e' passata da 530 a 700 EUR/t tra febbraio e marzo 2026, quindi il prezzo e' molto volatile. Il quantitativo di azoto del modello non e' validato su dati osservati."
+  nota: "Prezzo dell'azoto puro, non del formulato: se si usa un altro concime dividere il prezzo per la frazione di N."
+  verificato: false
+
+irrigazione_eur_mm:
+  valore: 0.8
+  unita: "EUR/ha per mm di acqua distribuita"
+  assunzione: true
+  motivazione: "Dalla tabella 'Analisi economica' di Vigo (UniMi, progetto SMART WUE, 5 aziende maidicole lombarde, 2024): costo di irrigazione EUR/ha diviso i mm distribuiti (volume m3/ha / 10): scorrimento 0,28, pivot 0,82, microirrigazione 1,47, rotolone 1,58 EUR/ha/mm. Scelto il valore del pivot, tra lo scorrimento (circa 70% del mais lombardo) e i metodi piu' cari. E' costo di impianto e uso (ammortamento, manutenzione), non include il contributo consortile, che e' dovuto anche senza prelievo."
+  nota: "Stima da 5 aziende, non una tariffa. Intervallo osservato 0,28-1,58."
+  verificato: false
+  intervallo: [0.28, 1.58]

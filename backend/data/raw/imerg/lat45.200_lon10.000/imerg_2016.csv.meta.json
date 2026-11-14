@@ -1,0 +1,69 @@
+{
+  "file": "imerg_2016.csv",
+  "source": "imerg",
+  "product": "GPM_3IMERGDF",
+  "version": "07",
+  "url": "https://doi.org/10.5067/GPM/IMERGDF/DAY/07",
+  "params": {
+    "format": "block2x2-v1",
+    "lat": 45.2,
+    "lon": 10.0,
+    "interpolation": "bilineare dei centri delle quattro celle piu' vicine",
+    "cells": [
+      {
+        "column": "precip_lat45.150_lon9.950",
+        "i_lon": 1899,
+        "i_lat": 1351,
+        "lat": 45.15,
+        "lon": 9.95,
+        "weight": 0.25
+      },
+      {
+        "column": "precip_lat45.250_lon9.950",
+        "i_lon": 1899,
+        "i_lat": 1352,
+        "lat": 45.25,
+        "lon": 9.95,
+        "weight": 0.25
+      },
+      {
+        "column": "precip_lat45.150_lon10.050",
+        "i_lon": 1900,
+        "i_lat": 1351,
+        "lat": 45.15,
+        "lon": 10.05,
+        "weight": 0.25
+      },
+      {
+        "column": "precip_lat45.250_lon10.050",
+        "i_lon": 1900,
+        "i_lat": 1352,
+        "lat": 45.25,
+        "lon": 10.05,
+        "weight": 0.25
+      }
+    ],
+    "nearest_column": "precip_lat45.250_lon10.050",
+    "i_lon0": 1899,
+    "i_lat0": 1351,
+    "cell_size_deg": 0.1,
+    "variable": "precipitation",
+    "units": "mm/day",
+    "fill_value": -9999.9,
+    "fill_policy": "valori di riempimento e negativi salvati come vuoto (NaN)",
+    "dimension_order": "time, lon, lat",
+    "access": "opendap",
+    "doi": "10.5067/GPM/IMERGDF/DAY/07",
+    "tie_rule": "cella piu' vicina a parita' -> nord-est",
+    "window_start": "2016-01-01",
+    "window_end": "2016-12-31",
+    "n_granules_cmr": 366,
+    "year": 2016,
+    "complete": true,
+    "n_rows": 366
+  },
+  "downloaded_at_utc": "2026-11-12T14:58:06+00:00",
+  "bytes": 18482,
+  "sha256": "5ce95d5c2cfedab74829187383cb2fa12ddd37065087662f0bebb4e82d6bf7bc",
+  "notes": "precipitazione giornaliera IMERG Final V07, blocco 2x2 di celle da 0,1 gradi"
+}

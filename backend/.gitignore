@@ -1,0 +1,42 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.DS_Store
+# credenziali: mai nel repository
+.netrc
+.env
+# file temporanei di graphify
+graphify-out/.graphify_*
+graphify-out/cache/
+# stato di strumenti locali: non fa parte del progetto
+.omc/
+.claude/
+.codex/
+runs.pkl
+data/raw/istat/_ratelimit/
+data/logs/
+# fuori dal repository pubblico: qui solo motore e backend (restano in locale)
+app/
+tests/test_app.py
+graphify-out/
+legacy/
+experiments/
+CLAUDE.md
+AGENTS.md
+PLAN.md
+AI_USAGE.md
+reports/FIELDWISE_report.*
+reports/build_report.py
+reports/*_review.md
+reports/aggiornamento_q10.md
+reports/esperimenti_dati_nuovi*.md
+data/processed/esperimenti/
+data/raw/landsat/
+data/raw/sentinel2/
+data/raw/worldcover/
+data/raw/gaez/
+.graphifyignore
+uv.lock
+data/raw/ecostress/*/task.json
+data/raw/ecostress/*/*-request.json*

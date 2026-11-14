@@ -1,0 +1,2 @@
+# dati scaricati: byte per byte come alla fonte (le impronte sha256 nei .meta.json devono restare valide)
+data/** -text

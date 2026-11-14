@@ -1,0 +1,84 @@
+{
+  "stations": [
+    {
+      "sensor_id": "2492",
+      "station": "Persico Dosimo",
+      "station_id": "136",
+      "lat": 45.17951839,
+      "lon": 10.0449444,
+      "quota_m": "44",
+      "dist_km": 4.194,
+      "role": "primary",
+      "datastart": "1990-10-17T00:00:00.000",
+      "datastop": null
+    }
+  ],
+  "convention": "Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente.",
+  "datasets": [
+    {
+      "id": "e7r2-7m84",
+      "name": "Precipitazioni fino al 2010",
+      "first": 0,
+      "last": 2010,
+      "updated": "2025-05-07T04:06:48.000Z"
+    },
+    {
+      "id": "2kar-pnuk",
+      "name": "Precipitazioni dal 2011 al 2020",
+      "first": 2011,
+      "last": 2020,
+      "updated": "2025-05-08T02:41:46.000Z"
+    },
+    {
+      "id": "pstb-pga6",
+      "name": "Precipitazioni dal 2021",
+      "first": 2021,
+      "last": 9999,
+      "updated": "2026-03-06T17:54:22.000Z"
+    }
+  ],
+  "start_year": 2000,
+  "end_year": 2025,
+  "temperature": {
+    "stations": [
+      {
+        "sensor_id": "2485",
+        "station": "Persico Dosimo",
+        "station_id": "136",
+        "lat": 45.17951839,
+        "lon": 10.0449444,
+        "quota_m": "44",
+        "dist_km": 4.194,
+        "role": "primary",
+        "datastart": "1993-01-01T00:00:00.000",
+        "datastop": null
+      }
+    ],
+    "convention": "Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente.",
+    "datasets": [
+      {
+        "id": "6eu4-4tja",
+        "name": "Temperatura fino al 2010",
+        "first": 0,
+        "last": 2010,
+        "updated": "2025-05-06T16:42:07.000Z"
+      },
+      {
+        "id": "d4kj-kbpj",
+        "name": "Temperatura dal 2011 al 2020",
+        "first": 2011,
+        "last": 2020,
+        "updated": "2025-05-07T19:53:27.000Z"
+      },
+      {
+        "id": "w9wd-u6jh",
+        "name": "Temperatura dal 2021",
+        "first": 2021,
+        "last": 9999,
+        "updated": "2026-03-06T20:50:13.000Z"
+      }
+    ],
+    "start_year": 2000,
+    "end_year": 2025
+  }
+}

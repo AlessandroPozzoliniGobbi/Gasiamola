@@ -1,0 +1,986 @@
+# FIELDWISE - regole di avvicendamento e penalita' di rotazione
+# Generato da uno script a partire dalle regole trascritte; vedi _meta e docs/fonti_rotation_heat_cover.md
+_meta:
+  descrizione: Regole di avvicendamento (disciplinari di produzione integrata Lombardia ed Emilia-Romagna 2026), penalita'
+    di resa per monosuccessione e famiglie botaniche per mais da granella, soia, frumento tenero.
+  compilato_il: '2026-11-11'
+  fonti_dettaglio: docs/fonti_rotation_heat_cover.md
+  natura_delle_regole: 'I disciplinari di produzione integrata sono ad adesione VOLONTARIA (SQNPI, intervento SRA01 del CSR,
+    marchio QC). Una rotazione ''non_conforme'' NON e'' vietata per legge: non da'' diritto ai premi/al marchio. Il motore
+    deve mostrarla con l''etichetta ''non conforme al disciplinare'' e non nasconderla. Le avvertenze agronomiche (sezione
+    avvertenze) sono un livello distinto: ''sconsigliato'', non ''vietato''.'
+  valori_stato_conformita:
+  - conforme
+  - conforme_solo_in_deroga
+  - non_conforme
+  come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale: 'La rotazione triennale A-B-C e'' ripetuta ciclicamente
+    (A B C A B C ...). Si valutano TUTTE le finestre di 5 anni consecutivi (una per ciascuna delle 3 fasi del ciclo, cioe''
+    per ogni possibile anno di inizio dell''impegno). In ogni finestra: (1) si contano i ristoppi per coltura = coppie di
+    anni consecutivi con la stessa coltura o con colture ''analoghe'' (cereali autunno-vernini tra loro); (2) si contano le
+    colture principali diverse = generi botanici diversi (ER cap. 7: ''Colture diverse: colture che non appartengono allo
+    stesso genere botanico''). La rotazione e'' conforme solo se lo e'' in tutte le finestre: l''ER chiede che la regola delle
+    tre colture sia rispettata ''sempre nel corso di tutti gli anni di impegno''. Per l''ER si include nella finestra anche
+    l''anno precedente l''impegno (prima adesione: ''deve essere presa in considerazione la coltura dell''anno precedente'').
+    Le cover crop, i sovesci e i secondi raccolti non contano e non interrompono un ristoppio (Lombardia punto I; ER cap.
+    7: due mais da granella intervallati da un sovescio autunno-vernino restano un ristoppio). Conseguenza per i cicli di
+    3 anni: un ciclo con due colture (A-A-B) ha in qualche finestra di 5 anni due ristoppi di A, quindi non e'' mai conforme
+    alla norma quinquennale, mentre e'' esplicitamente ammesso dall''impegno triennale lombardo SRA01 2026 (''coltura A -
+    coltura A - coltura B'').'
+  cosa_vieta_e_cosa_no: 'Tra mais, soia e frumento tenero i disciplinari NON vietano alcuna successione tra colture diverse
+    (i divieti di precessione dell''ER riguardano soia con colza, girasole e fagiolo, non le nostre colture). Limitano solo
+    i ristoppi e impongono un numero minimo di colture. Differenza tra le due regioni: in Lombardia ogni coltura ammette un
+    ristoppio nel quinquennio; in Emilia-Romagna la soia non ammette ristoppio. Nessuna delle due fissa per queste tre colture
+    un intervallo minimo di ritorno in anni (intervalli espliciti esistono solo per barbabietola, riso, orticole).'
+  uso_dei_fattori_di_resa: 'f_rotazione moltiplica la resa della coltura nell''anno in cui la coltura principale precedente
+    e'' la stessa coltura (le cover crop non interrompono il ristoppio). Regola per la rotazione triennale ripetuta (A B C
+    A B C ...): il motore guarda le due colture principali precedenti. (1) Coltura precedente diversa: f = 1. (2) Precedente
+    uguale e quella di due anni prima diversa: fattore ''primo_ristoppio''. (3) Precedente e quella di due anni prima uguali:
+    fattore ''monosuccessione_continua''. In un ciclo A-A-B ricorre solo il caso (2) una volta ogni 3 anni; in A-A-A il caso
+    (3) ogni anno dal terzo in poi (e (2) nel secondo anno simulato). Scenario d''acqua: mais irriguo (crops.mais.irrigabile
+    = 1) -> mais_dopo_mais.irriguo per (2) e (3); mais non irriguo -> mais_dopo_mais.asciutto.primo_ristoppio e .monosuccessione_continua.
+    Soia: soia_dopo_soia (media in asciutto) per (2) e (3) in tutti e due gli scenari; l''irriguo 0.904 e'' in intervallo.
+    Frumento (non irriguo): frumento_dopo_frumento.primo_ristoppio per (2), .monosuccessione_continua per (3); un cereale
+    autunno-vernino conta come frumento. precessione_favorevole NON si usa (usato_dal_motore: false). Tutti i fattori hanno
+    sensibilita: true.'
+  limiti: 'Nessuna prova di lungo periodo in Pianura Padana con fattore per il mais in monosuccessione e'' stata leggibile
+    ad accesso aperto (Borrelli et al. 2014, Eur. J. Agron. 55:12-19, prova di Lodi dal 1985, e Giacometti et al. 2021, prova
+    di Cadriano (BO) dal 1966: testo non accessibile o senza fattore leggibile). Per il mais e la soia il fattore viene quindi
+    da un grande studio osservazionale USA (Seifert et al. 2017), per il frumento da prove europee di lungo periodo che includono
+    Padova e Bologna (Marini et al. 2020). Per il primo ristoppio del frumento la fonte e'' una sintesi tecnica britannica
+    (AHDB), non una prova padana.'
+  condizioni_delle_prove: 'mais_dopo_mais e soia_dopo_soia (Seifert et al. 2017): studio osservazionale su rese di campi commerciali
+    del Midwest USA 2007-2012 (dati satellitari), irriguo e asciutto separati, concimazione dell''agricoltore non controllata:
+    la penalita'' comprende la risposta all''azoto e le differenze di gestione. frumento_dopo_frumento.monosuccessione_continua
+    (Marini et al. 2020): prove europee di lungo periodo in asciutto, monocoltura pluridecennale contro rotazioni di 4-6 anni
+    con medica, NPK uguale. frumento_dopo_frumento.primo_ristoppio (AHDB): sintesi tecnica britannica sul secondo frumento,
+    frumento in asciutto. Possibile doppio conteggio con il bilancio dell''azoto: le penalita'' osservate contengono in parte
+    un effetto azoto che il motore calcola gia'' (credito di precessione -40 kg N dopo stocchi): variante f = 1 da provare
+    in sensibilita''.'
+  rivisto_il: 2026-11-12 (mais irriguo/asciutto, primo ristoppio e monosuccessione del frumento, condizione della soia, precessione
+    non usata, successioni_vietate derivate)
+disciplinari:
+  lombardia:
+    n_min_colture_principali_quinquennio:
+      valore: 3
+      unita: colture
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 'Successione colturale', punto 1, p. 6
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'Testo: ''Nel caso di impegni quinquennali le aziende devono adottare un avvicendamento quinquennale che comprenda
+        almeno tre colture principali e preveda al massimo un ristoppio per ogni coltura (es. "coltura A - coltura A - coltura
+        B - coltura C - coltura B" ...)''. Applicazione per l''intera superficie aziendale.'
+      verificato: true
+    n_min_colture_principali_quinquennio_deroga:
+      valore: 2
+      unita: colture
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7, punto 1, p. 6 (casi I-IV)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'Ammesso solo se il criterio generale e'' incompatibile con gli assetti aziendali e per: I) aree svantaggiate
+        di montagna o Natura 2000; II) indirizzi colturali specializzati; III) foraggere pluriennali; IV) seminativi < 5 ha
+        in aziende viticole/frutticole. Un''azienda cerealicola di pianura a Cremona ricade al piu'' nel caso II: va dichiarato
+        all''utente.'
+      verificato: true
+    max_ristoppi_per_coltura_quinquennio:
+      valore: 1
+      unita: ristoppi
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7, punto 1, p. 6
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'Vale per ogni coltura, comprese mais, soia e frumento (nessuna scheda di coltura lombarda 2026 aggiunge vincoli:
+        l''Allegato 3 ''Colture erbacee'' contiene solo le schede di concimazione).'
+      verificato: true
+    n_min_colture_principali_impegno_triennale:
+      valore: 2
+      unita: colture
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7, punto 1, p. 6
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'Testo: ''Nel caso di impegni triennali (adesione all''intervento SRA01 nell''anno 2026) le aziende devono adottare
+        un avvicendamento triennale che comprenda almeno due colture principali diverse e preveda al massimo un ristoppio
+        per ogni coltura (es. "coltura A - coltura A - coltura B" ...)''.'
+      verificato: true
+    max_ristoppi_per_coltura_impegno_triennale:
+      valore: 1
+      unita: ristoppi
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7, punto 1, p. 6
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: ''
+      verificato: true
+    cereali_autunno_vernini_analoghi:
+      valore: frumento tenero, frumento duro, orzo, ecc.
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7, punto A, p. 7
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: '''i cereali autunno-vernini (frumento tenero e duro, orzo, ecc.) sono considerati colture analoghe ai fini del
+        ristoppio''. Il mais (primaverile-estivo) non e'' analogo al frumento.'
+      verificato: true
+    cover_crop_non_contano:
+      valore: le colture da sovescio e le cover crops non vengono considerate ai fini della successione colturale
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7, punto I, p. 7
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: ''
+      verificato: true
+    adesione_per_singola_coltura:
+      valore: solo vincoli di ristoppio, intervallo minimo di rientro ed eventuali restrizioni
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7, punto 2, pp. 6-7
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: Per mais, soia e frumento la Lombardia non fissa intervalli minimi di rientro specifici.
+      verificato: true
+  emilia_romagna:
+    n_min_colture_principali_quinquennio:
+      valore: 3
+      unita: colture
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Avvicendamento - Norme di rotazione', p. 8
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'Testo: ''Le aziende devono adottare, per le colture principali, una successione minima quinquennale, che comprenda
+        almeno 3 colture principali diverse. Nei 5 anni e'' possibile effettuare al massimo un ristoppio per coltura delle
+        sole colture indicate nell''allegato 1''. La regola va rispettata ''sempre nel corso di tutti gli anni di impegno''.'
+      verificato: true
+    colture_diverse_definizione:
+      valore: colture che non appartengono allo stesso genere botanico
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7, p. 8
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: ''
+      verificato: true
+    max_ristoppi_quinquennio:
+      mais:
+        valore: 1
+        unita: ristoppi
+        fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+        riferimento: Allegato 1, riga Mais, p. 50; NTA mais 2026 'Avvicendamento colturale'
+        url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+        nota: '''E'' ammesso il ristoppio che puo'' essere effettuato una sola volta nell''arco del quinquennio.'''
+        verificato: true
+      frumento_tenero:
+        valore: 1
+        unita: ristoppi
+        fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+        riferimento: Allegato 1, riga Frumento tenero, p. 50; NTA frumento 2026
+        url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+        nota: Il frumento tenero dopo avena, farro, frumento duro, orzo, segale, triticale e' un ristoppio.
+        verificato: true
+      soia:
+        valore: 0
+        unita: ristoppi
+        fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+        riferimento: Allegato 1, riga Soia, p. 51; NTA soia 2026 'Avvicendamento colturale'
+        url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+        nota: '''Non e'' ammesso il ristoppio. La soia non deve seguire ne'' precedere il colza, il girasole e il fagiolo.'''
+        verificato: true
+    cereali_autunno_vernini_analoghi:
+      valore: frumento tenero, frumento duro, orzo, ...
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7, p. 8
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: '''I cereali autunno-vernini, che presentano problematiche fitosanitarie simili, sono considerati colture analoghe
+        ai fini del ristoppio. Ad esempio, la successione tra frumento tenero e Orzo si configura come un ristoppio.'''
+      verificato: true
+    colture_secondarie_e_sovesci_non_contano:
+      valore: secondi raccolti, intercalari e sovesci (ciclo < 120 giorni) non modificano i vincoli tra colture principali
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7, pp. 8-9
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: '''la successione tra due mais da granella anche se intervallata da un mais da trinciato e/o da sovescio autunno-vernino
+        e'' considerato un ristoppio''. Coltura secondaria: ciclo inferiore a 120 giorni.'
+      verificato: true
+    anno_precedente_conta:
+      valore: alla prima adesione la coltura dell'anno precedente conta per ristoppio e precessione
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7, p. 8
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: ''
+      verificato: true
+    intervallo_minimo_di_ritorno:
+      valore: nessuno specifico per mais, soia, frumento tenero
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: Allegato 1, pp. 50-51
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: Intervalli in anni sono fissati solo per altre colture (es. barbabietola 3 anni, riso).
+      verificato: true
+successioni_vietate:
+  mais_mais_mais:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di mais (fino a 5 in 5 anni + anno precedente); 1 generi botanici diversi nella rotazione. Esito calcolato
+        dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o
+        3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta
+        nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  mais_mais_soia:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di mais (fino a 2 in 5 anni + anno precedente); 2 generi botanici diversi nella rotazione. Esito calcolato
+        dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o
+        3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta
+        nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  mais_mais_frumento:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di mais (fino a 2 in 5 anni + anno precedente); 2 generi botanici diversi nella rotazione; contiene
+        mais -> frumento: avvertenza fusariosi (vedi avvertenze.mais_frumento_fusariosi). Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  mais_soia_soia:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di soia (fino a 2 in 5 anni + anno precedente); 2 generi botanici diversi nella rotazione. Esito calcolato
+        dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o
+        3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta
+        nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  mais_soia_frumento:
+    lombardia_impegno_quinquennale:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: '3 generi botanici diversi nella rotazione. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  mais_frumento_soia:
+    lombardia_impegno_quinquennale:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: '3 generi botanici diversi nella rotazione; contiene mais -> frumento: avvertenza fusariosi (vedi avvertenze.mais_frumento_fusariosi).
+        Esito calcolato dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le
+        finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  mais_frumento_frumento:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di frumento (fino a 2 in 5 anni + anno precedente); 2 generi botanici diversi nella rotazione; contiene
+        mais -> frumento: avvertenza fusariosi (vedi avvertenze.mais_frumento_fusariosi). Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  soia_soia_soia:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di soia (fino a 5 in 5 anni + anno precedente); 1 generi botanici diversi nella rotazione. Esito calcolato
+        dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o
+        3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta
+        nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  soia_soia_frumento:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di soia (fino a 2 in 5 anni + anno precedente); 2 generi botanici diversi nella rotazione. Esito calcolato
+        dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o
+        3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta
+        nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  soia_frumento_frumento:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di frumento (fino a 2 in 5 anni + anno precedente); 2 generi botanici diversi nella rotazione. Esito
+        calcolato dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre
+        di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non
+        scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+  frumento_frumento_frumento:
+    lombardia_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: 'calcolato applicando: Lombardia Parte generale cap. 7 punto 1 (p. 6) e punto A (p. 7); ER Norme generali
+        cap. 7 (pp. 7-9) e Allegato 1 (pp. 48-51)'
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'ristoppio di frumento (fino a 5 in 5 anni + anno precedente); 1 generi botanici diversi nella rotazione. Esito
+        calcolato dall''autore (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre
+        di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non
+        scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    lombardia_impegno_triennale_SRA01_2026:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Lombardia (2026). Sistemi di produzione integrata nelle filiere agroalimentari - Norme tecniche agronomiche,
+        Parte generale (approvate con D.d.s. n. 3864 del 25/03/2026)
+      riferimento: cap. 7 punto 1, impegni triennali (p. 6)
+      url: https://www.fitosanitario.regione.lombardia.it/wps/wcm/connect/5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c/Tecniche+agronomiche+2026+PARTE+GENERALE.pdf?MOD=AJPERES&CONVERT_TO=URL&CACHEID=ROOTWORKSPACE-5ad93ff9-f46f-45fb-89d7-b0c0524e1f6c-pQ-XV0f
+      nota: 'finestra di 3 anni, tutte le fasi del ciclo. Esito calcolato dall''autore (derivato) applicando le regole lette
+        alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale,
+        non scritta nel disciplinare. verificato si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_impegno_quinquennale:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: cap. 7 'Norme di rotazione' (p. 8) e Allegato 1 (pp. 50-51)
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'finestra di 5 anni piu'' l''anno precedente (prima adesione), tutte le fasi. Esito calcolato dall''autore (derivato)
+        applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+    emilia_romagna_adesione_singola_coltura:
+      valore: non_conforme
+      unita: '-'
+      fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+      riferimento: 'cap. 7 (p. 8: impegni annuali) e Allegato 1 (pp. 50-51)'
+      url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+      nota: 'solo vincoli specifici di coltura (ristoppi), senza la regola delle tre colture. Esito calcolato dall''autore
+        (derivato) applicando le regole lette alla rotazione triennale ripetuta, su tutte le finestre di 5 (o 3) anni: interpretazione
+        in _meta.come_si_confronta_una_rotazione_triennale_con_una_norma_quinquennale, non scritta nel disciplinare. verificato
+        si riferisce alle regole lette.'
+      verificato: true
+      derivato: true
+avvertenze:
+  mais_frumento_fusariosi:
+    valore: sconsigliato senza interramento dei residui
+    unita: '-'
+    fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+    riferimento: Norme tecniche di difesa frumento 2026, 'Fusariosi (Fusarium spp.) - Interventi agronomici'; Allegato 1 Norme
+      generali, riga Frumento duro (p. 50)
+    url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-tecniche-di-coltura/erbacee/erbacee/difesa-frumento-2026.pdf/@@download/file
+    nota: 'Testo: ''dopo mais e sorgo e'' possibile seminare il frumento duro solo dopo l''interramento dei residui colturali'';
+      per alcune cv di tenero (Mieti, Serio, Trofeo) e'' obbligatorio, per le altre cv di frumento tenero ''si consiglia''.
+      Il rischio documentato e'' sanitario (fusariosi della spiga, micotossine); nessuna delle fonti lette quantifica una
+      penalita'' di resa del frumento dopo mais: NON si applica un fattore, si mostra un''avvertenza. La scheda lombarda di
+      difesa del frumento 2026 non contiene questo vincolo (solo ''evitare semine fitte'', ''concimazioni equilibrate'').
+      Mais e frumento appartengono alla stessa famiglia (Poaceae) ma a generi diversi: per i disciplinari sono ''colture diverse''.'
+    verificato: true
+famiglie_botaniche:
+  mais:
+    valore: Poaceae
+    unita: '-'
+    fonte: 'GBIF Backbone Taxonomy (consultata via API species/match): Zea mays L.'
+    riferimento: famiglia Poaceae, genere Zea (usageKey 5290052)
+    url: https://www.gbif.org/species/5290052
+    nota: ''
+    verificato: true
+  frumento:
+    valore: Poaceae
+    unita: '-'
+    fonte: 'GBIF Backbone Taxonomy (consultata via API species/match): Triticum aestivum L.'
+    riferimento: famiglia Poaceae, genere Triticum (usageKey 7795888)
+    url: https://www.gbif.org/species/7795888
+    nota: ''
+    verificato: true
+  soia:
+    valore: Fabaceae
+    unita: '-'
+    fonte: 'GBIF Backbone Taxonomy (consultata via API species/match): Glycine max (L.) Merr.'
+    riferimento: famiglia Fabaceae, genere Glycine (usageKey 5359660)
+    url: https://www.gbif.org/species/5359660
+    nota: ''
+    verificato: true
+  regola_stessa_famiglia:
+    valore: nessun vincolo per famiglia tra mais e frumento; il conteggio usa il genere botanico
+    unita: '-'
+    fonte: Regione Emilia-Romagna (2026). Disciplinari di produzione integrata 2026 - Norme generali (DGR 3130 del 16/02/2026)
+    riferimento: cap. 7, p. 8 (definizione di colture diverse); Allegato 1 esempio 'frumento duro - frumento tenero - orzo
+      - mais'
+    url: https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2026/norme-in-vigore/norme-generali_2026.pdf/@@download/file
+    nota: 'Vincoli per famiglia esistono solo per altre colture (es. barbabietola: no chenopodiacee e crucifere). Il rischio
+      mais -> frumento e'' gestito come avvertenza sanitaria (avvertenze.mais_frumento_fusariosi).'
+    verificato: true
+f_rotazione:
+  mais_dopo_mais:
+    irriguo:
+      valore: 0.983
+      unita: '-'
+      fonte: Seifert C.A., Roberts M.J., Lobell D.B. (2017). Continuous corn and soybean yield penalties across hundreds of
+        thousands of fields. Agronomy Journal 109(2), 541-548, doi:10.2134/agronj2016.03.0134 (open access CC BY-NC-ND)
+      riferimento: 'Results ''Overall Effects'' (p. 543): penalita'' media del mais continuo irriguo 1.7% (0.20 Mg/ha)'
+      url: https://mssoy.org/sites/default/files/documents/seifert-et-al-agron-j-109-2017.pdf
+      nota: 'Scenario d''acqua del motore per il mais (crops.mais.irrigabile = 1). La fonte da'' per l''irriguo solo la media
+        su tutti gli anni di monosuccessione, non i valori anno per anno: lo stesso fattore si applica al primo ristoppio
+        e alla monosuccessione continua. Condizioni della prova: studio osservazionale su 748.374 rese di campi commerciali,
+        Midwest USA, 2007-2012, concimazione praticata dagli agricoltori (non controllata). Stime piu'' alte di altre fonti
+        nell''intervallo: limite inferiore 1/1.16 = 0.862 (Mudare et al. 2025, cereale dopo precessione non leguminosa contro
+        monosuccessione, meta-analisi globale).'
+      verificato: true
+      sensibilita: true
+      intervallo:
+      - 0.862
+      - 0.983
+    asciutto:
+      primo_ristoppio:
+        valore: 0.981
+        unita: '-'
+        fonte: Seifert C.A., Roberts M.J., Lobell D.B. (2017). Continuous corn and soybean yield penalties across hundreds
+          of thousands of fields. Agronomy Journal 109(2), 541-548, doi:10.2134/agronj2016.03.0134 (open access CC BY-NC-ND)
+        riferimento: Results, 'Effects by Years of Continuous Cropping' e Fig. 3 (p. 545)
+        url: https://mssoy.org/sites/default/files/documents/seifert-et-al-agron-j-109-2017.pdf
+        nota: 'Mais in asciutto (Fig. 3 della fonte): ''Penalties for corn tripled from 1.9 to 5.7% between 1 and 2 yr of
+          continuous cropping but then leveled off''. 1 anno di monosuccessione = mais dopo un mais diverso da quello di due
+          anni prima: f = 1 - 0.019. Usato solo nello scenario non irriguo. Condizioni della prova come in irriguo (osservazionale,
+          Midwest USA, concimazione non controllata). Stime piu'' alte di altre fonti: Mudare et al. 2025 (+16%), Bowles et
+          al. 2020 (+28% rotazioni complesse contro semplici). Intervallo = [1 - 0.057, 1 - 0.017].'
+        verificato: true
+        sensibilita: true
+        intervallo:
+        - 0.943
+        - 0.983
+      monosuccessione_continua:
+        valore: 0.943
+        unita: '-'
+        fonte: Seifert C.A., Roberts M.J., Lobell D.B. (2017). Continuous corn and soybean yield penalties across hundreds
+          of thousands of fields. Agronomy Journal 109(2), 541-548, doi:10.2134/agronj2016.03.0134 (open access CC BY-NC-ND)
+        riferimento: Results, 'Effects by Years of Continuous Cropping' e Fig. 3 (p. 545)
+        url: https://mssoy.org/sites/default/files/documents/seifert-et-al-agron-j-109-2017.pdf
+        nota: 'Mais in asciutto, dal 2o anno consecutivo di mais in poi: penalita'' 5.7% (''then leveled off''); media generale
+          in asciutto 4.3% (0.42 Mg/ha). Usato solo nello scenario non irriguo. Intervallo: dal limite inferiore 1/1.16 =
+          0.862 (Mudare et al. 2025, valore globale) a 1 - 0.019 = 0.981.'
+        verificato: true
+        sensibilita: true
+        intervallo:
+        - 0.862
+        - 0.981
+  soia_dopo_soia:
+    valore: 0.897
+    unita: '-'
+    fonte: Seifert C.A., Roberts M.J., Lobell D.B. (2017). Continuous corn and soybean yield penalties across hundreds of
+      thousands of fields. Agronomy Journal 109(2), 541-548, doi:10.2134/agronj2016.03.0134 (open access CC BY-NC-ND)
+    riferimento: Abstract e Results 'Overall Effects' (pp. 541, 543)
+    url: https://mssoy.org/sites/default/files/documents/seifert-et-al-agron-j-109-2017.pdf
+    nota: 'Condizione a cui si riferisce il valore: soia continua IN ASCIUTTO, penalita'' media su tutti gli anni di monosuccessione
+      10.3% (0.32 Mg/ha); in irriguo 9.6% (0.36 Mg/ha), estremo superiore dell''intervallo (1 - 0.096 = 0.904). La penalita''
+      cresce con gli anni di monosuccessione fino a 5 anni, ma il testo non riporta i valori anno per anno (solo Fig. 3, grafico):
+      si usa la media per primo ristoppio e monosuccessione continua. Studio osservazionale USA, concimazione non controllata.
+      Nello scenario irriguo del motore si puo'' usare 0.904 (sensibilita''). Nota: in Emilia-Romagna il ristoppio di soia
+      e'' comunque non conforme.'
+    verificato: true
+    sensibilita: true
+    intervallo:
+    - 0.897
+    - 0.904
+  frumento_dopo_frumento:
+    primo_ristoppio:
+      valore: 0.875
+      unita: '-'
+      fonte: 'AHDB - Agriculture and Horticulture Development Board (Regno Unito). Take-all disease in cereals: prevent, detect,
+        control (pagina web, consultata il 2026-11-12)'
+      riferimento: 'Sezione sulla ''second wheat syndrome'': ''yields of second wheat crops are frequently 10-15% less than
+        those of first wheats''; ''losses of 10-20% are common in second and third wheat crops'' (suoli argillosi calcarei)'
+      url: https://ahdb.org.uk/knowledge-library/take-all-in-winter-wheat
+      nota: 'Frumento dopo un frumento (secondo frumento), con la coltura di due anni prima diversa. f = 1 - 0.125 (punto
+        medio di 10-15%); intervallo da 1 - 0.15 a 1 - 0.10. Causa principale: mal del piede (take-all, Gaeumannomyces tritici).
+        Fonte di un ente tecnico pubblico britannico (organismo statutario finanziato da contributi obbligatori), categoria
+        ''altro'' nella gerarchia del progetto: nessuna fonte italiana o peer-reviewed aperta con la penalita'' del primo
+        ristoppio e'' stata trovata. Contesto: frumento in asciutto nel Regno Unito, rese alte; la pressione del mal del piede
+        in Pianura Padana non e'' stata verificata. La stessa pagina nota che in monosuccessione di cereali le rese ''generally
+        recover, to some extent'' (declino del mal del piede): coerente con una monosuccessione continua (0.82) non piu''
+        penalizzata del secondo frumento.'
+      verificato: true
+      sensibilita: true
+      intervallo:
+      - 0.85
+      - 0.9
+    monosuccessione_continua:
+      valore: 0.82
+      unita: '-'
+      fonte: Marini L., St-Martin A., Vico G., Baldoni G., Berti A., Blecharczyk A., Malecka-Jankowiak I., Morari F., Sawinska
+        Z., Bommarco R. (2020). Crop rotations sustain cereal yields under a changing climate. Environmental Research Letters
+        15, 124011 (open access)
+      riferimento: Sez. 3.1 'Yield responses to diverse crop rotations' (p. 5); Tabella 1 (p. 3)
+      url: https://doi.org/10.1088/1748-9326/abc651
+      nota: 'Vale per la MONOSUCCESSIONE CONTINUA (terzo anno consecutivo di frumento o oltre), non per il singolo ristoppio.
+        Condizioni della prova: monocoltura di frumento mantenuta per decenni contro rotazioni di 4-6 anni con medica (Padova
+        1989-2009: mais-barbabietola-mais-frumento-medica-medica; Bologna 1967-2011: mais-frumento-mais-frumento-medica x3),
+        prove in asciutto, 7 siti europei, 291 anni-sito, NPK minerale raccomandato uguale nei due trattamenti. Testo: ''winter
+        and spring cereals produced more under a diverse rotation than under monoculture, 860 and 390 kg ha-1 per year ...
+        the benefit of adopting a diverse rotation corresponds to a 20%-25% yield gain''. Conversione: f = 1/(1+0.20...0.25)
+        = 0.833...0.800, valore centrale 1/1.225 = 0.82. Il confronto contiene anche l''apporto di N della medica: rispetto
+        a mais-soia-frumento la penalita'' e'' probabilmente sovrastimata.'
+      verificato: true
+      sensibilita: true
+      intervallo:
+      - 0.8
+      - 0.833
+precessione_favorevole:
+  cereale_dopo_leguminosa_vs_monosuccessione:
+    valore: 0.833
+    unita: '-'
+    fonte: 'Mudare S., Jing J., Makowski D., He X., Liang Z., Sims Z., Wanger T.C., Tilman D., Zhang F., Cong W.F. (2025).
+      Crop rotations synergize yield, nutrition, and revenue: a meta-analysis. Nature Communications, doi:10.1038/s41467-025-64567-9'
+    riferimento: Results, 'Yield gain varying with functional groups' (Fig. 2a)
+    url: https://europepmc.org/article/PMC/PMC12572145
+    nota: 'Testo: ''Legume crops increased subsequent cereal crop yield by 20% (CI: 15%-25%)'' rispetto alla monosuccessione;
+      f = 1/1.20 = 0.833 (intervallo 1/1.25 ... 1/1.15). Meta-analisi globale (3663 coppie, 1980-2024), non specifica per
+      l''Europa. Misura la stessa cosa di f_rotazione vista dall''altro lato: NON va moltiplicata con f_rotazione, serve solo
+      come confronto. Il testo nota inoltre che il beneficio della rotazione cala con dosi di N piu'' alte. NON USATO DAL
+      MOTORE (usato_dal_motore: false): l''effetto della leguminosa sul cereale successivo e'' gia'' rappresentato dal bilancio
+      dell''azoto e dal credito di precessione (nitrogen.yaml); moltiplicarlo per la resa sarebbe un doppio conteggio. Resta
+      come informazione e confronto.'
+    verificato: true
+    sensibilita: true
+    intervallo:
+    - 0.8
+    - 0.87
+    usato_dal_motore: false
+calendario_rotazione:
+  giorni_minimi_raccolta_semina:
+    valore: 10
+    unita: giorni
+    nota: 'Usato da fieldwise.rotation: la coltura successiva (o la cover) si semina non prima di raccolta + questo numero
+      di giorni; vale anche tra terminazione della cover e semina della coltura principale. Sotto i 30 giorni del requisito
+      SRA06 tra raccolta e semina della cover (cover_crop.requisiti_sra06.max_giorni_raccolta_semina).'
+    verificato: false
+    assunzione: true
+    motivazione: 'Nessuna fonte ufficiale lombarda fissa un intervallo minimo tra raccolta e semina per mais, soia e frumento
+      (i disciplinari regolano solo la successione). Il tempo serve per trinciatura dei residui, lavorazione principale (aratura
+      o minima lavorazione) e preparazione del letto di semina: con lavorazioni ridotte bastano pochi giorni, con aratura,
+      erpicatura e attesa di condizioni di tempera due o tre settimane. Dieci giorni e'' un valore centrale.'
+    sensibilita: true
+    intervallo:
+    - 3
+    - 21

@@ -1,0 +1,265 @@
+{
+  "lat": 45.2,
+  "lon": 10.0,
+  "generated": "2026-11-12 23:17",
+  "counts": {
+    "OK": 31,
+    "ATTENZIONE": 11,
+    "ERRORE": 0,
+    "NON DISPONIBILE": 0
+  },
+  "checks": [
+    {
+      "dataset": "POWER",
+      "name": "Completezza giornaliera",
+      "status": "OK",
+      "detail": "9497 righe su 9497 attese (2000-01-01..2025-12-31); giorni mancanti 0; duplicati 0; fuori periodo 0; buco piu' lungo 0 giorni"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Valori mancanti",
+      "status": "OK",
+      "detail": "nessun NaN in nessuna variabile"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Sentinelle",
+      "status": "OK",
+      "detail": "nessun valore <= -900 su 66479 letture"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Intervallo tmax",
+      "status": "OK",
+      "detail": "tmax: min -3.73, max 40.92 degC; attesi [-30, 50]; fuori: 0"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Intervallo tmin",
+      "status": "OK",
+      "detail": "tmin: min -10.04, max 26.53 degC; attesi [-40, 40]; fuori: 0"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Intervallo pioggia",
+      "status": "ATTENZIONE",
+      "detail": "rain: min 0.00, max 261.53 mm/g; attesi [0, 300]; fuori: 0; 5 giorni piu' piovosi: 2024-05-18 261.5, 2024-06-21 165.3, 2024-01-02 144.9, 2025-11-02 122.0, 2025-12-01 74.7 (ATTENZIONE oltre 150 mm)"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Intervallo radiazione",
+      "status": "OK",
+      "detail": "srad: min 0.59, max 31.25 MJ/m2/g; attesi [0, 35]; fuori: 0"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Radiazione / cielo sereno",
+      "status": "OK",
+      "detail": "Rs/Rso: max 1.017 il 2006-11-02, mediana 0.715; oltre 1.1: 0 giorni (Rso a quota 170.78 m, FAO-56 eq. 37)"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Intervallo umidita'",
+      "status": "OK",
+      "detail": "rh: min 27.61, max 99.98 %; attesi [0, 100]; fuori: 0"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Intervallo vento",
+      "status": "OK",
+      "detail": "wind: min 0.33, max 6.24 m/s; attesi [0, 20]; fuori: 0"
+    },
+    {
+      "dataset": "POWER",
+      "name": "Coerenza tmin <= tmean <= tmax",
+      "status": "OK",
+      "detail": "0 giorni incoerenti (tolleranza 0.05 degC): tmin > tmean 0, tmean > tmax 0, tmin > tmax 0"
+    },
+    {
+      "dataset": "ARPA pioggia",
+      "name": "Completezza per anno",
+      "status": "ATTENZIONE",
+      "detail": "giorni completi per anno: min 75% (2003), media 94%, 9497 giorni, 8974 completi; anni sotto 90%: 2002 90%, 2003 75%, 2004 81%, 2008 89%, 2010 80%, 2016 84%"
+    },
+    {
+      "dataset": "POWER vs ARPA pioggia",
+      "name": "Pioggia annua",
+      "status": "ATTENZIONE",
+      "detail": "24 anni confrontabili (>= 80% giorni completi), 2 non confrontabili; scarto relativo (POWER-ARPA)/ARPA sui giorni comuni: mediano +2.0%, min -18.1%, max +68.2%; anni oltre +-25%: 2004 +34%, 2023 +33%, 2024 +37%, 2025 +68%; non confrontabili: 2003 (75.1%), 2010 (79.7%)"
+    },
+    {
+      "dataset": "POWER vs ARPA pioggia",
+      "name": "Correlazione dei totali mensili",
+      "status": "OK",
+      "detail": "r di Pearson tra totali mensili POWER e ARPA = 0.769 su 271 mesi (anni confrontabili, mesi con >= 80% di giorni completi); informativo, nessuna soglia"
+    },
+    {
+      "dataset": "POWER vs ARPA pioggia",
+      "name": "Giorni piovosi (>= 1 mm)",
+      "status": "OK",
+      "detail": "frequenza media POWER 31.0% contro ARPA 21.2% dei giorni comuni (differenza +9.9 punti); per anno nella tabella; informativo"
+    },
+    {
+      "dataset": "POWER vs ARPA pioggia",
+      "name": "Rapporto annuo nel tempo",
+      "status": "ATTENZIONE",
+      "detail": "rapporto POWER/ARPA medio: fino al 2022 1.02 (21 anni), dopo 1.46 (3 anni); variazione +43% (ATTENZIONE oltre +-25%)"
+    },
+    {
+      "dataset": "IMERG",
+      "name": "Completezza giornaliera",
+      "status": "OK",
+      "detail": "9253 giorni con valore su 9253 attesi (2000-06-01..2025-09-30); mancanti 0"
+    },
+    {
+      "dataset": "IMERG",
+      "name": "Intervallo valori",
+      "status": "OK",
+      "detail": "min 0.00, max 88.89 mm/g; attesi [0, 400]; fuori: 0"
+    },
+    {
+      "dataset": "IMERG",
+      "name": "Ultimo giorno disponibile",
+      "status": "ATTENZIONE",
+      "detail": "ultimo giorno 2025-09-30 (fine periodo meteo 2025-12-31)"
+    },
+    {
+      "dataset": "POWER vs IMERG",
+      "name": "Pioggia annua",
+      "status": "ATTENZIONE",
+      "detail": "24 anni confrontabili (>= 80% giorni completi), 2 non confrontabili; scarto relativo (POWER-IMERG)/IMERG sui giorni comuni: mediano -16.5%, min -28.7%, max +23.1%; anni oltre +-25%: 2016 -28%, 2017 -26%, 2023 -29%; non confrontabili: 2000 (58.5%), 2025 (74.8%)"
+    },
+    {
+      "dataset": "POWER vs IMERG",
+      "name": "Correlazione dei totali mensili",
+      "status": "OK",
+      "detail": "r di Pearson tra totali mensili POWER e IMERG = 0.865 su 288 mesi (anni confrontabili, mesi con >= 80% di giorni completi); informativo, nessuna soglia"
+    },
+    {
+      "dataset": "POWER vs IMERG",
+      "name": "Giorni piovosi (>= 1 mm)",
+      "status": "OK",
+      "detail": "frequenza media POWER 30.4% contro IMERG 25.9% dei giorni comuni (differenza +4.6 punti); per anno nella tabella; informativo"
+    },
+    {
+      "dataset": "POWER vs IMERG",
+      "name": "Rapporto annuo nel tempo",
+      "status": "OK",
+      "detail": "rapporto POWER/IMERG medio: fino al 2022 0.84 (22 anni), dopo 0.97 (2 anni); variazione +16% (ATTENZIONE oltre +-25%)"
+    },
+    {
+      "dataset": "POWER ET0",
+      "name": "Penman-Monteith vs Hargreaves",
+      "status": "OK",
+      "detail": "totali annui medi su 26 anni: Penman-Monteith 887 mm, Hargreaves 1036 mm; rapporto medio HG/PM 1.170 (annuo min 1.122, max 1.219); correlazione giornaliera 0.975; mese con lo scarto maggiore: dicembre (+65%, +7.0 mm); nessun anno con rapporto fuori [0.85, 1.30]"
+    },
+    {
+      "dataset": "ARPA temperature",
+      "name": "Completezza per anno",
+      "status": "ATTENZIONE",
+      "detail": "giorni completi per anno: min 72% (2010), media 94%, 9497 giorni, 8971 completi; anni sotto 90%: 2002 85%, 2003 75%, 2004 89%, 2008 89%, 2010 72%, 2016 84%"
+    },
+    {
+      "dataset": "POWER vs ARPA temperature",
+      "name": "Differenza tmax/tmin",
+      "status": "ATTENZIONE",
+      "detail": "POWER - ARPA su 8971 giorni completi: tmax -0.79 degC, tmin +0.70 degC (anno); giugno-agosto (2254 giorni): tmax -1.32, tmin +1.18 degC (ATTENZIONE se |tmax estiva| > 1)"
+    },
+    {
+      "dataset": "POWER vs ARPA temperature",
+      "name": "Giorni con tmax > 35 degC",
+      "status": "OK",
+      "detail": "giorni con tmax > 35 degC nei giorni comuni: POWER 320, ARPA 465; per anno nella tabella; informativo"
+    },
+    {
+      "dataset": "MODIS NDVI",
+      "name": "Date per anno",
+      "status": "OK",
+      "detail": "26 anni su 26 con le date attese (23; 20 nel 2000); nessun anno con meno di 20 date"
+    },
+    {
+      "dataset": "MODIS NDVI",
+      "name": "Intervallo NDVI",
+      "status": "OK",
+      "detail": "1767 valori NDVI (centro e finestra): min -0.035, max 0.889; attesi [-0.2, 1]; fuori: 0"
+    },
+    {
+      "dataset": "MODIS NDVI",
+      "name": "Pixel centrale buono/marginale",
+      "status": "OK",
+      "detail": "95.0% delle 595 date ha il pixel centrale buono o marginale (affidabilita' 0/1); informativo"
+    },
+    {
+      "dataset": "MODIS NDVI",
+      "name": "Finestra con almeno meta' pixel buoni",
+      "status": "OK",
+      "detail": "95.8% delle date ha almeno il 50% dei pixel della finestra buoni; informativo"
+    },
+    {
+      "dataset": "MODIS NDVI",
+      "name": "Date utilizzabili in estate",
+      "status": "OK",
+      "detail": "date estive (giugno-agosto) con pixel centrale utilizzabile: min 83%, media 99% su 26 anni; nessun anno sotto 60%"
+    },
+    {
+      "dataset": "MODIS NDVI",
+      "name": "NDVI medio luglio-agosto",
+      "status": "OK",
+      "detail": "media di luglio-agosto (finestra) su 26 anni: min 0.601 (2003), max 0.763 (2014); per anno nella tabella"
+    },
+    {
+      "dataset": "SoilGrids",
+      "name": "Sabbia + argilla + limo",
+      "status": "OK",
+      "detail": "somma per strato: 0-30cm 100.02%, 30-100cm 100.00%, 100-200cm 99.90%; attesa 100 +-2; fuori: 0"
+    },
+    {
+      "dataset": "SoilGrids",
+      "name": "Densita' apparente",
+      "status": "OK",
+      "detail": "media per strato: 0-30cm 1.43, 30-100cm 1.51, 100-200cm 1.53 g/cm3; attesa [1, 1.8]; fuori: 0"
+    },
+    {
+      "dataset": "SoilGrids",
+      "name": "Sostanza organica 0-30 cm",
+      "status": "ATTENZIONE",
+      "detail": "media 3.56%, intervallo q05-q95 0.99-8.31%; ATTENZIONE oltre 3% (valore alto per un seminativo di pianura)"
+    },
+    {
+      "dataset": "ISTAT",
+      "name": "Anni presenti per coltura",
+      "status": "OK",
+      "detail": "mais 2006-2026 (21 anni); soia 2006-2026 (21 anni); frumento 2006-2026 (21 anni)"
+    },
+    {
+      "dataset": "ISTAT",
+      "name": "Rese in intervalli plausibili",
+      "status": "OK",
+      "detail": "tutte le rese in intervallo (t/ha: mais 5-16; soia 1.5-6; frumento 3-9)"
+    },
+    {
+      "dataset": "ISTAT",
+      "name": "Anni successivi all'ultimo anno di meteo",
+      "status": "ATTENZIONE",
+      "detail": "anni oltre l'ultimo anno di meteo (2025) da escludere dalla validazione (stime provvisorie): frumento 2026, mais 2026, soia 2026"
+    },
+    {
+      "dataset": "ISTAT",
+      "name": "Salti annui > 30%",
+      "status": "ATTENZIONE",
+      "detail": "6 variazioni oltre +-30% rispetto all'anno precedente: frumento 2013 -38.5%, frumento 2014 +37.5%, frumento 2016 +30.0%, mais 2016 +47.4%, mais 2023 +36.8%, soia 2020 +50.0%"
+    },
+    {
+      "dataset": "SMAP",
+      "name": "Giorni con passaggio di qualita' raccomandata",
+      "status": "OK",
+      "detail": "2323 giorni su 3845 (60.4%) con almeno un passaggio con flag [0, 8]; informativo"
+    },
+    {
+      "dataset": "SMAP",
+      "name": "Intervallo valori",
+      "status": "OK",
+      "detail": "3620 valori di qualita' raccomandata: min 0.038, max 0.468 m3/m3; attesi [0.02, 0.6]; fuori: 0"
+    }
+  ]
+}

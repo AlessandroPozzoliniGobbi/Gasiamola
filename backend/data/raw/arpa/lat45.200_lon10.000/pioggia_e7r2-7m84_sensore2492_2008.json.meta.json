@@ -1,0 +1,29 @@
+{
+  "file": "pioggia_e7r2-7m84_sensore2492_2008.json",
+  "source": "arpa",
+  "product": "Precipitazioni fino al 2010",
+  "version": "e7r2-7m84; ultimo aggiornamento 2025-05-07T04:06:48.000Z",
+  "url": "https://www.dati.lombardia.it/resource/e7r2-7m84.json",
+  "params": {
+    "$select": "date_trunc_ymd(data) as giorno, case(date_extract_hh(data)=0 AND date_extract_mm(data)=0, 1, true, 0) as mezzanotte, sum(case(stato='VA' AND valore>=0, valore, true, 0)) as pioggia, sum(case(stato='VA' AND valore>=0, 1, true, 0)) as n_valid, count(*) as n_tot",
+    "$where": "idsensore='2492' AND data>'2008-01-01T00:00:00' AND data<='2009-01-01T00:00:00'",
+    "$group": "giorno,mezzanotte",
+    "$order": "giorno,mezzanotte",
+    "$limit": "50000",
+    "sensor_id": "2492",
+    "station": "Persico Dosimo",
+    "station_id": "136",
+    "lat": 45.17951839,
+    "lon": 10.0449444,
+    "quota_m": "44",
+    "dist_km": 4.194,
+    "role": "primary",
+    "datastart": "1990-10-17T00:00:00.000",
+    "datastop": null,
+    "year": 2008
+  },
+  "downloaded_at_utc": "2026-11-11T16:19:32+00:00",
+  "bytes": 73384,
+  "sha256": "3b5ef2e798aa029bf69e325028d851a9273045f6569464b8a67a574d71ea7b13",
+  "notes": "Sensore 2492 (Persico Dosimo, quota 44 m, 4.194 km dal punto). Righe = aggregato giornaliero SoQL (giorno, mezzanotte, pioggia, n_valid, n_tot). Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente."
+}
