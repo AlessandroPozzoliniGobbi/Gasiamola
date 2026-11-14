@@ -5,6 +5,7 @@ import Link from "next/link";
 import { deleteCompletedReport, listRecentReports, MAX_SAVED_REPORTS } from "../../lib/reportStorage";
 import { labelRotation, type ReportSummary } from "../../lib/reportTypes";
 import styles from "../../styles/reports.module.css";
+import PortfolioHistory from "../portfolio/PortfolioHistory";
 
 type HistoryState = { status: "loading" } | { status: "ready"; items: ReportSummary[] } | { status: "error"; message: string };
 
@@ -37,6 +38,7 @@ export default function ReportsHistory() {
         <h1>Your Analysis History</h1>
         <p>Revisit completed analyses, explore past decisions and compare your fields over time.</p>
       </div>
+      <PortfolioHistory />
       <div className={styles.historyHeading}>
         <div><h2>Recent analyses</h2><span>Saved on this browser only · Maximum {MAX_SAVED_REPORTS}</span></div>
         <Link className={styles.primaryButton} href="/mappa">Analyze a field ↗</Link>

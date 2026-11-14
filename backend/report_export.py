@@ -194,6 +194,73 @@ def _historical_figures(report:dict,width:float,bold:str,regular:str):
     return [KeepTogether([HistoricalFigure(m['label'],m,series,width,bold,regular),Spacer(1,10)]) for m in metrics]
 
 
+class PortfolioDeltaFigure(Flowable):
+    """Signed differences per field, not cross-field ranking scores.
+
+    The values come exclusively from independent completed report snapshots.
+    """
+    def __init__(self, label, key, fields, width, bold, regular, multiplier=1.0, unit=''):
+        super().__init__()
+        self.label, self.key, self.fields = label, key, fields
+        self.multiplier, self.unit = multiplier, unit
+        self.width, self.height = width, 53 + 23 * len(fields)
+        self.bold, self.regular = bold, regular
+
+    def draw(self):
+        c=self.canv
+        c.setFillColor(INK);c.setFont(self.bold,9)
+        c.drawString(0,self.height-16,self.label[:86])
+        values=[]
+        for item in self.fields:
+            if self.key=='grossMarginEurHa' and not item.get('advancedEconomics'):
+                values.append(None);continue
+            current=_numeric((item.get('current') or {}).get(self.key))
+            proposed=_numeric((item.get('recommended') or {}).get(self.key))
+            values.append(None if current is None or proposed is None else (proposed-current)*self.multiplier)
+        valid=[abs(x) for x in values if x is not None]
+        maxdelta=max([1e-9, *valid])
+        mid=195;half=max(55,(self.width-mid-94))
+        c.setStrokeColor(RULE);c.line(mid,14,mid,self.height-29)
+        for i,(field,delta) in enumerate(zip(self.fields,values)):
+            y=self.height-40-i*23
+            c.setFillColor(MUTED);c.setFont(self.regular,8)
+            name=str(field.get('name','Field'))
+            if len(name)>26:name=name[:23]+'...'
+            c.drawString(0,y,name)
+            if delta is None:
+                c.drawRightString(self.width,y,'N/A');continue
+            barwidth=half*abs(delta)/maxdelta
+            c.setFillColor(colors.HexColor('#27754d') if delta>=0 else colors.HexColor('#b78249'))
+            c.roundRect(mid if delta>=0 else mid-barwidth,y-2,max(1,barwidth),10,2,stroke=0,fill=1)
+            c.setFillColor(INK);c.setFont(self.bold,8)
+            c.drawRightString(self.width,y,f'{delta:+,.1f} {self.unit}')
+        c.setStrokeColor(RULE);c.line(0,5,self.width,5)
+
+
+def _portfolio_figures(report, width, bold, regular):
+    fields=((report.get('portfolio') or {}).get('fields') or [])
+    if not isinstance(fields,list):return []
+    fields=[f for f in fields if isinstance(f,dict)]
+    metrics=[
+        ('Median relative yield change','relativeYieldMedian',100.0,'pp'),
+        ('Irrigation demand change','irrigationMm',1.0,'mm'),
+        ('Nitrogen fertilizer change','fertilizerKgN',1.0,'kg N/ha'),
+        ('Nitrogen leaching change','nitrogenLeachingKgN',1.0,'kg N/ha'),
+        ('Annual humus change','humusChangeTonsHa',1.0,'t/ha/year'),
+    ]
+    if any(f.get('advancedEconomics') for f in fields):
+        metrics.append(('Partial economic margin change','grossMarginEurHa',1.0,'EUR/ha/year'))
+    out=[]
+    # Keep figures splittable across fields in batches of six.
+    for label,key,mult,unit in metrics:
+        for start in range(0,len(fields),6):
+            batch=fields[start:start+6]
+            if not batch:continue
+            part=f' (fields {start+1}-{start+len(batch)})' if len(fields)>6 else ''
+            out.append(KeepTogether([PortfolioDeltaFigure(label+part,key,batch,width,bold,regular,mult,unit),Spacer(1,8)]))
+    return out
+
+
 def render_pdf(markdown: str, report:dict, demo:bool=False) -> bytes:
     """Transform supported Markdown + report chart values into a direct A4 PDF."""
     if len(markdown)>1_000_000:raise ValueError('Markdown is too large for PDF export.')
@@ -210,7 +277,7 @@ def render_pdf(markdown: str, report:dict, demo:bool=False) -> bytes:
     }
     buffer=BytesIO()
     doc=SimpleDocTemplate(buffer,pagesize=A4,leftMargin=47,rightMargin=47,topMargin=59,bottomMargin=54,
-         title='FIELDWISE | Field Analysis Report',author='FIELDWISE',pageCompression=1)
+         title='FIELDWISE | '+('Farm Portfolio Report' if report.get('portfolio') else 'Field Analysis Report'),author='FIELDWISE',pageCompression=1)
     width=doc.width
     story=[];lines=markdown.splitlines(); paragraph=[]
     def flush():
@@ -224,6 +291,8 @@ def render_pdf(markdown: str, report:dict, demo:bool=False) -> bytes:
             flush();i+=1;continue
         if line=='<!-- FIELDWISE_CHARTS -->':
             flush();story.extend(_chart_figures(report,styles,width,bold,regular));i+=1;continue
+        if line=='<!-- FIELDWISE_PORTFOLIO_CHARTS -->':
+            flush();story.extend(_portfolio_figures(report,width,bold,regular));i+=1;continue
         if line=='<!-- FIELDWISE_HISTORICAL_CHARTS -->':
             flush();story.extend(_historical_figures(report,width,bold,regular));i+=1;continue
         match=re.match(r'^(#{1,4})\s+(.+)',line)
@@ -267,7 +336,7 @@ def render_pdf(markdown: str, report:dict, demo:bool=False) -> bytes:
         canvas.saveState()
         w,h=A4
         canvas.setFont(bold,9);canvas.setFillColor(GREEN);canvas.drawString(47,h-38,'FIELDWISE')
-        canvas.setFont(regular,7.5);canvas.setFillColor(MUTED);canvas.drawRightString(w-47,h-38,'FIELD ANALYSIS / TECHNICAL REPORT')
+        canvas.setFont(regular,7.5);canvas.setFillColor(MUTED);canvas.drawRightString(w-47,h-38,'FARM PORTFOLIO / COMPARATIVE REPORT' if report.get('portfolio') else 'FIELD ANALYSIS / TECHNICAL REPORT')
         canvas.setStrokeColor(RULE);canvas.line(47,h-46,w-47,h-46)
         canvas.line(47,43,w-47,43)
         canvas.setFont(regular,7.3);canvas.drawString(47,30,'Historical decision-support model - interpret with field validation')

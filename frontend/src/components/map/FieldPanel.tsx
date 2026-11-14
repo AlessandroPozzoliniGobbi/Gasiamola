@@ -10,6 +10,7 @@ type Props = {
   selectedFieldId: string | null;
   onSelectField: (id: string) => void;
   onAnalyzeField: (id: string) => void;
+  onAnalyzeAll: () => void;
   onRenameField: (id: string, name: string) => void;
   onDeleteField: (id: string) => void;
   onClearFields: () => void;
@@ -21,6 +22,7 @@ export default function FieldPanel({
   selectedFieldId,
   onSelectField,
   onAnalyzeField,
+  onAnalyzeAll,
   onRenameField,
   onDeleteField,
   onClearFields,
@@ -124,10 +126,11 @@ export default function FieldPanel({
         <button
           type="button"
           className={`${styles.actionButton} ${styles.analyzeAllButton}`}
-          disabled
-          title="Analyzing all fields will be available soon"
+          disabled={!ready || fields.length < 2}
+          onClick={onAnalyzeAll}
+          title={fields.length < 2 ? "Add at least two fields to compare them" : "Analyze and compare all your fields"}
         >
-          Analyze all fields <span className={styles.comingSoon}>Soon</span>
+          Analyze all fields
         </button>
         <button
           type="button"

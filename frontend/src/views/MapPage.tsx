@@ -606,6 +606,20 @@ export default function MapPage() {
     router.push(`/analizza/${encodeURIComponent(id)}`);
   };
 
+  const handleAnalyzeAll = () => {
+    if (!ready || !hydrated || fieldsRef.current.length < 2) return;
+    try {
+      // Flush the debounced map save before the batch page reads localStorage.
+      saveFields(fieldsRef.current, nextSavedNumber(fieldsRef.current));
+      setStorageStatus("saved");
+      router.push("/analizza/tutti");
+    } catch (error) {
+      console.error("Could not save the fields before farm analysis:", error);
+      setStorageStatus("error");
+      window.alert("Could not save your fields. Check browser storage and try again.");
+    }
+  };
+
   const handleRenameField = (id: string, name: string) => {
     const trimmed = name.trim().slice(0, 48);
     const meta = fieldMetaRef.current.get(id);
@@ -782,6 +796,7 @@ export default function MapPage() {
                   selectedFieldId={selectedFieldId}
                   onSelectField={handleSelectField}
                   onAnalyzeField={handleAnalyzeField}
+                  onAnalyzeAll={handleAnalyzeAll}
                   onRenameField={handleRenameField}
                   onDeleteField={handleDeleteField}
                   onClearFields={handleClearFields}
