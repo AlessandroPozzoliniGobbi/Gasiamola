@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fieldwise"
+version = "0.2.0"
+description = "FIELDWISE - confronto di rotazioni colturali con bilanci di massa giornalieri e dati NASA"
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "network: test che richiede la rete (escluso di default con -m 'not network')",
+    "slow: test lento (ensemble completo)",
+]

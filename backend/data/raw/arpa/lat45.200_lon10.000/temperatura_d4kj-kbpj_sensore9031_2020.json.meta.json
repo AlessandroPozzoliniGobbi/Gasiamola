@@ -1,0 +1,29 @@
+{
+  "file": "temperatura_d4kj-kbpj_sensore9031_2020.json",
+  "source": "arpa",
+  "product": "Temperatura dal 2011 al 2020",
+  "version": "d4kj-kbpj; ultimo aggiornamento 2025-05-07T19:53:27.000Z",
+  "url": "https://www.dati.lombardia.it/resource/d4kj-kbpj.json",
+  "params": {
+    "$select": "date_trunc_ymd(data) as giorno, case(date_extract_hh(data)=0 AND date_extract_mm(data)=0, 1, true, 0) as mezzanotte, max(case(stato='VA' AND valore>-50 AND valore<60, valore)) as tmax, min(case(stato='VA' AND valore>-50 AND valore<60, valore)) as tmin, sum(case(stato='VA' AND valore>-50 AND valore<60, valore, true, 0)) as somma, sum(case(stato='VA' AND valore>-50 AND valore<60, 1, true, 0)) as n_valid, count(*) as n_tot",
+    "$where": "idsensore='9031' AND data>'2020-01-01T00:00:00' AND data<='2021-01-01T00:00:00'",
+    "$group": "giorno,mezzanotte",
+    "$order": "giorno,mezzanotte",
+    "$limit": "50000",
+    "sensor_id": "9031",
+    "station": "Casalbuttano ed Uniti",
+    "station_id": "1219",
+    "lat": 45.25595928,
+    "lon": 9.96349494,
+    "quota_m": "56",
+    "dist_km": 6.848,
+    "role": "explicit",
+    "datastart": "2005-01-15T00:00:00.000",
+    "datastop": null,
+    "year": 2020
+  },
+  "downloaded_at_utc": "2026-11-11T21:26:39+00:00",
+  "bytes": 103211,
+  "sha256": "8a64f6ea060657ead27a529efc9c8d64bae41bee7e62b8d43f0ddb9ad6c15a3a",
+  "notes": "Sensore 9031 (Casalbuttano ed Uniti, quota 56 m, 6.848 km dal punto). Righe = aggregato giornaliero SoQL (giorno, mezzanotte, tmax, tmin, somma, n_valid, n_tot). Valori validi: stato 'VA' e -50 < T < 60 °C. Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente."
+}

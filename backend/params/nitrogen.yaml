@@ -1,0 +1,866 @@
+# Parametri di azoto e sostanza organica (humus) per FIELDWISE.
+# Contratto delle voci: params/SCHEMA.md. Fonti e note di lettura: docs/fonti_nitrogen.md.
+# Colture: mais da granella, soia, frumento tenero. Area: Pianura Padana (provincia di Cremona).
+
+_meta:
+  descrizione: "Azoto (bilancio di massa del suolo) e humus (Hénin-Dupuis) per mais da granella, soia e frumento tenero in Pianura Padana"
+  compilato_il: "2026-11-11"
+  rivisto_il: "2026-11-12 (decisioni del responsabile dopo l'implementazione di nitrogen.py: soia senza concime e deficit_n, tetto e biomassa della cover proporzionali all'N assorbito, passo 2 che chiude il bilancio); 2026-11-12 (correzioni dopo reports/params_review.md: fissazione soia, coppia n_assorbito/NHI soia, efficienza del concime, cover crop nelle equazioni, strato dell'humus, k2 per C/N > 12, credito di precessione); 2026-11-12 (verifica del motore: soglie di C/N di k2 in suolo.k2_soglie_cn, riparto sulla traspirazione del bilancio idrico a doppio coefficiente, limiti aggiornati e misura della cover rifatta)"
+  convenzioni:
+    resa: "Le rese (t/ha) a cui si applicano i coefficienti per tonnellata sono di granella all'umidità commerciale (mais 14%, soia e frumento 13%, come in crops.yaml). Le tabelle ER (Allegato 6) non dichiarano l'umidità; la tabella MAS della Lombardia dice 'granella = all'umidità commerciale'. La soia in Salvagiotti et al. (2008) è al 13% di umidità."
+    humus: "H è lo stock di sostanza organica (SO) del suolo in t SO/ha nello STRATO DELL'HUMUS, unico per tutto il motore: spessore suolo.profondita_humus (0,20 m), con SO% e densità apparente presi da soil.yaml (strati_soilgrids.s0_30.sostanza_organica e .densita_apparente). H = SO% / 100 x profondita_humus x 10000 x densita_apparente (t/ha)."
+    strato_humus_e_strato_0_30: "Lo spessore 0,20 m è quello su cui il disciplinare ER ha derivato i coefficienti di mineralizzazione (Tab. 1 e nota, p. 53): k2 e n_humus riproducono la tabella solo su 20 cm. SO% e densità sono misurati o stimati su 0-30 cm (ERSAF, SoilGrids) e si assumono uniformi nello strato lavorato: lo stesso SO% vale per 0-20. I 10 cm tra 20 e 30 cm (un terzo dello stock 0-30) restano fuori dal bilancio dell'humus: non mineralizzano e non ricevono humus dai residui (stima prudente della mineralizzazione). Il modello idrico usa lo strato 0-30 cm di soil.yaml con la SO iniziale fissa: la variazione di H non retroagisce su fc e wp. Per confronto con lo stock 0-30: H(0-30) = 1,5 x H(0-20)."
+    tempo: "anni_seg = giorni del segmento / 365. Azoto e humus si aggiornano a passo giornaliero (tassi annui / 365); le voci per segmento sono somme giornaliere."
+    credito_precessione_e_resa: "Il credito di precessione (Tab. 4 ER) agisce SOLO sull'azoto (concime richiesto, N_min). NON va combinato con un fattore di resa per precessione favorevole (rotation_rules.precessione_favorevole), che misura in parte lo stesso effetto azoto: sarebbe un doppio conteggio."
+  equazioni:
+    stati: |
+      N_min  [kg N/ha]  azoto minerale nel profilo radicale
+      N_res  [kg N/ha]  azoto organico dei residui freschi (colture e cover) non ancora mineralizzati
+      N_cov  [kg N/ha]  azoto nella biomassa della cover crop viva (solo durante l'intercoltura con cover)
+      N_pl   [kg N/ha]  azoto nella coltura in piedi tra semina e raccolta (serve alla chiusura giornaliera)
+      H      [t SO/ha]  humus (sostanza organica stabile) nello strato dell'humus (0-0,20 m)
+      N_hum  [kg N/ha]  = H x n_humus x 1000  (azoto contenuto nell'humus; non è uno stato indipendente)
+    humus_henin_dupuis: |
+      Stock iniziale (strato dell'humus, vedi _meta.convenzioni):
+        H0 = SO%(soil.s0_30) / 100 x profondita_humus x 10000 x densita_apparente(soil.s0_30)
+      Mineralizzazione dell'humus nel segmento, con il tetto ER oltre il 3% di SO
+      (Tab. 1 ER: 'rimane costante per tenori di S.O. superiori al 3%'):
+        H_tetto = soglia_so_tetto / 100 x profondita_humus x 10000 x densita_apparente
+        H_min = k2 x min(H, H_tetto) x anni_seg                         [t SO/ha]
+      Humus formato dai residui alla raccolta (solo residui lasciati in campo):
+        SS_res = sostanza secca dei residui aerei [t/ha]  (da resa e indice di raccolta in crops.yaml,
+                 convertendo la granella a sostanza secca con la sua umidità)
+        C_res  = SS_res x c_residui                                      [t C/ha]
+        H_res  = k1_residui(coltura) x C_res x fattore_so_c              [t SO/ha]
+        (k1_residui è su base carbonio: kg C umificato per kg C del residuo)
+      Humus formato dalla cover crop alla terminazione (cover_crop.yaml):
+        C_cov  = SS_cov x biomassa_e_azoto.frazione_carbonio_sostanza_secca   [t C/ha]
+                 (SS_cov = biomassa_secca x U_cov / n_assorbito, vedi azoto_bilancio_segmento passo 3bis)
+        H_cov  = humus.coefficiente_isoumico x C_cov x fattore_so_c      [t SO/ha]
+      Variazione:
+        H(fine) = H(inizio) - H_min + H_res + H_cov
+      Con k2 costante, H sotto il tetto e apporti costanti A (H_res + H_cov annui) l'equilibrio è H_eq = A / k2.
+    k2_suolo: |
+      Metodo principale (Regione Emilia-Romagna, Allegato 2 Tab. 1 e nota):
+        classe di tessitura -> classi: tendenzialmente_sabbioso = S, SF, FS; franco (medio impasto) = F, FL, FA, FSA;
+                tendenzialmente_argilloso = A, AL, FLA, AS, L (classi USDA in italiano, tabella SO p. 66).
+        C/N 9-12 -> k2 = suolo.k2.per_tessitura[classe]
+        C/N < 9  -> k2 = suolo.k2.cn_basso[classe]   (coincide con l'estremo alto dell'intervallo della nota)
+        C/N > 12 -> k2 = suolo.k2.cn_alto[classe]    (ricavato dalla Tab. 1, NON l'estremo basso della nota:
+                    la nota darebbe 22 kg N per il franco e 28 per il sabbioso, la tabella dice 20 e 24)
+        Regola generale: k2 = n_mineralizzato_disciplinare[classe][C/N] / (H_1% x n_humus x 1000),
+                         H_1% = 0,01 x 0,20 x 10000 x densita_apparente_ER[classe]; riproduce la Tab. 1 in tutte le celle.
+      Alternativa continua (Machet et al. 1990, riportata dal Mémento Agro-Transfert 2007):
+        k2 = 1200 x (0.2 x T - 1) / ((A + 200) x (0.3 x CaCO3 + 200))
+        A = argilla [g/kg], CaCO3 = calcare totale [g/kg], T = temperatura media annua dell'aria [°C].
+        SoilGrids non fornisce il calcare: senza un dato locale porre CaCO3 = 0 e dichiararlo.
+      Nota: i k2 ER sono tassi relativi (1/anno) e si applicano a H calcolato con la densità di soil.yaml; con
+      densità 1,433 invece di 1,30 (franco ER) l'N mineralizzato per punto di SO è il 10% più alto della Tab. 1.
+    azoto_bilancio_segmento: |
+      PASSO GIORNALIERO (dal 2026-11-12; fieldwise.nitrogen.run_daily, nucleo numba, una chiamata per
+      rotazione dopo il bilancio idrico). Le voci per segmento (coltura, nudo, cover) sono somme dei flussi
+      giornalieri. Stati: N_min, N_res (residui e immobilizzazioni in attesa di rilascio), N_cov (cover viva),
+      N_pl (azoto nella coltura in piedi, tra semina e raccolta), H. Ogni giorno, in questo ordine:
+      0) Primo giorno di una coltura: credito di precessione CRED della coltura precedente (Tab. 4 ER)
+         CRED < 0: immobilizzazione N_min -> N_res di min(|CRED|, N_min), poi rilasciata come al passo 1bis
+         CRED > 0: anticipo del rilascio N_res -> N_min di min(CRED, N_res)
+      f_T = q10^((T - T_media)/10) (suolo.temperatura.q10; T = temperatura media giornaliera, media di f_T ~ 1)
+      1) MIN  = k2 x min(H, H_tetto) / 365 x f_T x n_humus x 1000 ;  H = H - k2 x min(H, H_tetto) / 365 x f_T
+         DISP = fattore_dispersione x MIN ;  DEP = deposizione_atmosferica / 365
+         N_min = N_min + MIN - DISP + DEP
+      1bis) Rilascio programmato: ogni apporto a N_res (N fresco dei residui dopo l'umificazione, N della cover
+         alla terminazione, immobilizzazioni) torna a N_min in suolo.residui.giorni_rilascio giorni normalizzati
+         dall'evento: quota del giorno = apporto x f_T / giorni_rilascio finche' la somma di f_T arriva a
+         giorni_rilascio (assunzione; piu' lento d'inverno, piu' rapido d'estate, massa conservata);
+         N_res = somma dei rilasci non ancora avvenuti.
+      2) Coltura: U = resa x n_assorbito(coltura) sul ciclo (resa nota dal bilancio idrico e dai fattori);
+         u_d = U x q_d con q_d = Tr_d / somma sul ciclo di Tr, Tr_d = traspirazione del giorno calcolata dal
+         nucleo idrico (water.py, metodo a doppio coefficiente FAO-56 cap. 7: Tr = Ks x Kcb x ET0 con Kcb di
+         crops.<coltura>.kcb, Tab. 17, stessa curva a quattro tratti e stessi punti di passaggio di Kc, eq. 70
+         su mid/end): una sola definizione di traspirazione nel motore (WaterResult.tr).
+         Regola dichiarata come ASSUNZIONE: la biomassa, e con essa l'azoto assorbito, cresce in proporzione
+         alla traspirazione (principio della produttivita' dell'acqua di FAO-33 e AquaCrop/FAO-66, ricordato,
+         non riletto per questa regola). Alternative per la sensibilita' (rotation.simulate, argomento
+         riparto): 'eta' (ETa) e 'eta_et0' (ETa/ET0).
+         u_suolo = min(u_d, N_min); N_min = N_min - u_suolo; N_pl = N_pl + u_suolo
+         Mais e frumento: def_d = u_d - u_suolo coperto dal concime del giorno (distribuzione frazionata che
+           segue la domanda): FERT_d = def_d / recupero_apparente ; PERD_F_d = FERT_d - def_d ; N_pl += def_d
+         Soia (nessun concime): FIX_d = min(u_d - u_suolo, quota_fissazione_max x U - FIX gia' fissato);
+           deficit_n_d = u_d - u_suolo - FIX_d (non coperto) ; N_pl += FIX_d
+         Controllo normativo sul ciclo: somma FERT x efficienza_concime.minerale_convenzione_normativa <= MAS.
+      2bis) Cover: u_cov_d = min(cover_crop.biomassa_e_azoto.n_assorbito x q_d, N_min), q_d = Tr / somma Tr
+         sul periodo della cover, Tr = traspirazione del nucleo idrico (Ks x Kcb x ET0 con Kcb = cover_crop.acqua.kcb.ini costante); N_min -> N_cov. Il tetto 0,70 x N_min del passo a fine segmento
+         non si usa piu': il limite nasce dal bilancio giornaliero (N_min presente ogni giorno).
+      3) Lisciviazione giornaliera: L_d = N_min x (1 - exp(-D_d / ((1 - anion_excl) x SAT_mm))), D_d =
+         percolazione profonda del giorno (SWAT eq. 4:2.1.2 e 4:2.1.8, formulata per il passo giornaliero;
+         qui con un solo strato = profilo del motore). N_min = N_min - L_d.
+      4) Ultimo giorno della coltura (raccolta): U_eff = N_pl ; EXP = resa x n_asportato x U_eff / U ;
+         R_N = U_eff - EXP (residui asportati: EXP += R_N, R_N = 0, H_res = 0) ; N_pl = 0
+         N_umif = H_res x n_humus x 1000 preso da R_N (deficit da N_min, poi H_res ridotto) ; H = H + H_res
+         R_N - N_umif -> N_res, rilasciato come al passo 1bis ; CRED della coltura per la coltura successiva.
+      4bis) Ultimo giorno della cover (terminazione): SS_cov = biomassa_secca x U_cov / n_assorbito ;
+         IMM_cov = npd_per_t_ss x SS_cov: se < 0 immobilizzazione da N_min di min(|IMM_cov|, N_min) che si
+         aggiunge all'N fresco; se > 0 efficienza_campo x IMM_cov passa subito a N_min. N_umif_cov =
+         H_cov x n_humus x 1000 dall'N fresco; il resto -> N_res con il rilascio del passo 1bis.
+      Chiusura giornaliera e sulla rotazione: DEP + FERT + FIX - (EXP + L + DISP + PERD_F) =
+         d(N_min + N_res + N_cov + N_pl + H x n_humus x 1000).
+      update_segment (involucro): un segmento solo, con D e assorbimento distribuiti uniformemente sui giorni;
+         l'N_res iniziale viene rilasciato in giorni_rilascio dall'inizio del segmento.
+    disciplinare_controllo: |
+      Per mostrare all'agricoltore la dose 'da disciplinare' (non usata nel bilancio di massa):
+        N = A - B + C + D - E - F - G   (Regione Emilia-Romagna, Allegato 2)
+        A = resa attesa x n_assorbito ; B = B1 x coefficiente_tempo + B2 ;
+        B1 = n_mineralizzato_disciplinare[tessitura][C/N] x min(SO%, 3) ; B2 = n_pronto[tessitura] x N_totale(per mille) ;
+        C = Ca + Cb (lisciviazione_disciplinare) ; D = B x fattore_dispersione ; E = credito_precessione ;
+        F = residuo di concimazioni organiche (non modellato) ; G = deposizione_atmosferica x coefficiente_tempo (+ fissazione per leguminose).
+        Qui il concime è contato con efficienza_concime.minerale_convenzione_normativa (= 1, convenzione dei disciplinari).
+  limiti:
+    - "Radici e rizodeposizione non sono contabilizzate: n_assorbito e k1_residui riguardano la parte aerea. Salvagiotti et al. (2008) stimano per la soia un 24% dell'azoto totale nelle parti ipogee (Rochester et al. 1998, citazione indiretta)."
+    - "Volatilizzazione e denitrificazione dell'azoto mineralizzato sono comprese, insieme all'immobilizzazione, nel fattore_dispersione del disciplinare ER; quelle del concime sono la perdita esplicita PERD_F = FERT x (1 - recupero_apparente). In entrambi i casi l'immobilizzazione è trattata come perdita (stima prudente)."
+    - "recupero_apparente è misurato in prova come differenza di assorbimento tra parcella concimata e non concimata: la quota non recuperata comprende anche nitrato rimasto nel suolo e lisciviato. Il motore la toglie tutta come PERD_F e calcola a parte la lisciviazione del N_min residuo: c'è una possibile parziale sovrapposizione (perdite sovrastimate), da esplorare in sensibilità."
+    - "Il fattore_dispersione del disciplinare ER si applica a B1+B2 (mineralizzazione + azoto pronto) una volta per coltura; qui si applica solo al flusso di mineralizzazione per non erodere N_min a ogni segmento."
+    - "La soia prende dal suolo tutto l'N_disp fino al fabbisogno: in campo una parte del nitrato resta comunque nel suolo. La regola sovrastima la presa dal suolo quando N_disp è alto (e quindi sottostima la fissazione)."
+    - "La lisciviazione è calcolata a passo giornaliero ma con un solo strato (SWAT eq. 4:2.1.2 applicata al profilo intero): sottostima il ritardo di trasporto e la stratificazione dei nitrati."
+    - "Effluenti zootecnici e ammendanti: solo l'efficienza e il limite di 170 kg N/ha sono riportati; la loro mineralizzazione pluriennale (Tab. 5 e 6 ER) non è modellata."
+    - "I coefficienti ER sono letti nelle Norme generali 2023; le modifiche 2025 e 2026 (BUR ER) sono state lette e non toccano queste voci; le modifiche 2024 non sono state lette."
+    - "k1 HD per la soia non esiste nelle fonti lette: si usa il valore del pisello proteico (leguminosa da granella) come proxy."
+    - "c_residui (frazione di carbonio nella sostanza secca dei residui) è letta solo per la paglia di frumento; per stocchi di mais e residui di soia è un'assunzione."
+    - "Fosforo e potassio non sono modellati."
+    - "Soia senza concime: se N_disp + FIX < U il fabbisogno non coperto è riportato come deficit_n (con indicatore), ma la resa non viene ridotta; l'asportazione e l'N dei residui si calcolano sull'assorbimento coperto U_eff."
+    - "Concime: copre ogni giorno la parte di assorbimento che il suolo non copre (distribuzione frazionata ideale che segue la domanda). L'azoto del concime esposto tra distribuzione e assorbimento (dosi in blocco, lisciviazione dopo la concimazione) non è rappresentato, se non attraverso la perdita esplicita PERD_F = FERT x (1 - recupero_apparente)."
+    - "Ripartizione giornaliera dell'assorbimento proporzionale alla traspirazione Ks x Kcb x ET0 calcolata dal bilancio idrico a doppio coefficiente (assunzione dichiarata; dal 2026-11-12 il bilancio idrico e il riparto usano la stessa traspirazione). La concentrazione di N nella biomassa e' trattata come costante nel ciclo (in campo e' piu' alta nelle prime fasi): l'assorbimento precoce e' sottostimato. Con ETa/ET0 (Kc singolo, evaporazione inclusa) il frumento assorbiva il 45% in nov-feb, con la traspirazione il 7%."
+    - "Cover: assorbimento proporzionale a Ks x Kcb x ET0 con Kcb costante, cioe' all'ET0 (alta a settembre-ottobre e a marzo, bassa d'inverno); la crescita della copertura nel tempo non e' rappresentata. Misura del 2026-11-12 (doppio coefficiente e CN di AquaCrop; punto pilota, solo pioggia, mediana delle annate, stesso intervallo con e senza cover): il drenaggio e' praticamente uguale (dopo il mais 65 mm nudo, 68 con cover; dopo il frumento 76 e 75), quindi la riduzione della lisciviazione e' tutta un effetto di intercettazione. Lisciviazione per mm drenato ridotta del 51% dopo il mais (10,4 -> 5,5 kg N/ha) e del 62% dopo il frumento (15,1 -> 5,6), con irrigazione libera 43% e 58%. Dopo il mais la riduzione resta sotto il 56-70% pubblicato perche' l'N minerale alla semina della cover e' quasi nullo (mediana 4,4 kg N/ha: il concime non resta nel suolo) e la lisciviazione da intercettare e' solo quella dell'N mineralizzato in autunno-inverno; la cover raggiunge comunque il tetto di 51 kg N/ha. Dopo il frumento (N minerale alla semina 21,6 kg N/ha) la riduzione sta nell'intervallo pubblicato. Nessun parametro e' stato tarato su questo risultato."
+    - "Misura del 2026-11-14 dopo l'introduzione del fattore di temperatura (q10 = 2; rotazione mais-soia-frumento, punto pilota, mediana di 17 annate, stesso intervallo nudo e con cover): lisciviazione dopo il mais 9,6 -> 6,2 kg N/ha col suolo nudo e 6,9 -> 2,6 con la cover, riduzione dovuta alla cover 27% -> 58% (tetto irriguo 55%, irrigazione libera 58%); dopo il frumento 9,5 -> 10,4 nudo e 4,1 -> 5,1 con cover, riduzione 56% -> 51%. Con q10 1,7-3 la riduzione dopo il mais varia molto (circa 54-86% nella prova senza credito di precessione): parametro sensibile. Riferimento di campo: Capra et al. (2023, GCB Bioenergy) in pianura padana, segale -64% della lisciviazione autunnale rispetto al suolo nudo. Provato e scartato: applicare il credito negativo degli stocchi (-40 kg N) dalla raccolta invece che alla semina porta la lisciviazione autunnale dopo il mais quasi a zero e rende la cover peggiore del suolo nudo (il credito ER e' un effetto netto sulla coltura successiva, non un'immobilizzazione autunnale). I numeri della misura del 2026-11-12 riportati sopra sono superati."
+    - "Mineralizzazione dell'humus e rilascio dei residui modulati dalla temperatura con un Q10 (suolo.temperatura.q10), normalizzato sulla media della serie: si usa la temperatura dell'aria come proxy di quella del suolo; l'umidita' del suolo non e' considerata; il C/N dei singoli residui entra solo attraverso il credito di precessione ER."
+    - "La frazione lisciviata usa SAT_mm dell'intero profilo del motore (1,5 m), non della sola zona radicale del segmento."
+    - "Il MAS non viene ridotto per rese sotto la resa di riferimento (la nota 112 regola solo il superamento)."
+    - "Cover: biomassa e humus proporzionali all'N assorbito (C/N costante) è un'assunzione; n_assorbito della segale è derivato, non misurato."
+    - "Lisciviazione probabilmente sottostimata (circa 4-25 kg N/ha/anno nelle rotazioni del punto pilota; per il mais irriguo in pianura padana la letteratura riporta in genere alcune decine di kg): il concime copre la domanda giorno per giorno e non passa mai dall'N minerale, la quota persa del concime e' contata a parte in PERD_F e non nella lisciviazione, e la SAT dell'intero profilo sta al denominatore della frazione lisciviata."
+    - "Un solo strato per la lisciviazione (SWAT eq. 4:2.1.2 sul profilo intero di 1,5 m): rispetto allo strato 0-30 cm la lisciviazione per mm drenato e' diluita di circa 5 volte; la SAT dello strato o della zona radicale va esplorata in sensibilita'."
+    - "Falda e risalita capillare non modellate (soil._meta.limiti): la percolazione e quindi la lisciviazione sono probabilmente sovrastimate dove la falda e' superficiale, mentre lo stress idrico del mais in asciutto e' sovrastimato."
+    - "L'azoto non limita la resa: lo scenario e' 'azoto non limitante, con costo e rischio ambientale espliciti' (concime, PERD_F, superamento del MAS, deficit_n della soia, lisciviazione). Le rotazioni povere di azoto si distinguono per concime e MAS, non per resa; le penalita' di ristoppio possono contenere un effetto azoto gia' rappresentato dal credito di precessione (variante f_rotazione = 1 in sensibilita')."
+
+# =============================================================================
+# COLTURE
+# =============================================================================
+
+mais:
+  n_assorbito:
+    valore: 22.7
+    unita: "kg N/t granella"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 6, Coefficienti di assorbimento e asportazione, riga 'Mais da granella (pianta intera)', N = 2,27 %, tipo ass., p. 70"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "Valore originale 2,27 % (kg N per 100 kg di granella) -> x10 = 22,7 kg N/t. Coefficiente di assorbimento = granella + parti non raccolte. Umidità della granella non dichiarata nella tabella (presumibilmente commerciale). Il vecchio motore aveva un valore non citato."
+    verificato: true
+    sensibilita: true
+  n_asportato:
+    valore: 15.6
+    unita: "kg N/t granella"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 6, riga 'Mais da granella (granella)', N = 1,56 %, tipo asp., p. 70"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "1,56 % -> 15,6 kg N/t. Caso stocchi lasciati in campo. Quota esportata implicita = 15,6/22,7 = 0,69."
+    verificato: true
+    sensibilita: true
+  k1_residui:
+    valore: 0.126
+    unita: "kg C umificato / kg C dei residui"
+    fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+    riferimento: "p. 19, Tableau 2 'Valeurs du coefficient k1', riga 'Maïs grain', colonna 'Modèle HD' (fonte primaria indicata: Wylleman 1999; valori HD attribuiti a Rémy e Marin-Laflèche 1976)"
+    url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+    nota: "Valore per il modello Hénin-Dupuis; lo stesso documento dà 0,213 per il modello AMG (non da usare con il k2 HD). Base carbonio: moltiplicare per il C dei residui. Fonte tecnica francese (Picardia), non italiana: nessuna fonte pubblica italiana con k1 per stocchi è stata trovata. Fonti primarie (Rémy e Marin-Laflèche 1976; Wylleman 1999) non consultate."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.126, 0.213]
+  credito_precessione:
+    stocchi_interrati:
+      valore: -40
+      unita: "kg N/ha"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce E, Tab. 4 'Azoto disponibile in funzione della coltura in precessione', riga 'Mais - stocchi interrati', p. 55"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Negativo = immobilizzazione temporanea (residui ad alto C/N). Si applica alla coltura che segue il mais."
+      verificato: true
+      sensibilita: true
+    stocchi_asportati:
+      valore: -10
+      unita: "kg N/ha"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, Tab. 4, riga 'Mais - stocchi asportati', p. 55"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+      sensibilita: true
+  coefficiente_tempo:
+    valore: 0.75
+    unita: "-"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 7, Tab. 2 'Valori indicativi del coefficiente tempo', riga 'Mais da granella', p. 73"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "Quota della mineralizzazione annua utile alla coltura. Serve solo al calcolo 'da disciplinare' mostrato all'agricoltore; il bilancio di massa usa la durata reale del segmento."
+    verificato: true
+
+soia:
+  n_assorbito:
+    valore: 78.7
+    unita: "kg N/t granella"
+    fonte: "Salvagiotti F., Cassman K.G., Specht J.E., Walters D.T., Weiss A., Dobermann A. (2008). Nitrogen uptake, fixation and response to fertilizer N in soybeans: A review. Field Crops Research 108(1): 1-13. doi:10.1016/j.fcr.2008.03.001"
+    riferimento: "Fig. 1 e testo p. 4: pendenza media 12,7 kg granella (13% di umidità) per kg N assorbito nella parte aerea (0,0127 Mg/kg N), meta-analisi n = 480"
+    url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
+    nota: "1000/12,7 = 78,7 kg N/t. Fa coppia con nhi (stessa fonte, Tab. 1). Controllo nel testo: 'a soybean crop yielding 5 Mg ha-1 accumulates about 400 kg N ha-1' (80 kg N/t). Sostituisce la coppia ER (63 ass. / 58,2 asp., NHI implicito 0,92) che, con l'HI 0,40 di crops.yaml, dava residui allo 0,37% di N contro l'1,21% medio di Salvagiotti (reports/params_review.md, punto 3). Con 78,7 e NHI 0,73: a 4,5 t/ha N nei residui 96 kg/ha su 5,9 t s.s., cioè 1,63% (Tab. 1: IQR 0,80-1,55, massimo 3,17). Alternativa ER in intervallo."
+    verificato: true
+    sensibilita: true
+    intervallo: [63.0, 78.7]
+  nhi:
+    valore: 0.73
+    unita: "kg N granella / kg N parte aerea"
+    fonte: "Salvagiotti F., Cassman K.G., Specht J.E., Walters D.T., Weiss A., Dobermann A. (2008). Nitrogen uptake, fixation and response to fertilizer N in soybeans: A review. Field Crops Research 108(1): 1-13. doi:10.1016/j.fcr.2008.03.001"
+    riferimento: "Tab. 1, riga 'N harvest index' (n = 216; media 0,73, 25% 0,64, 75% 0,82, min 0,38, max 0,97); testo p. 5"
+    url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
+    nota: "Indice di raccolta dell'azoto, coerente con n_assorbito (stessa meta-analisi). Intervallo = IQR. ER implicito 58,2/63 = 0,92 (fuori IQR)."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.64, 0.82]
+  n_asportato:
+    valore: 57.5
+    unita: "kg N/t granella"
+    fonte: "Derivato da Salvagiotti et al. (2008), Field Crops Research 108: 1-13 (n_assorbito x nhi)"
+    riferimento: "Fig. 1 (78,7 kg N/t) x Tab. 1 (NHI 0,73)"
+    url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
+    nota: "78,7 x 0,73 = 57,5 kg N/t. Controllo: Regione Emilia-Romagna, Norme generali 2023, Allegato 6, 'Soia (granella)' 5,82 % = 58,2 kg N/t (p. 70), differenza 1%; Salvagiotti Tab. 1: N nella granella 6,34 % (IQR 6,00-6,75) e 63,4 kg N/t a Lincoln (p. 5). Intervallo dall'estremo derivato al valore di Lincoln."
+    verificato: true
+    derivato: true
+    sensibilita: true
+    intervallo: [57.5, 63.4]
+  k1_residui:
+    valore: 0.094
+    unita: "kg C umificato / kg C dei residui"
+    fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+    riferimento: "p. 19, Tableau 2, riga 'Pois protéagineux', colonna 'Modèle HD'"
+    url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+    nota: "La soia non è in tabella: si usa il pisello proteico (leguminosa da granella) come proxy. Valore letto per il pisello, non per la soia: verificato false perché per la soia il valore non è stato letto."
+    verificato: false
+    assunzione: true
+    motivazione: "Nessuna fonte aperta letta dà k1 Hénin-Dupuis per i residui di soia; il pisello proteico è la leguminosa da granella più vicina nella tabella e ha lo stesso valore del frumento (0,094)."
+    sensibilita: true
+    intervallo: [0.094, 0.182]
+  credito_precessione:
+    valore: 0
+    unita: "kg N/ha"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 2, Tab. 4, riga 'Soia', p. 55"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "Il disciplinare non dà credito alla soia (contro 40 kg/ha per pisello e fagiolo). Coerente con Salvagiotti et al. (2008, p. 5): il bilancio parziale della soia è in media negativo (-40 kg N/ha) e il 'credito soia' delle raccomandazioni USA non è un guadagno netto di azoto."
+    verificato: true
+    sensibilita: true
+  coefficiente_tempo:
+    valore: 0.75
+    unita: "-"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 7, Tab. 2, riga 'Soia', p. 73"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "Solo per il calcolo 'da disciplinare'."
+    verificato: true
+  fissazione:
+    quota_fissazione_max:
+      valore: 0.86
+      unita: "frazione dell'azoto assorbito (parte aerea)"
+      fonte: "Salvagiotti F., Cassman K.G., Specht J.E., Walters D.T., Weiss A., Dobermann A. (2008). Nitrogen uptake, fixation and response to fertilizer N in soybeans: A review. Field Crops Research 108(1): 1-13. doi:10.1016/j.fcr.2008.03.001"
+      riferimento: "Testo p. 5 (commento alla Fig. 2): 'When less than 85 kg N ha-1 was applied as fertilizer and N uptake levels were above 350 kg N ha-1, the proportion of N derived from biological fixation ranged from 35 to 86%, most likely due to differences in soil N supply capacity'; Tab. 1, 'N2 fixation (%)', riga 'No N': max 98, 75% 74, media 58, 25% 46"
+      url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
+      nota: "Tetto della quota fissata nella forma di _meta.equazioni (passo 2): la soia usa prima N_disp e fissa il resto fino a 0,86 x U. Scelto l'estremo alto della classe di assorbimento > 350 kg N/ha, che è quella di una soia da 4,5 t/ha (U = 354 kg/ha); la variazione 35-86% è attribuita dalla fonte all'offerta di N del suolo, che nel motore è già N_disp. La media 0,58 dei controlli senza concime (valore della versione precedente) incorpora già l'N del suolo reale e non è un tetto: è il limite inferiore dell'intervallo; il massimo 0,98 il superiore. Con 0,86 la soia senza concime chiude il fabbisogno se N_disp >= 0,14 x U (50 kg/ha a 4,5 t/ha). Controllo con la regressione media della Fig. 2 (FIX = 0,66 U - 19, dosi < 10 kg N): a U = 354 FIX = 215 kg/ha (61%)."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.58, 0.98]
+    coeff_inibizione_n:
+      valore: 0.0098
+      unita: "ha/kg N"
+      fonte: "Salvagiotti F., Cassman K.G., Specht J.E., Walters D.T., Weiss A., Dobermann A. (2008). Nitrogen uptake, fixation and response to fertilizer N in soybeans: A review. Field Crops Research 108(1): 1-13. doi:10.1016/j.fcr.2008.03.001"
+      riferimento: "Fig. 3, curva limite y = 337 e^(-0,0098 x): 'the maximum level of N2 fixation as a function of fertilizer-N rate', x = concime N (kg/ha) in pre-semina o nei primi 20 cm; testo p. 6"
+      url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
+      usato_dal_motore: "no (2026-11-12): la soia non riceve concime nel motore, quindi il tetto in funzione della dose non si applica; con il concime la formula era circolare (FERT dipende da FIX e viceversa) e portava a dosi irrealistiche. Riportato come informazione."
+      nota: "Nella fonte: tetto assoluto della fissazione in funzione della DOSE DI CONCIME, FIX <= fissazione_max_assoluta x exp(-coeff_inibizione_n x FERT). Non si applica più all'N minerale del suolo né alla quota media (la versione precedente lo faceva: assunzione rimossa, vedi reports/params_review.md, voce 29). Con FERT = 30 kg/ha (MAS soia) il tetto scende a 251 kg N/ha."
+      verificato: true
+      sensibilita: true
+    fissazione_max_assoluta:
+      valore: 337
+      unita: "kg N/ha"
+      fonte: "Salvagiotti F., Cassman K.G., Specht J.E., Walters D.T., Weiss A., Dobermann A. (2008). Nitrogen uptake, fixation and response to fertilizer N in soybeans: A review. Field Crops Research 108(1): 1-13. doi:10.1016/j.fcr.2008.03.001"
+      riferimento: "Tab. 1 'N2 fixation (kg ha-1)' massimo; testo p. 5 (Herridge 1982 come massimo affidabile)"
+      url: "https://www.mssoy.org/sites/default/files/documents/nebraska-n-review-2008-ok.pdf"
+      usato_dal_motore: "no (2026-11-12): con FERT = 0 il tetto (337 kg N/ha) non è mai attivo perché quota_fissazione_max x U è più basso per le rese simulate; resta come controllo."
+      nota: "Tetto di controllo: FIX non deve superare questo valore."
+      verificato: true
+
+frumento:
+  n_assorbito:
+    valore: 29.6
+    unita: "kg N/t granella"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 6, riga 'Grano tenero FP/FPS (pianta intera)', N = 2,96 %, tipo ass., p. 69"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "2,96 % -> 29,6 kg N/t. Scelto il grano tenero panificabile FP/FPS (il più comune); biscottiero 2,81 %, di forza FF 3,11 % (stessa tabella, pp. 69-70)."
+    verificato: true
+    sensibilita: true
+    intervallo: [28.1, 31.1]
+  n_asportato:
+    valore: 24.0
+    unita: "kg N/t granella"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 6, riga 'Grano tenero FP/FPS (granella)', N = 2,40 %, tipo asp., p. 69"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "2,40 % -> 24,0 kg N/t, paglia lasciata in campo. Biscottiero 2,08 %, FF 2,53 %."
+    verificato: true
+    sensibilita: true
+    intervallo: [20.8, 25.3]
+  k1_residui:
+    valore: 0.094
+    unita: "kg C umificato / kg C dei residui"
+    fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+    riferimento: "p. 19, Tableau 2, riga 'Blé tendre', colonna 'Modèle HD'"
+    url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+    nota: "Modello AMG: 0,213 (stessa tabella). Fonti primarie (Rémy e Marin-Laflèche 1976; Wylleman 1999) non consultate."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.094, 0.213]
+  credito_precessione:
+    paglia_interrata:
+      valore: -30
+      unita: "kg N/ha"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, Tab. 4, riga 'Cereali autunno-vernini - paglia interrata', p. 55"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Immobilizzazione temporanea per la coltura successiva."
+      verificato: true
+      sensibilita: true
+    paglia_asportata:
+      valore: -10
+      unita: "kg N/ha"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, Tab. 4, riga 'Cereali autunno-vernini - paglia asportata', p. 55"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+      sensibilita: true
+  coefficiente_tempo:
+    valore: 0.60
+    unita: "-"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 7, Tab. 2, riga 'Grano tenero', p. 73"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "Solo per il calcolo 'da disciplinare'."
+    verificato: true
+
+# =============================================================================
+# SUOLO E HUMUS
+# =============================================================================
+
+suolo:
+  k2_soglie_cn:
+    # soglie del C/N dell'humus che scelgono la colonna di k2 (humus.k2_from_params)
+    inferiore:
+      valore: 9
+      unita: "-"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B1, Tab. 1, intestazioni delle colonne C/N<9 | C/N 9-12 | C/N>12, pp. 53-54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "C/N < 9 -> k2.cn_basso; 9 <= C/N <= 12 -> k2.per_tessitura. Prima era scritta nel codice (verifica del motore, errore 5). Tabella non riaperta in questa sessione: e' la stessa tabella da cui sono derivate le voci k2 (lette in una sessione precedente)."
+      verificato: false
+    superiore:
+      valore: 12
+      unita: "-"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B1, Tab. 1, intestazioni delle colonne C/N<9 | C/N 9-12 | C/N>12, pp. 53-54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "C/N > 12 -> k2.cn_alto. Vedi 'inferiore'."
+      verificato: false
+  k2:
+    per_tessitura:
+      tendenzialmente_sabbioso:
+        valore: 0.025
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, nota alla Tab. 1: 'decomposizione della sostanza organica dal 2 al 3% per i terreni sabbiosi', p. 53"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Punto medio dell'intervallo (valore usato dal disciplinare per C/N 9-12). Controllo: Tab. 1 dà 36 kg N/ha per 1% SO; con 0,20 m, densità 1,42 t/m3 e N 5%: 28,4 t SO x k2 x 50 kg N/t = 36 -> k2 = 0,025."
+        verificato: true
+        sensibilita: true
+        intervallo: [0.020, 0.030]
+      franco:
+        valore: 0.0185
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, nota alla Tab. 1: 'dal 1,7 al 2% per i terreni di medio impasto', p. 53"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Punto medio. Controllo: 24 kg N/ha per 1% SO (Tab. 1, C/N 9-12); 26 t SO (0,20 m, 1,30 t/m3) x k2 x 50 = 24 -> k2 = 0,0185. CONFLITTO: la formula di Rémy e Marin-Laflèche (Mémento 2007, p. 20) per un suolo con 200 g/kg di argilla e senza calcare dà 0,015; quella di Machet con T = 13 °C (Cremona) dà 0,024."
+        verificato: true
+        sensibilita: true
+        intervallo: [0.017, 0.020]
+      tendenzialmente_argilloso:
+        valore: 0.010
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, nota alla Tab. 1: 'da 0,5 al 1,5 % per i terreni argillosi', p. 53"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Punto medio. Controllo: 12 kg N/ha per 1% SO; 24,2 t SO (0,20 m, 1,21 t/m3) x k2 x 50 = 12 -> k2 = 0,0099."
+        verificato: true
+        sensibilita: true
+        intervallo: [0.005, 0.015]
+    cn_basso:
+      # k2 per C/N < 9: ricavato dalla Tab. 1 ER, regola in _meta.equazioni.k2_suolo
+      tendenzialmente_sabbioso:
+        valore: 0.0296
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, Tab. 1, colonna C/N<9: 42 kg N/ha per 1% SO; densità Tab. 2 (1.42 t/m3); nota alla Tab. 1 (20 cm, N nella SO 5%), pp. 53-54"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Calcolo: 42 / (28.4 t SO per 1% x 0,05 x 1000) = 0.0296. Riproduce la cella della Tab. 1; nota: estremo alto 3% dell'intervallo 2-3%: coincide."
+        verificato: true
+        derivato: true
+        sensibilita: true
+      franco:
+        valore: 0.02
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, Tab. 1, colonna C/N<9: 26 kg N/ha per 1% SO; densità Tab. 2 (1.3 t/m3); nota alla Tab. 1 (20 cm, N nella SO 5%), pp. 53-54"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Calcolo: 26 / (26.0 t SO per 1% x 0,05 x 1000) = 0.0200. Riproduce la cella della Tab. 1; nota: estremo alto 2% dell'intervallo 1,7-2%: coincide."
+        verificato: true
+        derivato: true
+        sensibilita: true
+      tendenzialmente_argilloso:
+        valore: 0.0149
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, Tab. 1, colonna C/N<9: 18 kg N/ha per 1% SO; densità Tab. 2 (1.21 t/m3); nota alla Tab. 1 (20 cm, N nella SO 5%), pp. 53-54"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Calcolo: 18 / (24.2 t SO per 1% x 0,05 x 1000) = 0.0149. Riproduce la cella della Tab. 1; nota: estremo alto 1,5% dell'intervallo 0,5-1,5%: coincide."
+        verificato: true
+        derivato: true
+        sensibilita: true
+    cn_alto:
+      # k2 per C/N > 12: ricavato dalla Tab. 1 ER, regola in _meta.equazioni.k2_suolo
+      tendenzialmente_sabbioso:
+        valore: 0.0169
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, Tab. 1, colonna C/N>12: 24 kg N/ha per 1% SO; densità Tab. 2 (1.42 t/m3); nota alla Tab. 1 (20 cm, N nella SO 5%), pp. 53-54"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Calcolo: 24 / (28.4 t SO per 1% x 0,05 x 1000) = 0.0169. Riproduce la cella della Tab. 1; la nota (estremo basso 2%) darebbe 28 kg N, la tabella dice 24: si segue la tabella."
+        verificato: true
+        derivato: true
+        sensibilita: true
+      franco:
+        valore: 0.0154
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, Tab. 1, colonna C/N>12: 20 kg N/ha per 1% SO; densità Tab. 2 (1.3 t/m3); nota alla Tab. 1 (20 cm, N nella SO 5%), pp. 53-54"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Calcolo: 20 / (26.0 t SO per 1% x 0,05 x 1000) = 0.0154. Riproduce la cella della Tab. 1; la nota (estremo basso 1,7%) darebbe 22 kg N, la tabella dice 20: si segue la tabella."
+        verificato: true
+        derivato: true
+        sensibilita: true
+      tendenzialmente_argilloso:
+        valore: 0.005
+        unita: "1/anno"
+        fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+        riferimento: "Allegato 2, voce B1, Tab. 1, colonna C/N>12: 6 kg N/ha per 1% SO; densità Tab. 2 (1.21 t/m3); nota alla Tab. 1 (20 cm, N nella SO 5%), pp. 53-54"
+        url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+        nota: "Calcolo: 6 / (24.2 t SO per 1% x 0,05 x 1000) = 0.0050. Riproduce la cella della Tab. 1; estremo basso 0,5% della nota: coincide."
+        verificato: true
+        derivato: true
+        sensibilita: true
+    formula_machet:
+      coeff_numeratore:
+        valore: 1200
+        unita: "-"
+        fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+        riferimento: "p. 20, Tableau 3, nota ** 'Equation k2 = 1200 / [(0,2*T-1)/[A+200).(0,3 CaCO3+200)]' (Machet et al. 1990)"
+        url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+        nota: "La formula stampata ha parentesi e barra sbagliate. La forma k2 = 1200 x (0,2 T - 1) / ((A+200)(0,3 CaCO3 + 200)), con A e CaCO3 in g/kg, riproduce la colonna 'Machet' della stessa tabella (es. limon calcaire A = 90, CaCO3 = 271 -> 0,015 con T ≈ 10 °C; argileux A = 302, CaCO3 = 2 -> 0,012). Alternativa a per_tessitura, utile perché è continua in argilla e temperatura. Fonte primaria (Machet et al. 1990) non consultata."
+        verificato: true
+        sensibilita: true
+      coeff_temperatura:
+        valore: [0.2, -1.0]
+        unita: "[1/°C, -]"
+        fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+        riferimento: "p. 20, Tableau 3, nota ** (termine 0,2*T - 1)"
+        url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+        nota: "f(T) = 0,2 x T - 1 (T media annua dell'aria, °C). Tarata nel nord della Francia (T ≈ 10 °C): a Cremona (T ≈ 13 °C) è un'estrapolazione."
+        verificato: true
+        sensibilita: true
+      offset_argilla:
+        valore: 200
+        unita: "g/kg"
+        fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+        riferimento: "p. 20, Tableau 3, nota ** (A + 200)"
+        url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+        nota: "A = argilla in g/kg (per mille). SoilGrids dà l'argilla in g/kg."
+        verificato: true
+      coeff_calcare:
+        valore: [0.3, 200]
+        unita: "[-, g/kg]"
+        fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+        riferimento: "p. 20, Tableau 3, nota ** (0,3 CaCO3 + 200)"
+        url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+        nota: "CaCO3 = calcare totale in g/kg. SoilGrids non lo fornisce: senza dato locale si pone 0 (k2 massimo per quell'argilla)."
+        verificato: true
+  n_mineralizzato_disciplinare:
+    # kg N/ha mineralizzati in un anno per ogni punto % di SO (strato 0,20 m), Tab. 1 ER
+    tendenzialmente_sabbioso:
+      valore: [42, 36, 24]
+      unita: "kg N/ha per 1% SO, [C/N<9, C/N 9-12, C/N>12]"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B1, Tab. 1 'Azoto mineralizzato (kg/ha) che si rende disponibile in un anno', p. 53"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Per il calcolo 'da disciplinare'. La disponibilità resta costante per SO > 3%."
+      verificato: true
+      sensibilita: true
+    franco:
+      valore: [26, 24, 20]
+      unita: "kg N/ha per 1% SO, [C/N<9, C/N 9-12, C/N>12]"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B1, Tab. 1, p. 53"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+      sensibilita: true
+    tendenzialmente_argilloso:
+      valore: [18, 12, 6]
+      unita: "kg N/ha per 1% SO, [C/N<9, C/N 9-12, C/N>12]"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B1, Tab. 1, p. 53"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+      sensibilita: true
+  n_humus:
+    valore: 0.05
+    unita: "kg N / kg SO"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 2, voce B1, nota alla Tab. 1: 'il contenuto di azoto nella sostanza organica sia del 5%', p. 53"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "Equivale a C/N = (1/1,724)/0,05 = 11,6, nell'intervallo 9-12 che lo stesso disciplinare indica come SO ben umificata (p. 66). Il Mémento 2007 (p. 25) usa N/C = 0,10 (C/N 10): intervallo derivato da qui."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.05, 0.058]
+  fattore_so_c:
+    valore: 1.724
+    unita: "kg SO / kg C organico"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 3 (interpretazione delle analisi), voce 'Sostanza organica', p. 65"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "SoilGrids fornisce il carbonio organico (soc, dg/kg): SO% = soc/100 (g/kg) x 1,724 / 10. Il Mémento 2007 (p. 5) indica 1,7-2 (2 per suoli picardi)."
+    verificato: true
+    sensibilita: true
+    intervallo: [1.72, 2.0]
+  profondita_humus:
+    valore: 0.20
+    unita: "m"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 2, voce B1, nota alla Tab. 1: 'valori ... calcolati considerando una profondità di 20 cm', p. 53"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "UNICO strato dell'humus del motore (azoto e humus). Spessore per cui il disciplinare ha derivato k2, n_humus e la Tab. 1: usarne un altro con gli stessi coefficienti cambierebbe la mineralizzazione per punto di SO. SO% e densità apparente NON si prendono da qui ma da soil.yaml (strati_soilgrids.s0_30: SO 2,327% ERSAF, densità 1,433 SoilGrids), assumendo lo strato 0-30 cm omogeneo per la lavorazione; i 10 cm tra 20 e 30 cm restano fuori dal bilancio dell'humus (vedi _meta.convenzioni.strato_humus_e_strato_0_30). Valori iniziali: H0 = 2,327/100 x 0,20 x 10000 x 1,433 = 66,7 t SO/ha (100 t/ha su 0-30). Il Mémento 2007 (p. 25) usa 4200 t/ha di terra, cioè 0,30 m x 1,4 t/m3: con 0,30 m stock e mineralizzazione crescono di 1,5 volte (sensibilità). Conversione: H [t SO/ha] = SO% / 100 x profondita_humus x 10000 x densita_apparente."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.20, 0.30]
+  soglia_so_tetto:
+    valore: 3.0
+    unita: "% SO"
+    fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+    riferimento: "Allegato 2, voce B1, Tab. 1 'Azoto mineralizzato ... che si rende disponibile in un anno': la disponibilità 'rimane costante per tenori di S.O. superiori al 3%', p. 53"
+    url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+    nota: "Tetto della mineralizzazione: H_min = k2 x min(H, H_tetto), H_tetto = 3/100 x profondita_humus x 10000 x densita_apparente (86,0 t SO/ha con densità 1,433). Con la SO ERSAF (2,33%) il tetto non è attivo; lo era con il valore SoilGrids 3,56% (94 contro 72 kg N/ha/anno, reports/params_review.md punto 3). Si applica anche al calcolo 'da disciplinare' (B1 con min(SO%, 3))."
+    verificato: true
+  densita_apparente:
+    # Densità della Tab. 2 ER: servono a ricavare k2 dalla Tab. 1 e come riserva se soil.yaml non ha la densità.
+    # Il motore usa la densità di soil.yaml (strati_soilgrids.s0_30.densita_apparente).
+    tendenzialmente_sabbioso:
+      valore: 1.42
+      unita: "t/m3"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B2, Tab. 2 'Quantità di azoto prontamente disponibile', colonna 'Densità apparente', p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Valore di riserva; preferire la densità apparente di SoilGrids del punto pilota."
+      verificato: true
+    franco:
+      valore: 1.30
+      unita: "t/m3"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B2, Tab. 2, p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+    tendenzialmente_argilloso:
+      valore: 1.21
+      unita: "t/m3"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B2, Tab. 2, p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+  n_pronto:
+    # N_min iniziale = coefficiente x N totale del suolo (per mille = g/kg); SoilGrids 'nitrogen' in cg/kg -> /100
+    tendenzialmente_sabbioso:
+      valore: 28.4
+      unita: "kg N/ha per 1 g/kg di N totale"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B2, Tab. 2 'Quantità di azoto prontamente disponibile (kg/ha)', p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Usato come n_iniziale: azoto minerale a inizio simulazione = n_pronto[tessitura] x N_totale (per mille)."
+      verificato: true
+      sensibilita: true
+    franco:
+      valore: 26.0
+      unita: "kg N/ha per 1 g/kg di N totale"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B2, Tab. 2, p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Esempio: N totale 1,2 g/kg -> 31 kg N/ha."
+      verificato: true
+      sensibilita: true
+    tendenzialmente_argilloso:
+      valore: 24.3
+      unita: "kg N/ha per 1 g/kg di N totale"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce B2, Tab. 2, p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+      sensibilita: true
+  fattore_dispersione:
+    # D = B x fc ; righe: disponibilità di ossigeno [impedita/scarsa, moderata, buona]
+    tendenzialmente_sabbioso:
+      valore: [0.30, 0.20, 0.15]
+      unita: "-, [ossigeno impedito o scarso, moderato, buono]"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce D, Tab. 3 'Fattori di correzione ... immobilizzazione e dispersione dell'azoto', p. 55"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Comprende immobilizzazione, volatilizzazione e denitrificazione. Classe di ossigeno da cartografia dei suoli (drenaggio); in mancanza usare 'buona'."
+      verificato: true
+      sensibilita: true
+    franco:
+      valore: [0.35, 0.25, 0.20]
+      unita: "-, [ossigeno impedito o scarso, moderato, buono]"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce D, Tab. 3, p. 55"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+      sensibilita: true
+    tendenzialmente_argilloso:
+      valore: [0.40, 0.30, 0.25]
+      unita: "-, [ossigeno impedito o scarso, moderato, buono]"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce D, Tab. 3, p. 55"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+      sensibilita: true
+  residui:
+    c_residui:
+      valore: 0.45
+      unita: "kg C / kg sostanza secca"
+      fonte: "Duparque A., Ancelin O., Duranel J., Dersigny C., Fleutry L. (2007). Mémento Sols et Matières Organiques. Agro-Transfert Ressources et Territoires e Chambres d'Agriculture de Picardie"
+      riferimento: "p. 42, 'Valeur de l'humus', esempio di calcolo: 'Rendement en humus de la paille = 0,85 * 0,45 * 0,213 * 2' (0,45 = teneur en C org. della paglia, su s.s.)"
+      url: "https://www.agro-transfert-rt.org/wp-content/uploads/2025/08/Memento_sols_et_matiere_organique.pdf"
+      nota: "Letto per la paglia di frumento (in un esempio, non in una tabella). Esteso a stocchi di mais e residui di soia: verificato false perché per queste colture il valore non è stato letto. Lo stesso valore (0,45) è usato per la cover crop: cover_crop.biomassa_e_azoto.frazione_carbonio_sostanza_secca rimanda a questa voce."
+      verificato: false
+      assunzione: true
+      motivazione: "Per stocchi di mais e residui di soia non è stata letta una fonte; il contenuto di carbonio dei tessuti vegetali secchi varia poco tra specie, quindi si usa lo stesso valore della paglia e lo si mette in sensibilità."
+      sensibilita: true
+    giorni_rilascio:
+      valore: 365
+      unita: "giorni"
+      nota: "Nucleo giornaliero (fieldwise.nitrogen.run_daily): l'N dei residui che non va in humus (alla raccolta o alla terminazione della cover) e l'N immobilizzato (credito di precessione negativo alla semina successiva, Npd negativo della cover alla terminazione) passano a N_min con un rilascio uniforme in questo numero di giorni dall'evento. Sostituisce rilascio_completo_dopo_una_coltura (rilascio in blocco alla raccolta successiva, che esponeva tutto quell'azoto al drenaggio autunnale)."
+      verificato: false
+      assunzione: true
+      motivazione: "Il disciplinare ER (Tab. 4) da' solo l'effetto netto sulla coltura successiva e nessuna durata; nessun coefficiente tempo e' nei parametri. Dodici mesi coprono la coltura successiva e il primo inverno, l'ordine di grandezza della decomposizione della frazione labile di stocchi e paglie in clima temperato; la forma uniforme e' la piu' semplice che conserva la massa."
+      sensibilita: true
+      intervallo: [180, 730]
+  temperatura:
+    q10:
+      valore: 2.0
+      unita: "-"
+      nota: "Fattore giornaliero f_T = q10^((T - T_media)/10), T = temperatura media giornaliera dell'aria del meteo (proxy della temperatura del suolo), T_media = media della serie meteo, quindi media di f_T circa 1: il totale annuo di k2 (ER) non cambia, cambia la distribuzione nell'anno. Moltiplica la mineralizzazione dell'humus (passo 1) e scandisce il rilascio di N_res in giorni normalizzati (passo 1bis). q10 = 1 riproduce il motore senza temperatura."
+      verificato: false
+      assunzione: true
+      motivazione: "Valore centrale della letteratura letta solo negli abstract: Stanford, Frere e Schwaninger (1973, Soil Science 115) Q10 circa 2 su 11 suoli tra 5 e 35 gradi C; Liu et al. (2016, Global Change Biology 22) media globale 2,21 su 379 studi; Miller et al. (2018, Biology and Fertility of Soils 54) 2,87 (2,67-3,15) su 55 suoli agricoli. Da verificare nei testi completi prima di marcarlo verificato."
+      sensibilita: true
+      intervallo: [1.7, 3.0]
+
+# =============================================================================
+# LISCIVIAZIONE
+# =============================================================================
+
+lisciviazione:
+  anion_excl:
+    valore: 0.50
+    unita: "frazione della porosità"
+    fonte: "Neitsch S.L., Arnold J.G., Kiniry J.R., Williams J.R. (2011). Soil and Water Assessment Tool Theoretical Documentation Version 2009. Texas Water Resources Institute TR-406; e Arnold J.G. et al. (2012) SWAT Input/Output File Documentation Version 2012"
+    riferimento: "Theoretical Documentation, sez. 4:2.1 'Nitrate movement', eq. 4:2.1.2 e 4:2.1.8, p. 269; I/O Documentation, cap. 22 (.sol), variabile ANION_EXCL, p. 304: 'If no value for ANION_EXCL is entered, the model will set ANION_EXCL = 0.50'"
+    url: "https://swat.tamu.edu/media/99192/swat2009-theory.pdf"
+    nota: "Formula: L = N_min x (1 - exp(-D_seg / ((1 - anion_excl) x SAT_mm))). SWAT la applica per strato e per giorno; qui per giorno (D = percolazione profonda del giorno) e su un solo strato, il profilo del motore (vedi _meta.limiti). Documento I/O: https://swat.tamu.edu/media/69296/swat-io-documentation-2012.pdf. Scelto al posto di Burns (1975), il cui articolo non è ad accesso aperto. Ente: USDA-ARS / Texas A&M (fonte 'altro', dichiarata)."
+    verificato: true
+    sensibilita: true
+    intervallo: [0.01, 1.0]
+  metodo_disciplinare:
+    # Solo controllo / dose da disciplinare (voce C, Allegato 2 ER)
+    soglie_pioggia_autunno_inverno:
+      valore: [150, 250]
+      unita: "mm (pioggia 1 ottobre - 31 gennaio)"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce C 'Perdite per lisciviazione', Ca, tabella, p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Colture annuali: pioggia < 150 mm -> nessuna perdita; 150-250 mm -> perdita = N_pronto x (y - 150)/100; > 250 mm -> si perde tutto l'azoto pronto."
+      verificato: true
+      sensibilita: true
+    perdita_uscita_inverno:
+      valore: 0.1
+      unita: "kg N/ha per mm di pioggia"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce C, Cb 'perdite all'uscita dell'inverno', p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: "Originale: '1 kg di N per ettaro ogni 10 mm di pioggia', conteggiata solo oltre i 250 mm cumulati (1 ottobre - fine febbraio)."
+      verificato: true
+      sensibilita: true
+    soglia_uscita_inverno:
+      valore: 250
+      unita: "mm (pioggia 1 ottobre - 28/29 febbraio)"
+      fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+      riferimento: "Allegato 2, voce C, Cb, p. 54"
+      url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+      nota: ""
+      verificato: true
+
+# =============================================================================
+# ENTRATE ESTERNE E EFFICIENZE
+# =============================================================================
+
+deposizione_atmosferica:
+  valore: 20
+  unita: "kg N/ha/anno"
+  fonte: "Regione Emilia-Romagna, DG Agricoltura, caccia e pesca (2023). Disciplinari di produzione integrata 2023 - Norme generali"
+  riferimento: "Allegato 2, voce G 'Azoto da apporti naturali', p. 56: 'Nelle zone di pianura limitrofe alle aree densamente popolate si stimano quantitativi oscillanti intorno ai 20 kg/ha anno'"
+  url: "https://agricoltura.regione.emilia-romagna.it/produzioni-agroalimentari/agricoltura-sostenibile/agricoltura-integrata/Collezione-dpi/dpi_2023/norme/norme_generali-2023.pdf/@@download/file"
+  nota: "Stima generica di pianura (Emilia-Romagna); non è una misura per Cremona. Nessun dato ARPA Lombardia letto."
+  verificato: true
+  sensibilita: true
+
+efficienza_concime:
+  recupero_apparente:
+    mais:
+      valore: 0.84
+      unita: "kg N assorbito in più / kg N di concime"
+      fonte: "Moretti B., Bertora C., Grignani C., Lerda C., Celi L., Sacco D. (2020). Conversion from mineral fertilisation to MSW compost use: nitrogen fertiliser value in continuous maize and test on crop rotation. Science of the Total Environment, doi:10.1016/j.scitotenv.2019.135308"
+      riferimento: "Par. 2.2.3, eq. 1 (NAR = [(Y x N)granella + (Y x N)residui] concimato - [idem] non concimato, diviso per la dose); par. 3.1.2 e Fig. 2: NAR del mais con concime minerale (M-Min) 90, 85 e 76% nel 2010, 2011, 2012; in rotazione (R-Min) 91, 88 e 82%"
+      url: "https://iris.unito.it/bitstream/2318/1726469/1/STOTEN-D-19-08926.pdf"
+      nota: "Media dei tre anni del mais in monosuccessione: (90 + 85 + 76)/3 = 84%. Prova di campo dell'Università di Torino nella pianura padana occidentale; mais FAO 500 in monosuccessione, in media 198 kg N/ha/anno da urea in presemina (par. 2.2.1), confronto con testimone non concimato. Letta la versione d'autore (manoscritto STOTEN-D-19-08926, archivio aperto AperTO), non quella dell'editore. Recupero apparente (metodo della differenza), non recupero isotopico. Sostituisce nel bilancio di massa la convenzione normativa 1,0 (minerale_convenzione_normativa): la quota 1 - 0,84 è la perdita esplicita PERD_F di _meta.equazioni. Valore alto rispetto alla letteratura internazionale (recuperi del primo anno spesso 30-50%, Ladha et al. 2005, Adv. Agron. 87: 85-156, citazione indiretta non letta): l'estremo inferiore dell'intervallo è 0,50."
+      verificato: true
+      sensibilita: true
+      intervallo: [0.50, 0.91]
+    frumento:
+      valore: 0.57
+      unita: "kg N assorbito in più / kg N di concime"
+      nota: "Non usato per la soia: nel motore la soia non riceve concime. Nessuna fonte aperta letta con il recupero apparente del concime nel frumento in Pianura Padana; la prova di Moretti et al. (2020) concima il frumento ma riporta il NAR solo per il mais."
+      verificato: false
+      assunzione: true
+      motivazione: "Valore medio delle prove sperimentali sul frumento attribuito a Ladha J.K., Pathak H., Krupnik T.J., Six J., van Kessel C. (2005), Efficiency of fertilizer nitrogen in cereal production: retrospects and prospects, Advances in Agronomy 87: 85-156 (recupero medio del primo anno 57% per il frumento), letto solo come citazione in rassegne successive: l'articolo non è ad accesso aperto e le copie trovate erano bloccate. È più basso del mais di Moretti et al. (2020), coerente con l'assorbimento del frumento concentrato in primavera, quando le piogge disperdono parte del concime."
+      sensibilita: true
+      intervallo: [0.30, 0.84]
+  minerale_convenzione_normativa:
+    valore: 1.0
+    unita: "-"
+    fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+    riferimento: "Allegato 10, 'Il concetto di bilancio dell'azoto': '(Kc FC) + (Ko FO) = MAS', 'KC ... Si considera uguale a 1'; Tabella 1 'Fertilizzante minerale (FM) 1,00', pp. 101-102"
+    url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+    nota: "Concorde con Regione Emilia-Romagna, Norme generali 2023, Allegato 2, p. 56 ('Per i concimi minerali di sintesi si assume un valore di efficienza del 100%'). CONVENZIONE CONTABILE dei disciplinari (azoto 'efficiente' per il confronto con il MAS), non recupero fisico: si usa SOLO per confrontare la dose FERT con vincoli.mas e per la dose 'da disciplinare'. Il bilancio di massa usa recupero_apparente e la perdita esplicita PERD_F (_meta.equazioni). La prima versione usava 0,70 e una quota residua 0,15, non citate: abbandonate."
+    verificato: true
+  effluente_bovino:
+    valore: 0.50
+    unita: "-"
+    fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+    riferimento: "Allegato 10, Tabella 1 'Parametri di Efficienza dell'azoto in rapporto al tipo di matrice', riga 'Bovini da latte o da carne' (liquido, palabile compostato e non), p. 102"
+    url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+    nota: "Riportato per l'uso futuro degli effluenti (zootecnia diffusa nel cremonese); suini e avicoli liquidi 0,60. Non usato nel motore attuale."
+    verificato: true
+
+# =============================================================================
+# VINCOLI NORMATIVI (da mostrare all'agricoltore)
+# =============================================================================
+
+vincoli:
+  mas:
+    mais:
+      valore: 280
+      unita: "kg N efficiente/ha"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2 'Apporti massimi standard di azoto efficiente alle colture (MAS)', Tabella 1, riga 'Mais di 1^ semina (classe FAO 600-700)', resa di riferimento 13 t/ha granella, fattore correttivo 17 kg N/t, p. 75"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: "Mais in ambiti non irrigui: 210 kg N/ha. Uguale in Emilia-Romagna (Norme generali 2023, Allegato 9: mais granella irriguo 280 a 13 t/ha, non irriguo 210 a 10,4 t/ha). Si può superare solo dimostrando rese maggiori: MAS = 280 + (resa - 13) x 17 (nota 112)."
+      verificato: true
+    mais_resa_riferimento:
+      valore: 13
+      unita: "t/ha granella (umidità commerciale)"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2, Tabella 1, riga 'Mais di 1^ semina', colonna 'Resa di riferimento'; legenda 'granella = all'umidità commerciale', pp. 75 e 77"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: ""
+      verificato: true
+    mais_fattore_correttivo:
+      valore: 17
+      unita: "kg N/t oltre la resa di riferimento"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2, Tabella 1, colonna 'Fattore correttivo azoto', e nota 112, p. 74-75"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: ""
+      verificato: true
+    frumento:
+      valore: 180
+      unita: "kg N efficiente/ha"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2, Tabella 1, riga 'Frumento tenero', resa di riferimento 6,5 t/ha granella, fattore correttivo 22 kg N/t, p. 75"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: "Uguale in Emilia-Romagna (Allegato 9, 180 kg/ha a 6,5 t/ha). MAS per resa superiore = 180 + (resa - 6,5) x 22."
+      verificato: true
+    frumento_resa_riferimento:
+      valore: 6.5
+      unita: "t/ha granella (umidità commerciale)"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2, Tabella 1, riga 'Frumento tenero', p. 75"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: ""
+      verificato: true
+    frumento_fattore_correttivo:
+      valore: 22
+      unita: "kg N/t oltre la resa di riferimento"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2, Tabella 1, riga 'Frumento tenero', p. 75"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: ""
+      verificato: true
+    soia:
+      valore: 30
+      unita: "kg N efficiente/ha"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2, Tabella 1, riga 'Leguminose da granella (piselli soia)', nota 3 (solo in presemina), p. 75 e 77"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: "Uguale in Emilia-Romagna (Allegato 9, 30 kg/ha; fino a 120 kg/ha se il rizobio non attecchisce, nota ** p. 76)."
+      verificato: true
+    doppia_coltura_max:
+      valore: 340
+      unita: "kg N efficiente/ha/anno"
+      fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+      riferimento: "Allegato 2, testo introduttivo e nota 5 alla Tabella 1, pp. 74 e 77"
+      url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+      nota: "Somma dei MAS di due colture nello stesso anno (es. soia di secondo raccolto dopo frumento)."
+      verificato: true
+  limite_effluenti_zvn:
+    valore: 170
+    unita: "kg N/ha/anno (azoto al campo da effluenti, media aziendale)"
+    fonte: "Regione Lombardia (2025). D.g.r. 30 aprile 2025 n. XII/4284, Aggiornamento del Programma d'azione regionale nitrati 2024-2027 (zone vulnerabili). BURL Serie Ordinaria n. 19 del 6 maggio 2025"
+    riferimento: "Allegato A, par. 4.4, commi 2 e 7, p. 42 (anche Allegato A, cap. 1, comma 3a, p. 17: '170 kg/ha di azoto al campo per gli effluenti di allevamento')"
+    url: "https://www.regione.lombardia.it/content/dam/rl/canali-tematici-servizi/10-agricoltura/10-direttiva-nitrati/red-normativa-nitrati-agr/accordion/acc-zone-vulnerabili-2024-2027/Delibera%2030%20aprile%202025%20-%20n.%204284.pdf"
+    nota: "Limite della Direttiva 91/676/CEE in zona vulnerabile, comprensivo di pascolo e acque reflue; salvo deroghe UE."
+    verificato: true

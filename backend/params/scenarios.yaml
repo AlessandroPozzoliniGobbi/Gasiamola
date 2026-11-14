@@ -1,0 +1,94 @@
+_meta:
+  descrizione: "Scenari d'acqua del motore di rotazione (fieldwise.rotation): solo pioggia, tetto irriguo per coltura, irrigazione libera"
+  compilato_il: "2026-11-12"
+  regole_d_uso: >-
+    Ogni scenario dice (1) il tetto irriguo NETTO per segmento colturale, in mm per ciclo di coltura, passato a
+    water.run_water_balance come irr_cap ("illimitato" = math.inf; una rotazione = una chiamata, quindi il tetto vale per ciascuna coltura
+    della rotazione); le colture con crops.<coltura>.irrigabile = 0 non si irrigano mai, i segmenti di suolo nudo e di
+    cover non si irrigano; (2) quale penalita' di ristoppio usare (regime_rotazione: "irriguo" o "asciutto", come
+    yield_model.rotation_factor e rotation_rules._meta.uso_dei_fattori_di_resa). Con un tetto finito la coltura e'
+    irrigata, quindi vale il regime 'irriguo'. L'irrigazione del motore e' a richiesta (FAO-56: si irriga quando
+    l'esaurimento supera RAW e si riporta il profilo a capacita' di campo), cioe' volumi netti senza perdite di
+    distribuzione.
+  limiti: >-
+    Il tetto del mais viene da 5 aziende lombarde in 2 annate (progetto SMART WUE, mais da trinciato e granella non
+    distinti nella tabella), convertito da lordo a netto con le efficienze dichiarate dalla stessa fonte. Per la soia
+    nessuna fonte letta.
+
+scenari:
+  solo_pioggia:
+    tetto_irriguo:
+      mais:
+        valore: 0
+        unita: "mm"
+        nota: "Scenario di riferimento senza irrigazione."
+        verificato: false
+        assunzione: true
+        motivazione: "Definizione dello scenario, non un dato misurato."
+      soia:
+        valore: 0
+        unita: "mm"
+        nota: "Come mais."
+        verificato: false
+        assunzione: true
+        motivazione: "Definizione dello scenario, non un dato misurato."
+    regime_rotazione:
+      valore: "asciutto"
+      unita: "-"
+      nota: "Penalita' di ristoppio del mais in asciutto (rotation_rules.f_rotazione.mais_dopo_mais.asciutto)."
+      verificato: false
+      assunzione: true
+      motivazione: "Senza irrigazione la coltura e' in asciutto per definizione."
+  tetto_irriguo:
+    tetto_irriguo:
+      mais:
+        valore: 200
+        unita: "mm"
+        fonte: "Vigo F. (Universita' degli Studi di Milano, DESP) (2024). Valutazioni economiche ed ambientali dei diversi sistemi irrigui del mais. Progetto SMART WUE, PSR Lombardia 2014-2020 Op. 16.2.01"
+        riferimento: "Diapositiva 'VOLUMI IRRIGUI': volumi stagionali lordi di 5 aziende lombarde, 2023 e 2024 (pivot 2400/2250, scorrimento 5141/4404, microirrigazione 1024/2520 e 1250/2550, rotolone 1500/2500 m3/ha) ed efficienze irrigue (pivot 85%, scorrimento 55%, microirrigazione 95%, rotolone 75%)"
+        url: "https://smartwue.unimi.it/wp-content/uploads/sites/54/2024/12/Valutazioni-economiche-ed-ambientali-dei-diversi-sistemi-irrigui-del-mais.pdf"
+        nota: "Il motore irriga a volumi netti: netto = lordo x efficienza / 10 (m3/ha -> mm). I 10 valori netti vanno da 97 mm (microirrigazione 2023) a 283 mm (scorrimento 2023), mediana 197 mm -> 200 mm. Non e' una dotazione di concessione del consorzio (non trovata): e' il volume effettivamente distribuito in aziende lombarde."
+        verificato: true
+        derivato: true
+        sensibilita: true
+        intervallo: [100, 280]
+      soia:
+        valore: 100
+        unita: "mm"
+        nota: "Tetto netto per ciclo di soia nello scenario intermedio."
+        verificato: false
+        assunzione: true
+        motivazione: "Nessuna fonte lombarda letta sui volumi irrigui della soia. In Pianura Padana la soia di primo raccolto riceve di norma meno interventi del mais (uno o due di soccorso in luglio-agosto); meta' del tetto del mais."
+        sensibilita: true
+        intervallo: [50, 200]
+    regime_rotazione:
+      valore: "irriguo"
+      unita: "-"
+      nota: "Con un tetto finito la coltura irrigabile e' comunque irrigata: penalita' di ristoppio del mais irriguo."
+      verificato: false
+      assunzione: true
+      motivazione: "rotation_rules distingue solo irriguo e asciutto (Seifert et al. 2017); un'irrigazione limitata e' piu' vicina all'irriguo. Alternativa in sensibilita': 'asciutto'."
+      sensibilita: true
+  irrigazione_libera:
+    tetto_irriguo:
+      mais:
+        valore: "illimitato"
+        unita: "mm"
+        nota: "Nessun tetto: l'irrigazione a richiesta copre ogni esaurimento oltre RAW (potenziale idrico)."
+        verificato: false
+        assunzione: true
+        motivazione: "Definizione dello scenario, non un dato misurato."
+      soia:
+        valore: "illimitato"
+        unita: "mm"
+        nota: "Come mais."
+        verificato: false
+        assunzione: true
+        motivazione: "Definizione dello scenario, non un dato misurato."
+    regime_rotazione:
+      valore: "irriguo"
+      unita: "-"
+      nota: "Penalita' di ristoppio del mais irriguo."
+      verificato: false
+      assunzione: true
+      motivazione: "Coltura irrigata per definizione."

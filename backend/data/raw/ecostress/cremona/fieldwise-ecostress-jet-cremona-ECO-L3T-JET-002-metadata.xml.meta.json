@@ -1,0 +1,21 @@
+{
+  "file": "fieldwise-ecostress-jet-cremona-ECO-L3T-JET-002-metadata.xml",
+  "source": "AppEEARS (LP DAAC)",
+  "product": "ECO_L3T_JET.002",
+  "version": "002",
+  "url": "https://appeears.earthdatacloud.nasa.gov/api/bundle/9cd39cda-6413-433b-acbe-44425576bf1b/e7a4d6e0-c08a-4a67-92e8-289e9c0d7b33",
+  "params": {
+    "task_id": "9cd39cda-6413-433b-acbe-44425576bf1b",
+    "layers": [
+      "ETdaily",
+      "ETinstUncertainty",
+      "PTJPLSMinst",
+      "cloud",
+      "water"
+    ]
+  },
+  "downloaded_at_utc": "2026-11-14T11:47:45+00:00",
+  "bytes": 28221,
+  "sha256": "1065fa11c923cac96e4b1840205105182a0a7af4e0e5accbc80ebbed3fd3735b",
+  "notes": null
+}

@@ -1,0 +1,15 @@
+{
+  "file": "catalog.json",
+  "source": "modis",
+  "product": "MOD13Q1",
+  "version": "not declared by service; /products description: MODIS/Terra Vegetation Indices (NDVI/EVI) 16-Day L3 Global 250m SIN Grid",
+  "url": "https://modis.ornl.gov/rst/api/v1/products | bands | dates",
+  "params": {
+    "latitude": 45.2,
+    "longitude": 10.0
+  },
+  "downloaded_at_utc": "2026-11-11T16:18:09+00:00",
+  "bytes": 36931,
+  "sha256": "a8098f461aadf1ae20c278d5305c5b772ed8e6b596644c369df595aa9a75a38b",
+  "notes": "Il servizio non dichiara la collezione MODIS; si registra la descrizione di /products."
+}

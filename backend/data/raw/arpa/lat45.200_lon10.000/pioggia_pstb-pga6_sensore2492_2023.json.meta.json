@@ -1,0 +1,29 @@
+{
+  "file": "pioggia_pstb-pga6_sensore2492_2023.json",
+  "source": "arpa",
+  "product": "Precipitazioni dal 2021",
+  "version": "pstb-pga6; ultimo aggiornamento 2026-03-06T17:54:22.000Z",
+  "url": "https://www.dati.lombardia.it/resource/pstb-pga6.json",
+  "params": {
+    "$select": "date_trunc_ymd(data) as giorno, case(date_extract_hh(data)=0 AND date_extract_mm(data)=0, 1, true, 0) as mezzanotte, sum(case(stato='VA' AND valore>=0, valore, true, 0)) as pioggia, sum(case(stato='VA' AND valore>=0, 1, true, 0)) as n_valid, count(*) as n_tot",
+    "$where": "idsensore='2492' AND data>'2023-01-01T00:00:00' AND data<='2024-01-01T00:00:00'",
+    "$group": "giorno,mezzanotte",
+    "$order": "giorno,mezzanotte",
+    "$limit": "50000",
+    "sensor_id": "2492",
+    "station": "Persico Dosimo",
+    "station_id": "136",
+    "lat": 45.17951839,
+    "lon": 10.0449444,
+    "quota_m": "44",
+    "dist_km": 4.194,
+    "role": "primary",
+    "datastart": "1990-10-17T00:00:00.000",
+    "datastop": null,
+    "year": 2023
+  },
+  "downloaded_at_utc": "2026-11-11T16:20:14+00:00",
+  "bytes": 79583,
+  "sha256": "ea2b35e23d048acc750da54e3e44626749d10c11b99f8a651726cda840295dc9",
+  "notes": "Sensore 2492 (Persico Dosimo, quota 44 m, 4.194 km dal punto). Righe = aggregato giornaliero SoQL (giorno, mezzanotte, pioggia, n_valid, n_tot). Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente."
+}

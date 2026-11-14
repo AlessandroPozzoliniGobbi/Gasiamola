@@ -1,0 +1,29 @@
+{
+  "file": "temperatura_w9wd-u6jh_sensore9938_2022.json",
+  "source": "arpa",
+  "product": "Temperatura dal 2021",
+  "version": "w9wd-u6jh; ultimo aggiornamento 2026-03-06T20:50:13.000Z",
+  "url": "https://www.dati.lombardia.it/resource/w9wd-u6jh.json",
+  "params": {
+    "$select": "date_trunc_ymd(data) as giorno, case(date_extract_hh(data)=0 AND date_extract_mm(data)=0, 1, true, 0) as mezzanotte, max(case(stato='VA' AND valore>-50 AND valore<60, valore)) as tmax, min(case(stato='VA' AND valore>-50 AND valore<60, valore)) as tmin, sum(case(stato='VA' AND valore>-50 AND valore<60, valore, true, 0)) as somma, sum(case(stato='VA' AND valore>-50 AND valore<60, 1, true, 0)) as n_valid, count(*) as n_tot",
+    "$where": "idsensore='9938' AND data>'2022-01-01T00:00:00' AND data<='2023-01-01T00:00:00'",
+    "$group": "giorno,mezzanotte",
+    "$order": "giorno,mezzanotte",
+    "$limit": "50000",
+    "sensor_id": "9938",
+    "station": "Cremona Via Fatebenefratelli",
+    "station_id": "677",
+    "lat": 45.14254358,
+    "lon": 10.04384767,
+    "quota_m": "43",
+    "dist_km": 7.255,
+    "role": "explicit",
+    "datastart": "2006-04-10T00:00:00.000",
+    "datastop": null,
+    "year": 2022
+  },
+  "downloaded_at_utc": "2026-11-11T21:25:49+00:00",
+  "bytes": 103587,
+  "sha256": "f1432b317fe18a20e38a7c9540def7b7b113824b48643716c528fa6bba8a3e5a",
+  "notes": "Sensore 9938 (Cremona Via Fatebenefratelli, quota 43 m, 7.255 km dal punto). Righe = aggregato giornaliero SoQL (giorno, mezzanotte, tmax, tmin, somma, n_valid, n_tot). Valori validi: stato 'VA' e -50 < T < 60 °C. Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente."
+}

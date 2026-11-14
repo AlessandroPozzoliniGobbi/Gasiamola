@@ -1,0 +1,21 @@
+{
+  "file": "ecostress_colture.csv",
+  "source": "Sentinel-2 L2A (riconoscimento NDVI, esperimento)",
+  "product": "coltura per punto-anno (mais, soia, frumento)",
+  "version": "prova_a 2026-11-14",
+  "url": "experiments/dati_nuovi/prova_a.py",
+  "params": {
+    "script": "experiments/dati_nuovi/prova_a.py",
+    "regole": "experiments/dati_nuovi/regole_prefissate.md (fissate prima di vedere i risultati)",
+    "origine": "data/processed/esperimenti/prova_a_classi_s2.csv",
+    "selezione": "solo le classi attribuite senza ambiguita' (mais, soia, cereale vernino da granella = frumento); doppie colture, altro e non classificabili sono esclusi",
+    "punti_anno": 58,
+    "punti": 25,
+    "anni": "2017-2022",
+    "uso": "scegliere quale coltura simulare nei punti-anno dove la classe e' netta, in fieldwise.validation (ECOSTRESS)"
+  },
+  "downloaded_at_utc": "2026-11-14T15:44:49+00:00",
+  "bytes": 855,
+  "sha256": "0d740d2120c4734a3da59e81f715b25be50518e4af410b5e9ecf10f1e17f8e9b",
+  "notes": "Limite: il riconoscimento da Sentinel-2 NON ha superato il criterio generale della prova A (65% di punti-anno senza ambiguita' contro 80% richiesto; coltura davvero attribuita solo nel 31%; quote lontane da ISTAT). Qui serve solo a scegliere la coltura da simulare dove la classe e' netta; non e' una mappa delle colture ne' una validazione del riconoscimento."
+}

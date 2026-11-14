@@ -1,0 +1,29 @@
+{
+  "file": "temperatura_6eu4-4tja_sensore2485_2001.json",
+  "source": "arpa",
+  "product": "Temperatura fino al 2010",
+  "version": "6eu4-4tja; ultimo aggiornamento 2025-05-06T16:42:07.000Z",
+  "url": "https://www.dati.lombardia.it/resource/6eu4-4tja.json",
+  "params": {
+    "$select": "date_trunc_ymd(data) as giorno, case(date_extract_hh(data)=0 AND date_extract_mm(data)=0, 1, true, 0) as mezzanotte, max(case(stato='VA' AND valore>-50 AND valore<60, valore)) as tmax, min(case(stato='VA' AND valore>-50 AND valore<60, valore)) as tmin, sum(case(stato='VA' AND valore>-50 AND valore<60, valore, true, 0)) as somma, sum(case(stato='VA' AND valore>-50 AND valore<60, 1, true, 0)) as n_valid, count(*) as n_tot",
+    "$where": "idsensore='2485' AND data>'2001-01-01T00:00:00' AND data<='2002-01-01T00:00:00'",
+    "$group": "giorno,mezzanotte",
+    "$order": "giorno,mezzanotte",
+    "$limit": "50000",
+    "sensor_id": "2485",
+    "station": "Persico Dosimo",
+    "station_id": "136",
+    "lat": 45.17951839,
+    "lon": 10.0449444,
+    "quota_m": "44",
+    "dist_km": 4.194,
+    "role": "primary",
+    "datastart": "1993-01-01T00:00:00.000",
+    "datastop": null,
+    "year": 2001
+  },
+  "downloaded_at_utc": "2026-11-11T21:20:53+00:00",
+  "bytes": 97316,
+  "sha256": "d96bbaaf7c5f8eeff2364a8c48163091b34de2225af91241351d935368384453",
+  "notes": "Sensore 2485 (Persico Dosimo, quota 44 m, 4.194 km dal punto). Righe = aggregato giornaliero SoQL (giorno, mezzanotte, tmax, tmin, somma, n_valid, n_tot). Valori validi: stato 'VA' e -50 < T < 60 °C. Orario ARPA = ora solare (UTC+1 fisso), riferito alle osservazioni fino all'orario indicato: la misura con timestamp T e' la pioggia in (T-10min, T]. Giorno D = intervallo solare (D 00:00, D+1 00:00]; la misura delle 00:00 va al giorno precedente."
+}

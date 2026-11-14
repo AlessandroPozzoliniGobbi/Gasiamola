@@ -1,0 +1,17 @@
+{
+  "file": "data_ITC4A.csv",
+  "source": "istat",
+  "product": "Superfici e produzione - dati in complesso - prov (101_1015_DF_DCSP_COLTIVAZIONI_2)",
+  "version": "1.0",
+  "url": "https://esploradati.istat.it/SDMXWS/rest/data/IT1,101_1015_DF_DCSP_COLTIVAZIONI_2,1.0/A.ITC4A...",
+  "params": {
+    "agency": "IT1",
+    "dataflow": "101_1015_DF_DCSP_COLTIVAZIONI_2",
+    "key": "A.ITC4A...",
+    "format": "SDMX-CSV 1.0"
+  },
+  "downloaded_at_utc": "2026-11-11T16:19:08+00:00",
+  "bytes": 561891,
+  "sha256": "5ff894c54b284fd287168e98617098f58ddf7a7aa69462228405f3898f4d0803",
+  "notes": "Tutte le colture e i tipi di dato per il territorio; filtrato a valle."
+}
