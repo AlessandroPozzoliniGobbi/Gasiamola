@@ -33,7 +33,6 @@ export default function Analysis({ fieldId }: Props) {
   const [running, setRunning] = useState(false);
   const [processingStage, setProcessingStage] = useState("Preparing your field analysis...");
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [usePilotReference, setUsePilotReference] = useState(false);
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [draft, setDraft] = useState<AnalysisDraft | null>(null);
   const [saveStatus, setSaveStatus] = useState<DraftSaveStatus>("saved");
@@ -119,17 +118,15 @@ export default function Analysis({ fieldId }: Props) {
     setAnalysisError(null);
     setRunning(true);
     try {
-      if (!usePilotReference) {
-        setProcessingStage("Checking field-specific climate and soil data...");
-        await prepareLocalField(point, setProcessingStage);
-      }
+      setProcessingStage("Checking field-specific climate and soil data...");
+      await prepareLocalField(point, setProcessingStage);
       setProcessingStage("Comparing rotations and saving your report...");
       const report = await analyzeField({
         id: field.id, name: field.name, number: field.number,
         areaHectares: hectares,
         polygonCoordinates: field.coordinates,
         representativePoint: point,
-      }, draft, usePilotReference);
+      }, draft);
       await saveCompletedReport(report);
       router.push(`/reports/${encodeURIComponent(report.id)}`);
     } catch (error) {
@@ -175,19 +172,6 @@ export default function Analysis({ fieldId }: Props) {
                     <div><span>Field</span><strong>#{field.number}</strong></div>
                     <div><span>Area</span><strong>{hectares?.toLocaleString("en-US", { maximumFractionDigits: 2 })} ha</strong></div>
                     <div><span>Reference point</span><strong>{point[1].toFixed(5)}° N, {point[0].toFixed(5)}° E</strong></div>
-                  </div>
-                  <div className={styles.ndviSection}>
-                    <div className={styles.ndviHeader}>
-                      <h3>NDVI <span className={styles.ndviSubheading}>vegetation index</span></h3>
-                      <span className={styles.subtleTag}>Coming soon</span>
-                    </div>
-                    <div className={styles.ndviGradient} aria-hidden="true" />
-                    <div className={styles.ndviTicks}><span>0 · Low</span><span>0.5</span><span>1 · High</span></div>
-                    <div className={styles.ndviThreshold}>
-                      <label className={styles.ndviLabel} htmlFor="ndvi-threshold">Display threshold</label>
-                      <input id="ndvi-threshold" type="range" min="0" max="1" step="0.01" value="0.5" disabled className={styles.ndviSlider} readOnly />
-                    </div>
-                    <p className={styles.ndviHint}>Preview only — no NDVI data loaded.</p>
                   </div>
                 </section>
               </aside>
@@ -267,7 +251,7 @@ export default function Analysis({ fieldId }: Props) {
                   <details className={styles.advancedSection}>
                     <summary className={styles.advancedSummary}>
                       <span><span className={styles.cardEyebrow}>05 / OPTIONAL FEATURES</span><strong>Advanced Analysis</strong></span>
-                      <span className={styles.subtleTag}>{draft.advancedEconomics ? "Enabled" : "Optional"}</span>
+                      <span className={`${styles.advancedIndicator} ${draft.advancedEconomics ? styles.advancedIndicatorActive : ""}`} role="img" aria-label={draft.advancedEconomics ? "Advanced analysis enabled" : "Advanced analysis disabled"} />
                     </summary>
                     <div className={styles.advancedBody}>
                       <p className={styles.helper}>Economic analysis is optional. The current backend supports a partial gross margin using fixed commodity prices and assumed nitrogen and irrigation costs.</p>
@@ -298,12 +282,6 @@ export default function Analysis({ fieldId }: Props) {
                   <div className={styles.summaryChips}>
                     <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>{draft.advancedEconomics ? "Advanced economics" : "Standard analysis"}</span>
                   </div>
-                  <label className={styles.referenceOption}>
-                    <input type="checkbox" checked={usePilotReference} onChange={(e) => setUsePilotReference(e.target.checked)} />
-                    <span><strong>Use Cremona pilot reference data</strong><br />
-                      <small>Optional fallback for testing. Uses Cremona pilot soil and climate, NOT local conditions. Keep this unchecked for a location-conditioned analysis.</small>
-                    </span>
-                  </label>
                   <div className={styles.submitActions}>
                     <button className={styles.resetButton} type="button" onClick={() => {
                       if (window.confirm("Reset this field's analysis settings to the defaults?")) updateDraft(() => defaultAnalysisDraft());
@@ -312,7 +290,7 @@ export default function Analysis({ fieldId }: Props) {
                       Run analysis <span>→</span>
                     </button>
                   </div>
-                  <p className={styles.helper}>Field-local mode downloads NASA POWER and SoilGrids data for your field&apos;s representative point (within 100 km of Cremona). The first preparation can take several minutes and requires an online backend. These are experimental gridded estimates, not field measurements. NDVI is not available yet.</p>
+                  <p className={styles.helper}>Field-local mode downloads NASA POWER and SoilGrids data for your field&apos;s representative point (within 100 km of Cremona). The first preparation can take several minutes and requires an online backend. These are experimental gridded estimates, not field measurements.</p>
                   {analysisError && <p className={styles.alert} role="alert">{analysisError}</p>}
                   <details className={styles.technicalDetails}>
                     <summary>Backend-ready identifiers (for integration)</summary>

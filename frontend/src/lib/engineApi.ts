@@ -17,8 +17,7 @@ type EngineResult = {
   };
 };
 
-export async function analyzeField(field: FieldSnapshot, draft: AnalysisDraft,
-  usePilotReference: boolean): Promise<CompletedReport> {
+export async function analyzeField(field: FieldSnapshot, draft: AnalysisDraft): Promise<CompletedReport> {
   if (!BASE) throw new Error("Analysis API is not configured. Set NEXT_PUBLIC_FIELDWISE_API_URL to your Python backend URL.");
   if (!field.representativePoint) throw new Error("This field does not have a valid reference point.");
   const controller = new AbortController();
@@ -34,7 +33,7 @@ export async function analyzeField(field: FieldSnapshot, draft: AnalysisDraft,
         // Standard reports do not opt into economic ranking; the backend's fixed
         // economic model is not modified by this display-level selection.
         priorities: { ...draft.priorities, profitto: draft.advancedEconomics ? draft.priorities.profitto : 0 },
-        use_pilot_reference: usePilotReference,
+        use_pilot_reference: false,
       }),
       signal: controller.signal,
     });

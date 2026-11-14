@@ -8,6 +8,7 @@ import styles from "../styles/Navbar.module.css";
 
 const navigation = [
   { href: "/", label: "Home" },
+  { href: "/mappa", label: "Map" },
   { href: "/progetto", label: "Project" },
   { href: "/reports", label: "Reports" },
   { href: "/contatti", label: "Team" },

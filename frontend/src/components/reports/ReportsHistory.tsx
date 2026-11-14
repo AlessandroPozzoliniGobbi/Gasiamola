@@ -47,7 +47,7 @@ export default function ReportsHistory() {
         <section className={styles.emptyState}>
           <span className={styles.emptyIcon} aria-hidden="true">▤</span>
           <h2>No analyses yet.</h2>
-          <p>Your completed field reports will appear here automatically once the FIELDWISE engine is connected.</p>
+          <p>Your completed field reports will appear here automatically after you complete an analysis.</p>
           <Link className={styles.primaryButton} href="/mappa">Explore your fields ↗</Link>
         </section>
         : <div className={styles.historyList}>
@@ -64,11 +64,7 @@ export default function ReportsHistory() {
             </div>
           </article>)}
         </div>)}
-      <div className={styles.previewNotice}>
-        <div><strong>Preview the report design</strong><p>Explore the five report sections with fictional data. This will not create a saved analysis.</p></div>
-        <Link href="/reports/preview" className={styles.secondaryButton}>Open demo preview →</Link>
-      </div>
-      <p className={styles.storageNote}>Reports stay on this browser and device. Clearing site data or using another browser can remove access to them. Export will be available after backend integration.</p>
+      <p className={styles.storageNote}>Reports stay on this browser and device. Clearing site data or using another browser can remove access to them. Keep a local PDF or Excel copy for long-term archiving.</p>
     </div>
   </main>;
 }

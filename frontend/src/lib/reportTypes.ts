@@ -30,6 +30,22 @@ export type FieldSnapshot = {
   representativePoint: [number, number] | null; // [longitude, latitude]
 };
 
+/** Annual-labelled points are overlapping historical rotation WINDOWS, not measured annual yields. */
+export type HistoricalWindowPoint = {
+  startYear:number;
+  endYear:number;
+  memberCount:number;
+  relativeYield:number|null;
+  irrigationMm:number|null;
+  nitrogenLeachingKgN:number|null;
+  humusChangeTonsHa:number|null;
+  grossMarginEurHa:number|null;
+};
+export type HistoricalWindows = {
+  method:string;
+  series:{role:"current"|"alternative1"|"alternative2";rotation:string;points:HistoricalWindowPoint[]}[];
+};
+
 export type CompletedReport = {
   schemaVersion: 1;
   id: string;
@@ -58,6 +74,7 @@ export type CompletedReport = {
     current: RotationResult;
     alternatives: RotationResult[];
     comparedRotations: number | null;
+    historicalWindows?: HistoricalWindows | null;
     notes: string[];
   };
 };

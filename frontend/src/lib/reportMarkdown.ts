@@ -22,11 +22,18 @@ const delta = (key: keyof RotationMetrics, value: number | null, baseline: numbe
 };
 
 function notesSection(role: string, outcome: RotationResult): string {
-  const bullets = (items: string[], fallback: string) => items.length ? items.map((line) => `- ${line}`).join("\n") : `- ${fallback}`;
+  const modelText = (items: string[]) => items.map(x => x.trim()).filter(Boolean).join(" ");
+  const isCurrent = role === "Current rotation";
+  const evidence = modelText(outcome.evidence);
+  const risks = modelText(outcome.risks);
+  const evidenceIntro = isCurrent ?
+    "This is the farmer's starting strategy and serves as the numerical baseline for all differences in the report." :
+    "Compared with the current rotation, the model identifies several changes in the selected performance indicators. These findings should be interpreted together rather than as a guarantee that one option is superior in every respect.";
+  const riskIntro = "A useful recommendation must also describe its potential disadvantages and unresolved uncertainties, including any production-rule caveats returned by the model.";
   return `### ${role} — ${labelRotation(outcome.label)}\n\n` +
-    `Relative ranking score: ${finite(outcome.score) ? outcome.score.toFixed(3) : "Not available"} (relative score, not confidence).\n\n` +
-    `**Evidence**\n\n${bullets(outcome.evidence, "No evidence supplied.")}\n\n` +
-    `**Risks and trade-offs**\n\n${bullets(outcome.risks, "No risk notes supplied.")}`;
+    `The relative ranking score is ${finite(outcome.score) ? outcome.score.toFixed(3) : "not available"}. This value only ranks the alternatives within the analyzed set; it does not represent a probability of success or a confidence level.\n\n` +
+    `**Interpretation of the evidence**\n\n${evidenceIntro} ${evidence || "No additional quantitative evidence was supplied for this rotation."}\n\n` +
+    `**Risks and trade-offs**\n\n${riskIntro} ${risks || "No specific risk note was supplied; this does not establish that the strategy is risk-free."}`;
 }
 
 export function renderReportMarkdown(report: CompletedReport, demo = false): string {
@@ -62,7 +69,8 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
     `**Leading alternative:** ${best ? labelRotation(best.label) : "No feasible alternative returned"}\n\n` +
     `**Irrigation scenario:** ${IRRIGATION_LABELS[report.inputs.irrigation]}\n\n` +
     `**Rotations compared:** ${report.results.comparedRotations ?? "Not supplied"}\n\n` +
-    `The recommendation reflects relative ranking among the considered rotations under historical weather conditions and the selected farmer priorities. It is not a prediction of next year's yield or a guarantee of economic benefit.`,
+    `The purpose of this analysis is to support a comparison of management strategies using a consistent set of historical climate scenarios. The model evaluates the current crop rotation against alternative sequences and ranks the resulting outcomes according to the priorities recorded above.\n\n` +
+    `The leading alternative is the highest-ranked eligible recommendation under those conditions, but it should not be interpreted as universally optimal. Differences between the scenarios can reflect trade-offs: for example, a change that improves relative yield can also raise water or fertilizer demand. The comparison is conditional on model assumptions, data coverage, scenario definitions and the alternatives that were actually evaluated.`,
     `## 2. Field, assumptions and input configuration\n\n` +
     `| Parameter | Value |\n| --- | --- |\n` +
     `| Field name | ${mdCell(report.field.name)} |\n| Field number | ${report.field.number} |\n` +
@@ -74,10 +82,18 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
     `| Analysis reference mode | ${mdCell(modeText)} |\n\n` +
     `### Priority weights\n\n| Criterion | Weight |\n| --- | --- |\n${priorities}`,
     `## 3. Quantitative comparison (all saved indicators)\n\n` +
-    `The full indicator table below supplies the values used by the comparison charts. Deltas are alternative minus current rotation; positive is not necessarily better for consumption and loss indicators.\n\n` +
+    `The full table reports every quantitative indicator retained in the browser report snapshot. Each column refers to a simulation-based property of the stated rotation and irrigation scenario, aggregated over historical weather conditions. These are modeled comparisons, not directly measured field outcomes.\n\n` +
+    `Deltas are calculated as **alternative minus current rotation**. A positive delta means an increase, not necessarily an improvement: higher relative yield and higher humus change can be favorable, whereas higher nitrogen leaching and irrigation demand usually represent a larger environmental or resource burden.\n\n` +
     `| Indicator | Current | Alternative 1 | Alternative 2 | Delta A1 | Delta A2 |\n| --- | --- | --- | --- | --- | --- |\n${rows}\n\n` +
-    `### Comparative figures\n\n<!-- FIELDWISE_CHARTS -->`,
+    `### Comparative figures\n\n` +
+    `The bar charts visualize the saved summary indicators. They complement, rather than replace, the numerical table: read both the scale and the unit of each metric before comparing options.\n\n` +
+    `<!-- FIELDWISE_CHARTS -->\n\n` +
+    `### Change across historical simulation windows\n\n` +
+    (report.results.historicalWindows?.series?.length ?
+      `The following line charts describe variation across **overlapping multi-year rotation simulations** indexed by their historical start year. Each point is the median across available cyclic shifts in that window, not the observation of a single farm in that calendar year. Adjacent points can share weather years and are not independent.\n\n<!-- FIELDWISE_HISTORICAL_CHARTS -->` :
+      `A year-indexed simulation series was not supplied with this saved report. It would be inappropriate to reconstruct or interpolate that sequence from aggregated summary values.`),
     `## 4. Evidence, risks and interpretations\n\n` +
+    `For each rotation, the following interpretation relates the ranking output to the differences in the indicator table. A favorable result for one variable does not remove uncertainty in others. The evidence and risk statements preserve the comparisons returned by the FIELDWISE API, rather than introducing unobserved measurements.\n\n` +
     [notesSection("Current rotation", outcomes[0]), ...report.results.alternatives.map((r,i) => notesSection(`Alternative ${i+1}`, r))].join("\n\n"),
     ...(economics ? [`## 5. Economics: difference from the current rotation\n\n` +
       `The economic indicator is a **partial gross margin**, not net profit: crop revenue minus nitrogen fertiliser and irrigation costs, using the model's fixed price and cost assumptions. It excludes seeds, crop protection, machinery, labour and fixed costs.\n\n` +
@@ -92,14 +108,8 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
       `| Runoff group | ${soil.aquaCropRunoffGroup} |\n` +
       `| Surface available water | ${soil.surfaceAvailableWaterMm.toFixed(2)} mm |\n` +
       `| Profile available water | ${soil.profileAvailableWaterMm.toFixed(2)} mm |` : "The saved report does not include a local soil-properties snapshot."),
-    `## ${economics ? 7 : 6}. Scientific interpretation and limitations\n\n` +
-    `${report.engine.methodologyNote ?? "No detailed methodology supplied with this report."}\n\n` +
-    `- Historical ensemble results describe sensitivity to past weather variability; they are not weather or harvest forecasts.\n` +
-    `- Soil grids describe predicted properties, not direct field measurements. A single point cannot resolve within-field heterogeneity.\n` +
-    `- Relative ranking scores are conditional on the alternative set, assumptions and priority weights; they are not confidence or sustainability percentages.\n` +
-    `- The saved browser report may omit daily model series and numerical diagnostics not transmitted by the backend.`,
-    `## ${economics ? 8 : 7}. Model notes\n\n${modelNotes}`,
-    `## ${economics ? 9 : 8}. Data provenance and reproducibility\n\n` +
+    `## ${economics ? 7 : 6}. Model notes\n\n${modelNotes}`,
+    `## ${economics ? 8 : 7}. Data provenance and reproducibility\n\n` +
     `| Item | Value |\n| --- | --- |\n` +
     `| Engine version | ${mdCell(report.engine.version)} |\n` +
     `| Data period | ${mdCell(report.engine.dataPeriod)} |\n` +
@@ -110,6 +120,12 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
     `| Model input point | ${fmtPoint(report.engine.modelPoint)} |\n\n` +
     `Scientific references, dataset product versions, transformation details and raw model series should be attached through the backend when available. Do not infer missing information from the displayed values.`,
     ...(geometry ? [`## Appendix. Field polygon vertices (GeoJSON order)\n\n| Ring | Vertex | Longitude | Latitude |\n| --- | --- | --- | --- |\n${geometry}`] : []),
+    `## Final disclaimer — scope and model limitations\n\n` +
+    `This document is a decision-support report produced from a historical simulation ensemble. It is **not** a field measurement, harvest forecast, yield guarantee, financial projection or substitute for site-specific agronomic advice.\n\n` +
+    `${modeText} ${report.engine.methodologyNote ?? "Detailed methodological notes were not provided."}\n\n` +
+    `The analysis uses a representative geographic point; it does not resolve spatial variability throughout the entire polygon. NASA POWER and SoilGrids represent gridded climate data and modeled soil properties rather than direct measurements on this field. The effect of groundwater and local management may not be fully represented.\n\n` +
+    `Ranking scores are relative to the compared rotations and selected priorities, and they are not confidence or sustainability percentages. The model has important validation limitations, including reported uncertainty in wheat yields, soil nitrogen and humus processes. Any economic margin, when included, covers selected variable costs only and is not net farm profit.\n\n` +
+    `Only fields transmitted to the browser are included here. Daily simulation states, raw satellite imagery and other unpublished diagnostics have not been inferred. For professional use, verify assumptions, local regulatory compliance and field measurements independently.`,
   ];
   return md.join("\n\n") + "\n";
 }

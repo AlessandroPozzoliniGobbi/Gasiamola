@@ -6,8 +6,9 @@ import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS } from "
 import { REPORT_METRICS, formatMetric, labelRotation, type CompletedReport,
   type RotationMetrics, type RotationResult } from "../../lib/reportTypes";
 import styles from "../../styles/reports.module.css";
-import { openPdfReport } from "../../lib/reportPrint";
+import { downloadPdfReport } from "../../lib/reportPrint";
 import { downloadExcelReport } from "../../lib/reportExcel";
+import HistoricalWindowPlot from "./HistoricalWindowPlot";
 
 type Tab = "overview" | "compare" | "insights" | "economics" | "details";
 const TABS: { id: Tab; title: string }[] = [
@@ -135,6 +136,15 @@ function BulletSection({ title, items, fallback }: { title: string; items: strin
 
 export default function ReportDashboard({ report, demo = false }: { report: CompletedReport; demo?: boolean }) {
   const [tab, setTab] = useState<Tab>("overview");
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const savePdf = async () => {
+    setPdfError(null);
+    setPdfExporting(true);
+    try { await downloadPdfReport(report, demo); }
+    catch (error) { setPdfError(error instanceof Error ? error.message : "PDF export failed."); }
+    finally { setPdfExporting(false); }
+  };
   // Legacy reports predate the optional advanced-analysis input; preserve their Economics tab.
   const showEconomics = !("advancedEconomics" in report.inputs) || report.inputs.advancedEconomics === true;
   const visibleTabs = TABS.filter((item) => showEconomics || item.id !== "economics");
@@ -155,7 +165,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
   const dateLabel = Number.isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
   return (
-    <main className={`${styles.page} ${tab === "overview" ? styles.overviewPage : ""} ${demo ? styles.demoPage : ""}`}>
+    <main className={`${styles.page} ${tab === "overview" ? styles.overviewPage : ""}`}>
       <div className={styles.container}>
         <div className={styles.topbar}>
           <Link className={styles.backLink} href="/reports">← All reports</Link>
@@ -164,10 +174,6 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
         {demo && <div role="status" className={styles.demoBanner}>
           <strong>DEMO PREVIEW — FICTIONAL DATA.</strong> These values are for interface testing only. No FIELDWISE analysis was performed. This report is not saved.
         </div>}
-        {report.engine.sourceMode === "pilot_reference" &&
-          <div className={styles.demoBanner} role="status"><strong>CREMONA REFERENCE DATASET.</strong> This report uses pilot-point climate and soil data, not measurements for this field. It is an exploratory comparison only.</div>}
-        {report.engine.sourceMode === "local_estimate" &&
-          <div className={styles.demoBanner} role="status"><strong>LOCATION-CONDITIONED ESTIMATE.</strong> Local NASA POWER and SoilGrids predictions are used at one representative point. This is experimental, not a measured or validated field-scale forecast.</div>}
         <header className={styles.reportHeader}>
           <div>
             <span className={styles.eyebrow}>FIELD REPORT · {dateLabel}</span>
@@ -175,13 +181,14 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             <p>Compare rotations, explore environmental trade-offs and see the evidence behind each result.</p>
           </div>
           <div className={styles.exportArea}>
-            <button type="button" onClick={() => openPdfReport(report, demo)}
-              title="Open the complete, print-ready report and save it as PDF"
-              className={styles.secondaryButton}>Export PDF</button>
+            <button type="button" onClick={savePdf} disabled={pdfExporting}
+              title="Download the complete PDF report directly"
+              className={styles.secondaryButton}>{pdfExporting ? "Preparing PDF…" : "Export PDF"}</button>
             <button type="button" onClick={() => downloadExcelReport(report, demo)}
               title="Download the tabular data used by all comparison charts"
               className={styles.secondaryButton}>Export Excel</button>
-            <small>PDF opens a print-ready document · Excel contains the underlying tables.</small>
+            <small>Download the full PDF or an Excel workbook with the underlying tables.</small>
+            {pdfError && <small role="alert" style={{color:"#9b4c22"}}>{pdfError}</small>}
           </div>
         </header>
 
@@ -234,6 +241,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
         {tab === "insights" && <div className={styles.content}>
           <div className={styles.sectionIntro}><span className={styles.smallCaps}>03 / MODEL INSIGHTS</span><h2>Understand the uncertainty.</h2>
             <p>Results summarize historical climate scenarios, not a weather forecast for next season.</p></div>
+          {report.results.historicalWindows && <HistoricalWindowPlot history={report.results.historicalWindows} showEconomics={showEconomics} />}
           <div className={styles.insightGrid}>
             {outcomes.map((item, index) => <article key={`${item.label}-${index}`} className={styles.panel}>
               <span className={styles.smallCaps}>{index === 0 ? "Current rotation" : `Alternative ${index}`}</span>
@@ -311,7 +319,8 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
                 {report.engine.localData && <div><dt>Soil</dt><dd>{report.engine.localData.surfaceTexture} · CN {report.engine.localData.curveNumber}</dd></div>}
               </dl>
             </section>
-            <section className={styles.panel}><h3>Interpretation &amp; limits</h3>
+            <section className={styles.panel}><h3>Important limitations</h3>
+              <p className={styles.compactCaveat}>{report.engine.sourceMode === "local_estimate" ? "Location-conditioned estimate: gridded NASA POWER climate and SoilGrids soil at one point, not a field-scale measurement or validated forecast." : report.engine.sourceMode === "pilot_reference" ? "Cremona reference dataset: results are based on pilot-point conditions, not this field’s local soil and climate." : "Pilot-point historical comparison; not a forecast for the next growing season."}</p>
               <p className={styles.compactCaveat}>Historical-climate ensemble, not a forecast. Estimates at one representative point may not reflect variations across the field.</p>
               <p className={styles.compactCaveat}>Scores depend on the compared rotations and your priorities. Economic margins exclude several farm costs.</p>
               <p className={styles.compactAside}>Full model notes, individual risks, soil parameters and reproducibility data are included in the PDF.</p>

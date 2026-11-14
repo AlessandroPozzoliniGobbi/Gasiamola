@@ -11,9 +11,9 @@ import os
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from fieldwise import __version__, config, ensemble, ranking
 from fieldwise.data.cache import CacheMiss
@@ -30,9 +30,6 @@ PRIORITIES = tuple(ranking.PRIORITA.keys())
 
 
 class AnalyzeRequest(BaseModel):
-    # Reject unknown economic or other parameters instead of silently ignoring them.
-    model_config = ConfigDict(extra="forbid")
-
     # GeoJSON order, [longitude, latitude]
     point: tuple[float, float]
     rotation: str = Field(min_length=4, max_length=160)
@@ -177,6 +174,48 @@ def _cache_is_current(meta: dict) -> bool:
     return True
 
 
+def _historical_windows(detail, scenario: str, current, alternatives):
+    """Historical three-year ROTATION WINDOWS, not a measured annual field series.
+
+    For each window start year and cyclic class, summarize successful simulations
+    across cyclic shifts with the median. These windows overlap and their points
+    must not be interpreted as independent observations or annual forecasts.
+    """
+    if detail.empty:
+        return None
+    indicators = {
+        "relativeYield": "resa_rel_media",
+        "irrigationMm": "irrigazione_mm",
+        "nitrogenLeachingKgN": "n_lisciviato_kg_n",
+        "humusChangeTonsHa": "humus_t_ha",
+        "grossMarginEurHa": "margine_lordo_eur_ha",
+    }
+    series = []
+    for role, item in [("current", current), ("alternative1", alternatives[0] if len(alternatives) > 0 else None),
+                       ("alternative2", alternatives[1] if len(alternatives) > 1 else None)]:
+        if item is None:
+            continue
+        cls = str(item["classe"])
+        rows = detail.loc[(detail["classe"] == cls) & (detail["scenario"] == scenario)]
+        if rows.empty:
+            continue
+        points = []
+        for year, block in rows.groupby("anno_partenza", sort=True):
+            point = {"startYear": int(year), "endYear": int(block["anno_valutato"].max()), "memberCount": int(len(block))}
+            for name, column in indicators.items():
+                point[name] = number(block[column].median()) if column in block.columns else None
+            points.append(point)
+        if points:
+            series.append({"role": role, "rotation": cls, "points": points})
+    if not series:
+        return None
+    return {
+        "method": "Median across simulated cyclic shifts for each historical rotation start-year; "
+                  "each point summarizes an overlapping multi-year rotation window, not an observed annual yield.",
+        "series": series,
+    }
+
+
 @app.get("/api/v1/health")
 def health():
     pointdir = config.DATA_DIR / "processed" / f"lat{PILOT[1]:.3f}_lon{PILOT[0]:.3f}"
@@ -229,7 +268,7 @@ def analyze(request: AnalyzeRequest):
     else:
         model_point = PILOT
     try:
-        _, summary = ensemble.load_ensemble(lat=model_point[1], lon=model_point[0])
+        detail, summary = ensemble.load_ensemble(lat=model_point[1], lon=model_point[0])
         meta = summary.attrs.get("meta", {})
         if not _cache_is_current(meta):
             raise HTTPException(status_code=409, detail={"code": "STALE_ENSEMBLE", "message": "Cached simulations no longer match the current parameter files. Regenerate and validate the ensemble before using them."})
@@ -262,6 +301,7 @@ def analyze(request: AnalyzeRequest):
         note = ("Cremona pilot soil and climate (45.2 N, 10.0 E). This exploratory comparison "
                 "is NOT location-specific to the selected field." if not exact_pilot else
                 "Pilot-point historical comparison with cached Cremona soil and weather data.")
+    historical_windows = _historical_windows(detail, request.scenario, current, conf.get("alternative", []))
     return {
         "schemaVersion": 1,
         "engine": {"version": __version__, "dataPeriod": (f"{meta['anni_valutati'][0]}–{meta['anni_valutati'][-1]} (historical years)" if isinstance(meta.get("anni_valutati"), list) and meta["anni_valutati"] else "Historical ensemble"),
@@ -272,9 +312,36 @@ def analyze(request: AnalyzeRequest):
         "results": {"scenario": request.scenario, "current": _outcome(current, current),
                     "alternatives": [_outcome(x, current) for x in conf.get("alternative", [])],
                     "comparedRotations": conf.get("n_confrontate"),
+                    "historicalWindows": historical_windows,
                     "notes": [note, ("No region-specific compliance filter was applied: local rotation regulations must be verified." if local_rec else
                               "Alternatives are filtered for compliance with the Lombardy five-year rotation rules; the existing rotation remains visible regardless of compliance."),
                               "Ranking scores are relative and can change substantially with uncertain parameters or chosen priorities.",
                               "Wheat-yield validation was negative; do not interpret the wheat-related rankings as reliable risk forecasts.",
                               "Economic margin includes crop revenue less mineral nitrogen fertilizer and irrigation only; it excludes seed, crop protection, machinery and fixed costs."] + list(conf.get("note", []) or conf.get("notes", []))},
     }
+
+
+class PdfReportRequest(BaseModel):
+    """Export the same Markdown already composed by the browser report."""
+    markdown: str = Field(min_length=20, max_length=1_000_000)
+    report: dict = Field(default_factory=dict)
+    demo: bool = False
+
+
+@app.post("/api/v1/reports/pdf")
+def export_report_pdf(request: PdfReportRequest):
+    try:
+        from report_export import render_pdf
+        pdf = render_pdf(request.markdown, request.report, request.demo)
+    except ImportError as exc:
+        raise HTTPException(status_code=503, detail={"code": "PDF_DEPENDENCY_MISSING", "message": "Install reportlab in the backend environment to enable PDF export."}) from exc
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail={"code": "PDF_EXPORT_FAILED", "message": str(exc)}) from exc
+    report_id = str(request.report.get("id", "report"))
+    safe_id = "".join(c if c.isalnum() or c in "-_" else "_" for c in report_id)[:64]
+    filename = f"FIELDWISE_{safe_id or 'report'}.pdf"
+    return Response(pdf, media_type="application/pdf", headers={
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+    })
