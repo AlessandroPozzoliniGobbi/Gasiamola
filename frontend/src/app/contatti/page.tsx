@@ -6,7 +6,7 @@ const teamMembers = [
   { number: "03", name: "De Martini Matteo", role: "[Role / contribution to the project]" },
   { number: "04", name: "Pozzolini Gobbi Alessandro", role: "Frontend developer" },
   { number: "05", name: "Tesch Vittorio", role: "[Role / contribution to the project]" },
-  { number: "06", name: "Valente Lorenzo", role: "[Role / contribution to the project]" },
+  { number: "06", name: "Valente Lorenzo", role: "Nitrogen Expert" },
 ];
 
 export default function Contatti() {

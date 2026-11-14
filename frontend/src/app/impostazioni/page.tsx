@@ -30,10 +30,10 @@ export default function Impostazioni() {
     <main className="project-page inner-page">
       <div className="project-page-content inner-page-content">
         <button type="button" className="project-page-back back-button" onClick={goBack}>
-          <span aria-hidden="true">←</span> Torna indietro
+          <span aria-hidden="true">←</span> Go back
         </button>
-        <h1>Impostazioni</h1>
-        <p>*Qui inseriremo le impostazioni dell&apos;applicazione.*</p>
+        <h1>Settings</h1>
+        <p>Application settings will be available here.</p>
       </div>
     </main>
   );

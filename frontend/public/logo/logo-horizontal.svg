@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" role="img" aria-labelledby="title desc">
-  <title id="title">FIELDWISE - logo orizzontale</title>
-  <desc id="desc">Logo con satellite, germoglio e campi, seguito dal nome FIELDWISE e da una catch phrase modificabile.</desc>
+  <title id="title">FIELDWISE - horizontal logo</title>
+  <desc id="desc">Logo featuring a satellite, sprout and fields, followed by the FIELDWISE name and an editable tagline.</desc>
   <g transform="translate(20 10) scale(.58)">
     <g fill="none" stroke="#256f4d" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
       <path d="M92 334C54 213 103 91 217 47c65-25 139-20 198 13"/>

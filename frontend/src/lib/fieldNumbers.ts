@@ -35,10 +35,10 @@ export function prepareImportedFields(imported: readonly ImportedField[]) {
     // Se il nome era quello generato automaticamente, aggiorniamo il numero
     // anche nel nome; i nomi personalizzati sono conservati intatti.
     const customName = item.name?.trim() || "";
-    const name = !customName || /^Appezzamento \d+$/.test(customName)
-      ? `Appezzamento ${number}`
+    const name = !customName || /^(?:Appezzamento|Field) \d+$/.test(customName)
+      ? `Field ${number}`
       : customName;
 
-    return { number, name, coordinates: item.coordinates };
+    return { number, name, coordinates: item.coordinates, backupId: item.backupId, analysis: item.analysis };
   });
 }

@@ -1,0 +1,338 @@
+/* PROJECT — independent routes with shared chapter navigation. */
+.projectShell, .projectShell * { box-sizing: border-box; }
+.projectShell {
+  --project-ink: #193d2b;
+  --project-green: #256f4d;
+  --project-muted: #637e6b;
+  min-height: calc(100svh - 78px);
+  padding: clamp(32px, 4.8vw, 65px) 22px 96px;
+  background:
+    radial-gradient(ellipse at 9% 6%, rgba(206, 232, 196, .54), transparent 32%),
+    radial-gradient(ellipse at 91% 88%, rgba(219, 239, 208, .55), transparent 36%),
+    #f7faf5;
+  color: var(--project-ink);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+.projectContainer { max-width: 1330px; margin: 0 auto; }
+.projectHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  margin-bottom: 28px;
+}
+.headerTitleGroup { min-width: 0; }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--project-green);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.6;
+}
+.eyebrowDot { flex: 0 0 8px; width: 8px; height: 8px; background: #549666; border-radius: 50%; }
+.headerTitle {
+  margin: 11px 0 7px;
+  font-size: clamp(34px, 4.1vw, 56px);
+  line-height: 1.11;
+  letter-spacing: -.052em;
+  font-weight: 800;
+}
+.headerDescription { margin: 0; color: var(--project-muted); font-size: 15px; line-height: 1.6; }
+.overviewLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 11px 14px;
+  border: 1px solid #cfe1d0;
+  border-radius: 13px;
+  color: var(--project-green);
+  background: rgba(255, 255, 253, .7);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 750;
+  transition: border-color .2s ease, background .2s ease;
+}
+.overviewLink:hover { background: #fff; border-color: #a8cdb1; }
+
+/* The navbar-like chapter index stays visible across all /progetto routes. */
+.chapterNav {
+  position: sticky;
+  top: 88px;
+  z-index: 20;
+  width: 100%;
+  margin-bottom: 28px;
+  padding: 7px;
+  border: 1px solid #d6e7d5;
+  border-radius: 23px;
+  background: #edf4eb;
+  box-shadow: 0 4px 20px rgba(22, 57, 36, .03);
+}
+.chapterLinks { display: flex; align-items: stretch; gap: 4px; }
+.chapterLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 48px;
+  padding: 12px 10px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  color: #486652;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: clamp(11px, .88vw, 13px);
+  font-weight: 700;
+  line-height: 1.2;
+  transition: color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+.chapterLink:hover { color: #153f2a; background: #e1eddf; }
+.chapterActive, .chapterActive:hover {
+  background: #fff;
+  color: #17623e;
+  box-shadow: 0 3px 12px rgba(34, 76, 44, .10);
+}
+.projectShell a:focus-visible { outline: 3px solid #2f8b5b; outline-offset: 3px; }
+
+.contentCard {
+  padding: clamp(30px, 5vw, 66px);
+  border: 1px solid #dae8d9;
+  border-radius: 28px;
+  background: rgba(255, 255, 252, .96);
+  box-shadow: 0 20px 56px rgba(32, 69, 38, .055);
+}
+.contentHeading { max-width: 810px; }
+.sectionLabel {
+  color: var(--project-green);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+.pageTitle {
+  margin: 12px 0 17px;
+  font-size: clamp(34px, 4.4vw, 59px);
+  line-height: 1.11;
+  letter-spacing: -.055em;
+  font-weight: 790;
+  text-wrap: balance;
+}
+.lead {
+  max-width: 760px;
+  margin: 0;
+  color: #587160;
+  font-size: clamp(17px, 1.65vw, 20px);
+  line-height: 1.72;
+}
+.overviewFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: clamp(42px, 6vw, 77px);
+  padding-top: 25px;
+  border-top: 1px solid #dfeadf;
+}
+.overviewInfo { display: flex; align-items: center; gap: 16px; max-width: 600px; color: #607a66; font-size: 14px; line-height: 1.5; }
+.overviewNumber { color: #8eb49a; font-size: 45px; line-height: 1; font-weight: 800; letter-spacing: -.07em; }
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  flex: 0 0 auto;
+  padding: 15px 22px;
+  border-radius: 13px;
+  background: #256f4d;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 750;
+  transition: background .2s ease;
+}
+.primaryLink:hover { background: #185336; }
+
+.draftArea {
+  max-width: 1000px;
+  margin-top: 43px;
+  padding: clamp(24px, 3.2vw, 39px);
+  border: 1px dashed #bfd7c1;
+  border-radius: 21px;
+  background: #f7faf5;
+}
+.draftTopline { display: flex; align-items: center; gap: 9px; color: #6c926e; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.draftDot { display: inline-block; width: 8px; height: 8px; background: #9dc4a4; border-radius: 50%; }
+.draftTitle { margin: 14px 0 7px; font-size: 24px; font-weight: 760; letter-spacing: -.035em; }
+.draftText { margin: 0; color: #607866; font-size: 15px; line-height: 1.65; }
+.topicList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 23px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.topicList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 13px 15px;
+  border: 1px solid #dfebdd;
+  border-radius: 13px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+  color: #365e43;
+}
+.topicList li::before {
+  content: "";
+  display: block;
+  flex: 0 0 7px;
+  width: 7px;
+  height: 7px;
+  background: #8cb99a;
+  border-radius: 50%;
+}
+.chapterFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 1px solid #e0eadf;
+}
+.chapterMove { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; color: #246446; text-decoration: none; }
+.chapterMove:hover { color: #133e29; }
+.chapterMoveNext { text-align: right; align-items: flex-end; }
+.moveKicker { font-size: 10px; color: #78947d; font-weight: 800; letter-spacing: .13em; }
+.chapterMove strong { font-size: 14px; font-weight: 750; }
+
+/* Project Overview is also the Introduction. On desktop it occupies exactly
+   the available viewport below the sticky site navbar. Other chapters remain
+   normal scrolling documents for when research text is added later. */
+.overviewCard { display: flex; flex-direction: column; justify-content: center; }
+.overviewBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, .85fr);
+  align-items: center;
+  gap: clamp(24px, 3.1vw, 48px);
+}
+.overviewHighlights {
+  display: grid;
+  gap: clamp(11px, 1.9vh, 19px);
+  padding-left: clamp(18px, 2.4vw, 30px);
+  border-left: 1px solid #dce9dc;
+}
+.overviewHighlight span {
+  color: var(--project-green);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: .10em;
+}
+.overviewHighlight p {
+  margin: 5px 0 0;
+  color: #516f5b;
+  font-size: clamp(12px, 1vw, 14px);
+  line-height: 1.45;
+}
+@media (min-width: 921px) and (min-height: 550px) {
+  .projectShell:has(.overviewCard) {
+    height: calc(100dvh - 79px);
+    min-height: 0;
+    overflow: hidden;
+    padding: clamp(12px, 2.1vh, 21px) 22px;
+  }
+  .projectShell:has(.overviewCard) .projectContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+  .projectShell:has(.overviewCard) .projectHeader {
+    flex: 0 0 auto;
+    margin-bottom: clamp(8px, 1.5vh, 15px);
+  }
+  .projectShell:has(.overviewCard) .headerTitle {
+    margin: 3px 0 1px;
+    font-size: clamp(28px, 2.8vw, 41px);
+  }
+  .projectShell:has(.overviewCard) .headerDescription {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .projectShell:has(.overviewCard) .chapterNav {
+    position: static;
+    flex: 0 0 auto;
+    margin-bottom: clamp(8px, 1.5vh, 15px);
+    padding: 5px;
+    border-radius: 20px;
+  }
+  .projectShell:has(.overviewCard) .chapterLink {
+    min-height: 43px;
+    padding: 9px 6px;
+    font-size: clamp(10px, .85vw, 12px);
+  }
+  .projectShell:has(.overviewCard) .overviewCard {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: clamp(18px, 3.1vh, 40px) clamp(22px, 3.2vw, 46px);
+    overflow: hidden;
+  }
+  .projectShell:has(.overviewCard) .pageTitle {
+    margin: 7px 0 12px;
+    font-size: clamp(30px, 3.3vw, 47px);
+  }
+  .projectShell:has(.overviewCard) .lead {
+    font-size: clamp(14px, 1.2vw, 17px);
+    line-height: 1.53;
+  }
+  .projectShell:has(.overviewCard) .overviewFooter {
+    flex: 0 0 auto;
+    margin-top: clamp(13px, 2.4vh, 27px);
+    padding-top: clamp(12px, 1.9vh, 19px);
+  }
+  .projectShell:has(.overviewCard) .overviewNumber { font-size: 34px; }
+  .projectShell:has(.overviewCard) .overviewInfo { font-size: 12px; }
+  .projectShell:has(.overviewCard) .primaryLink { padding: 12px 17px; font-size: 12px; }
+}
+@media (max-width: 920px) {
+  .overviewBody { grid-template-columns: 1fr; gap: 24px; }
+  .overviewHighlights { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .overviewHighlights { padding-left: 15px; }
+}
+@media (max-width: 920px) {
+  /* Stack the index when labels would otherwise wrap. */
+  .chapterNav { position: static; }
+  .chapterLinks { flex-direction: column; gap: 3px; }
+  .chapterLink { min-height: 41px; font-size: 14px; justify-content: flex-start; padding: 10px 16px; text-align: left; }
+  .chapterNav { border-radius: 18px; padding: 6px; }
+}
+@media (max-width: 700px) {
+  .projectShell { padding: 29px 15px 65px; }
+  .projectHeader { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
+  .headerTitle { margin: 9px 0 6px; }
+  .headerDescription { font-size: 14px; }
+  .overviewLink { min-height: 36px; padding: 8px 12px; font-size: 12px; }
+  .chapterNav { margin-bottom: 19px; }
+  .contentCard { border-radius: 21px; padding: 27px 23px; }
+  .lead { font-size: 16px; line-height: 1.65; }
+  .overviewFooter { flex-direction: column; align-items: flex-start; gap: 22px; margin-top: 37px; }
+  .topicList { grid-template-columns: 1fr; }
+  .draftArea { margin-top: 30px; padding: 22px 19px; }
+  .chapterFooter { gap: 12px; }
+  .chapterMove strong { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chapterLink, .primaryLink, .overviewLink { transition: none; }
+}

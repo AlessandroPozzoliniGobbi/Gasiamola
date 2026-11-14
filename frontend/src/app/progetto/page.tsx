@@ -1,10 +1,49 @@
-export default function Progetto() {
+import type { Metadata } from "next";
+import Link from "next/link";
+import styles from "../../styles/project.module.css";
+
+export const metadata: Metadata = { title: "Project Overview | FIELDWISE" };
+
+/** Introduction and overview are a single landing page. */
+export default function ProjectPage() {
   return (
-    <main className="project-page inner-page">
-      <div className="project-page-content inner-page-content">
-        <h1>Progetto</h1>
-        <p>*Inseriamo qui la spiegazione del nostro progetto.*</p>
+    <article className={`${styles.contentCard} ${styles.overviewCard}`}>
+      <div className={styles.overviewBody}>
+        <div className={styles.overviewIntro}>
+          <span className={styles.sectionLabel}>PROJECT OVERVIEW / THE BIG PICTURE</span>
+          <h1 className={styles.pageTitle}>A clearer view of every field.</h1>
+          <p className={styles.lead}>
+            FIELDWISE is a decision-support project developed for the NASA Space Apps Challenge 2026.
+            By combining Earth observation data with agricultural models, we help farmers compare
+            crop rotations, understand trade-offs and make better-informed decisions.
+          </p>
+        </div>
+
+        <div className={styles.overviewHighlights} aria-label="Introduction at a glance">
+          <div className={styles.overviewHighlight}>
+            <span>THE CHALLENGE</span>
+            <p>Make complex environmental information useful for real agricultural decisions.</p>
+          </div>
+          <div className={styles.overviewHighlight}>
+            <span>OUR APPROACH</span>
+            <p>Compare crop rotations using historical climate data and physical soil balances.</p>
+          </div>
+          <div className={styles.overviewHighlight}>
+            <span>OUR GOAL</span>
+            <p>Show evidence, risks and limitations clearly—not just a recommendation.</p>
+          </div>
+        </div>
       </div>
-    </main>
+
+      <footer className={styles.overviewFooter}>
+        <div className={styles.overviewInfo}>
+          <span className={styles.overviewNumber}>07</span>
+          <span>Dedicated chapters. Pick any topic above to explore it in depth.</span>
+        </div>
+        <Link className={styles.primaryLink} href="/progetto/analytical-framework">
+          Explore the framework <span aria-hidden="true">→</span>
+        </Link>
+      </footer>
+    </article>
   );
 }

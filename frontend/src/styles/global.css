@@ -93,6 +93,7 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   font-size: clamp(21px, 2.3vw, 29px);
   line-height: 1.5;
 }
+.landing .landing-tagline strong { color: var(--home-ink); font-weight: 800; }
 .landing .landing-actions { display: flex; justify-content: center; margin-top: 31px; }
 .landing .start-button,
 .landing .landing-project-link {
@@ -527,4 +528,20 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
 @media (prefers-reduced-motion: reduce) {
   .contact-card { transition: none; }
   .contact-card:hover { transform: none; }
+}
+
+/* On desktop the Analysis view fills the available body area. The document itself
+   never scrolls; the settings column inside Analysis has its own scrollbar.
+   Other routes and smaller screens keep their normal scrolling behavior. */
+@media (min-width: 1021px) {
+  body:has(> main[data-fieldwise-analysis]) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+  body:has(> main[data-fieldwise-analysis]) > header {
+    flex: 0 0 auto;
+  }
 }

@@ -260,7 +260,7 @@ export default function MapCanvas({
     <div
       ref={containerRef}
       role="region"
-      aria-label={`Mappa interattiva: zona di ${MAP_CONFIG.operationalRadiusKm} chilometri attorno a Cremona`}
+      aria-label={`Interactive map: area within ${MAP_CONFIG.operationalRadiusKm} kilometers of Cremona`}
       style={{ width: "100%", height: "100%" }}
     />
   );

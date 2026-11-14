@@ -23,7 +23,7 @@ export default function MapStyleSwitcher({
   const label =
     nextMode === "satellite"
       ? "Satellite"
-      : "Stradale";
+      : "Street map";
 
   // Miniatura satellitare: MapTiler
   const mapTilerKey =
@@ -48,8 +48,8 @@ export default function MapStyleSwitcher({
       className={styles.basemapToggle}
       onClick={onToggle}
       disabled={disabled}
-      title={`Passa alla vista ${label.toLowerCase()}`}
-      aria-label={`Passa alla vista ${label.toLowerCase()}`}
+      title={`Switch to ${label.toLowerCase()}`}
+      aria-label={`Switch to ${label.toLowerCase()}`}
     >
       <span
         className={styles.basemapToggleImage}

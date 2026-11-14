@@ -38,13 +38,14 @@ export default function FieldStoragePanel({
   return (
     <details className={styles.mapAccordion}>
       <summary className={styles.mapAccordionSummary}>
-        <span>Salvataggio e file</span>
+        <span>Saved fields and files</span>
         <span className={styles.summaryChevron} aria-hidden="true">⌄</span>
       </summary>
       <div className={styles.mapAccordionBody}>
         <p className={styles.storageHelp}>
-          I terreni si salvano automaticamente in questo browser.
-          Puoi esportare o sostituire la configurazione con un GeoJSON.
+          Fields are saved automatically in this browser.
+          Export your FIELDWISE configuration as GeoJSON, including each field’s analysis settings.
+          Importing a configuration replaces the current fields and settings.
         </p>
         <div className={styles.storageActions}>
           <button
@@ -53,7 +54,7 @@ export default function FieldStoragePanel({
             onClick={onExport}
             disabled={!ready || count === 0 || importing}
           >
-            Esporta GeoJSON
+            Export configuration
           </button>
 
           <input
@@ -62,7 +63,7 @@ export default function FieldStoragePanel({
             accept=".geojson,.json,application/geo+json,application/json"
             onChange={handleFileChange}
             className={styles.visuallyHiddenFileInput}
-            aria-label="Seleziona un file GeoJSON da importare"
+            aria-label="Choose a GeoJSON file to import"
             tabIndex={-1}
           />
           <button
@@ -71,7 +72,7 @@ export default function FieldStoragePanel({
             onClick={() => inputRef.current?.click()}
             disabled={!ready || importing}
           >
-            {importing ? "Caricamento..." : "Importa GeoJSON"}
+            {importing ? "Importing…" : "Import configuration"}
           </button>
         </div>
         {importFeedback && (

@@ -9,6 +9,7 @@ type Props = {
   fields: FieldItem[];
   selectedFieldId: string | null;
   onSelectField: (id: string) => void;
+  onAnalyzeField: (id: string) => void;
   onRenameField: (id: string, name: string) => void;
   onDeleteField: (id: string) => void;
   onClearFields: () => void;
@@ -19,6 +20,7 @@ export default function FieldPanel({
   fields,
   selectedFieldId,
   onSelectField,
+  onAnalyzeField,
   onRenameField,
   onDeleteField,
   onClearFields,
@@ -41,9 +43,9 @@ export default function FieldPanel({
 
   return (
     <section className={styles.fieldPanel}>
-      <h2 className={styles.sectionTitle}>I tuoi appezzamenti ({fields.length})</h2>
+      <h2 className={styles.sectionTitle}>Your fields ({fields.length})</h2>
       {fields.length === 0 ? (
-        <p className={styles.description}>Non hai ancora disegnato alcun campo.</p>
+        <p className={styles.description}>You have not drawn any fields yet.</p>
       ) : (
         <div className={styles.fieldList}>
           {fields.map((field) => (
@@ -57,10 +59,10 @@ export default function FieldPanel({
                     maxLength={48}
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
-                    aria-label={`Nuovo nome dell'appezzamento ${field.number}`}
+                    aria-label={`New name for field ${field.number}`}
                   />
-                  <button type="submit" className={styles.fieldIconButton} aria-label="Salva nome" title="Salva nome">✓</button>
-                  <button type="button" className={styles.fieldIconButton} onClick={() => setEditingId(null)} aria-label="Annulla rinomina" title="Annulla rinomina">×</button>
+                  <button type="submit" className={styles.fieldIconButton} aria-label="Save name" title="Save name">✓</button>
+                  <button type="button" className={styles.fieldIconButton} onClick={() => setEditingId(null)} aria-label="Cancel renaming" title="Cancel renaming">×</button>
                 </form>
               ) : (
                 <>
@@ -69,17 +71,29 @@ export default function FieldPanel({
                     className={[styles.fieldSelectButton, selectedFieldId === field.id ? styles.fieldSelectActive : ""].join(" ")}
                     onClick={() => onSelectField(field.id)}
                     aria-pressed={selectedFieldId === field.id}
-                    title="Seleziona e inquadra il campo"
+                    title="Select and zoom to field"
                   >
                     {field.name}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.fieldIconButton} ${styles.fieldAnalyzeButton}`}
+                    onClick={() => onAnalyzeField(field.id)}
+                    disabled={!ready}
+                    title={`Analyze ${field.name}`}
+                    aria-label={`Analyze ${field.name}`}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 19h16M7 16v-5M12 16V7M17 16v-8M5 8l5-3 4 2 5-4" />
+                    </svg>
                   </button>
                   <button
                     type="button"
                     className={styles.fieldIconButton}
                     onClick={() => beginEditing(field)}
                     disabled={!ready}
-                    title={`Rinomina ${field.name}`}
-                    aria-label={`Rinomina ${field.name}`}
+                    title={`Rename ${field.name}`}
+                    aria-label={`Rename ${field.name}`}
                   >
                     ✎
                   </button>
@@ -88,8 +102,8 @@ export default function FieldPanel({
                     className={[styles.fieldIconButton, styles.fieldDeleteButton].join(" ")}
                     onClick={() => onDeleteField(field.id)}
                     disabled={!ready}
-                    title={`Elimina ${field.name}`}
-                    aria-label={`Elimina ${field.name}`}
+                    title={`Delete ${field.name}`}
+                    aria-label={`Delete ${field.name}`}
                   >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M3 6h18M8 6V4h8v2M5 6l1 14h12l1-14M10 10v6M14 10v6" />
@@ -103,17 +117,27 @@ export default function FieldPanel({
       )}
 
       {selectedFieldId && (
-        <p className={styles.description}>Campo selezionato: puoi trascinarne i vertici sulla mappa.</p>
+        <p className={styles.description}>Selected field: you can drag its vertices on the map.</p>
       )}
 
-      <button
-        type="button"
-        className={styles.actionButton}
-        onClick={onClearFields}
-        disabled={!ready || fields.length === 0}
-      >
-        Cancella tutti gli appezzamenti
-      </button>
+      <div className={styles.fieldPanelActions}>
+        <button
+          type="button"
+          className={`${styles.actionButton} ${styles.analyzeAllButton}`}
+          disabled
+          title="Analyzing all fields will be available soon"
+        >
+          Analyze all fields <span className={styles.comingSoon}>Soon</span>
+        </button>
+        <button
+          type="button"
+          className={styles.actionButton}
+          onClick={onClearFields}
+          disabled={!ready || fields.length === 0}
+        >
+          Delete all fields
+        </button>
+      </div>
     </section>
   );
 }

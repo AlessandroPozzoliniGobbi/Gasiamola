@@ -120,7 +120,7 @@ export default function FloatingFieldWindow({ count, onClose, children }: Props)
         width: size.width,
         height: size.height,
       } : undefined}
-      aria-label="Finestra degli appezzamenti"
+      aria-label="Fields window"
     >
       <header
         className={styles.floatingHeader}
@@ -129,11 +129,11 @@ export default function FloatingFieldWindow({ count, onClose, children }: Props)
         onPointerUp={stopDrag}
         onPointerCancel={stopDrag}
         onDoubleClick={toggleMaximize}
-        title="Trascina per spostare la finestra"
+        title="Drag to move window"
       >
         <div className={styles.floatingHeading}>
           <span className={styles.floatingHeadingIcon} aria-hidden="true">⠿</span>
-          <strong>{detached ? "Appezzamenti" : "Elenco appezzamenti"}</strong>
+          <strong>{detached ? "Fields" : "Field list"}</strong>
           <span className={styles.floatingCount}>{count}</span>
         </div>
         <div className={styles.floatingButtons}>
@@ -141,7 +141,7 @@ export default function FloatingFieldWindow({ count, onClose, children }: Props)
             type="button"
             className={styles.floatingIconButton}
             onClick={toggleMaximize}
-            aria-label={maximized ? "Riduci la finestra" : "Ingrandisci la finestra"}
+            aria-label={maximized ? "Restore window" : "Maximize window"}
           >
             {maximized ? "❐" : "□"}
           </button>
@@ -149,7 +149,7 @@ export default function FloatingFieldWindow({ count, onClose, children }: Props)
             type="button"
             className={styles.floatingIconButton}
             onClick={onClose}
-            aria-label="Chiudi elenco appezzamenti"
+            aria-label="Close field list"
           >×</button>
         </div>
       </header>

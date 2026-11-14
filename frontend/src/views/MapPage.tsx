@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { TerraDrawPolygonMode } from "terra-draw";
 import type { TerraDraw } from "terra-draw";
@@ -25,12 +26,14 @@ import {
   type StorageStatus,
 } from "../lib/fieldStorage";
 import type { FieldGeometry, FieldItem, MapMode } from "../types/field";
+import { deleteAnalysisDraft, replaceAnalysisDrafts, snapshotAnalysisDrafts, type AnalysisDraft } from "../lib/analysisStorage";
 import styles from "../styles/map.module.css";
 
 type Basemap = "cartographic" | "satellite";
 type FieldMetadata = Pick<FieldItem, "number" | "name">;
 
 export default function MapPage() {
+  const router = useRouter();
   const frameRef = useRef<HTMLElement | null>(null);
   const mapAreaRef = useRef<HTMLElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -92,12 +95,16 @@ export default function MapPage() {
   // Nuovi campi / importazione lo aprono; eliminare tutto lo chiude.
   useEffect(() => {
     if (!ready || !hydrated) return;
-    if (fields.length === 0) {
-      setFieldWindowOpen(false);
-    } else if (fields.length > previousCountRef.current) {
-      setFieldWindowOpen(true);
-    }
-    previousCountRef.current = fields.length;
+    let active = true;
+    const nextCount = fields.length;
+    const shouldOpen = nextCount > previousCountRef.current;
+    previousCountRef.current = nextCount;
+    queueMicrotask(() => {
+      if (!active) return;
+      if (nextCount === 0) setFieldWindowOpen(false);
+      else if (shouldOpen) setFieldWindowOpen(true);
+    });
+    return () => { active = false; };
   }, [fields.length, ready, hydrated]);
 
   // La pagina /mappa e' una vista applicativa senza scroll desktop.
@@ -174,7 +181,7 @@ export default function MapPage() {
             result.valid && result.id !== undefined ? [result.id] : []
           );
           if (validIds.length) draw.removeFeatures(validIds);
-          throw new Error("Uno o piu' poligoni salvati non sono stati accettati da Terra Draw.");
+          throw new Error("Terra Draw rejected one or more saved polygons.");
         }
 
       }
@@ -189,7 +196,7 @@ export default function MapPage() {
         setHydrated(true);
       }
     } catch (error) {
-      console.error("Impossibile ripristinare gli appezzamenti:", error);
+      console.error("Could not restore saved fields:", error);
       // Non salviamo dati nuovi sopra un archivio che non riusciamo a leggere.
       setStorageStatus("error");
       setHydrated(false);
@@ -228,11 +235,24 @@ export default function MapPage() {
           replacingRef.current = false;
         }
       }
-      setAreaWarning("Modifica annullata: il poligono usciva dalla zona consentita o aveva lati che si incrociavano.");
+      setAreaWarning("Change canceled: the field crossed the permitted boundary or contained intersecting edges.");
       return;
     }
 
     const activeIds = new Set(geometries.map((geometry) => geometry.id));
+    // Also clean up configurations if Terra Draw deletes a field by keyboard
+    // or another route, instead of the explicit Delete button.
+    const removedIds = fieldsRef.current.map((field) => field.id).filter((id) => !activeIds.has(id));
+    if (removedIds.length) {
+      try {
+        const remainingDrafts = snapshotAnalysisDrafts();
+        for (const id of removedIds) delete remainingDrafts[id];
+        replaceAnalysisDrafts(remainingDrafts);
+      } catch (error) {
+        console.error("Unable to clear settings for removed fields:", error);
+        setStorageStatus("error");
+      }
+    }
     // Scartiamo i metadati degli appezzamenti che non esistono piu'.
     for (const id of fieldMetaRef.current.keys()) {
       if (!activeIds.has(id)) fieldMetaRef.current.delete(id);
@@ -248,7 +268,7 @@ export default function MapPage() {
         // Primo numero LIBERO: 1, 2, 3, 5 -> 4.
         const number = firstAvailableNumber(usedNumbers);
         usedNumbers.add(number);
-        meta = { number, name: `Appezzamento ${number}` };
+        meta = { number, name: `Field ${number}` };
         fieldMetaRef.current.set(geometry.id, meta);
       }
       return { ...geometry, ...meta };
@@ -272,21 +292,22 @@ export default function MapPage() {
   useEffect(() => {
     if (!ready || !hydrated) return;
 
-    setStorageStatus("saving");
+    let active = true;
+    queueMicrotask(() => { if (active) setStorageStatus("saving"); });
     const timer = window.setTimeout(() => {
       try {
         saveFields(fields, nextSavedNumber(fields));
-        setSavedAt(new Date().toLocaleTimeString("it-IT", {
+        setSavedAt(new Date().toLocaleTimeString("en-GB", {
           hour: "2-digit", minute: "2-digit", second: "2-digit",
         }));
         setStorageStatus("saved");
       } catch (error) {
-        console.error("Impossibile salvare gli appezzamenti:", error);
+        console.error("Could not save fields:", error);
         setStorageStatus("error");
       }
     }, 350);
 
-    return () => window.clearTimeout(timer);
+    return () => { active = false; window.clearTimeout(timer); };
   }, [fields, ready, hydrated]);
 
   // Se si chiude la scheda subito dopo una modifica, salviamo lo stato
@@ -298,7 +319,7 @@ export default function MapPage() {
       try {
         saveFields(fieldsRef.current, nextSavedNumber(fieldsRef.current));
       } catch (error) {
-        console.error("Salvataggio in chiusura non riuscito:", error);
+        console.error("Could not save fields before leaving:", error);
       }
     };
     const onVisibilityChange = () => {
@@ -327,9 +348,20 @@ export default function MapPage() {
       !isPolygonAllowed(field.coordinates) || !isSimpleFieldPolygon(field.coordinates)
     ).length;
     if (!window.confirm(
-      `Rimuovere dal salvataggio ${removed} appezzamenti fuori zona o geometricamente non validi?\n` +
-      "Prima usa 'Scarica backup completo' se vuoi conservarli."
+      `Remove ${removed} out-of-area or invalid fields from saved data?\n` +
+      "Download the full backup first if you want to keep them."
     )) return;
+    try {
+      const kept = new Set(fieldsRef.current.map((field) => field.id));
+      const previousDrafts = snapshotAnalysisDrafts();
+      replaceAnalysisDrafts(Object.fromEntries(
+        Object.entries(previousDrafts).filter(([id]) => kept.has(id))
+      ));
+    } catch (error) {
+      console.error("Unable to remove analysis settings for excluded fields:", error);
+      window.alert("Could not update saved analysis settings. Your fields have not been changed.");
+      return;
+    }
     legacyBackupRef.current = null;
     setOutsideSavedCount(0);
     setHydrated(true);
@@ -342,8 +374,8 @@ export default function MapPage() {
     try {
       downloadGeoJSON(fields);
     } catch (error) {
-      console.error("Esportazione GeoJSON non riuscita:", error);
-      window.alert("Impossibile esportare il GeoJSON. Riprova dal browser.");
+      console.error("GeoJSON export failed:", error);
+      window.alert("Could not export GeoJSON. Please try again.");
     }
   };
 
@@ -356,7 +388,7 @@ export default function MapPage() {
     if (!draw || !ready || !hydrated || replacingRef.current) {
       setImportFeedback({
         kind: "error",
-        message: "Attendi che la mappa sia pronta per importare.",
+        message: "Wait until the map is ready before importing.",
       });
       return;
     }
@@ -371,7 +403,7 @@ export default function MapPage() {
 
     try {
       if (file.size > 3_000_000) {
-        throw new Error("Il file supera il limite di 3 MB.");
+        throw new Error("The file exceeds the 3 MB limit.");
       }
 
       // PRIMA validiamo completamente il file: nessun campo viene modificato.
@@ -382,25 +414,35 @@ export default function MapPage() {
       );
       if (invalidIndex !== -1) {
         throw new Error(
-          `Il campo ${invalidIndex + 1} del GeoJSON e' fuori zona o ha lati che si incrociano. ` +
-          "La configurazione attuale non e' stata modificata."
+          `Field ${invalidIndex + 1} is outside the permitted area or has intersecting edges. ` +
+          "The current fields have not been changed."
         );
       }
       const prepared = prepareImportedFields(imported);
       const replacement: FieldItem[] = prepared.map((item) => ({
-        ...item,
-        id: String(draw.getFeatureId()),
+        number: item.number,
+        name: item.name,
+        coordinates: item.coordinates,
+        // Restoring a FIELDWISE backup preserves identity. Generic GeoJSON
+        // always creates new fields (even at the same location with the same name).
+        id: item.backupId ?? String(draw.getFeatureId()),
       }));
+      const restoredDrafts: Record<string, AnalysisDraft> = Object.create(null);
+      replacement.forEach((field, i) => {
+        if (prepared[i].analysis) restoredDrafts[field.id] = prepared[i].analysis;
+      });
 
       if (fields.length > 0) {
         const confirmed = window.confirm(
-          `Importare ${replacement.length} appezzamenti e SOSTITUIRE i ${fields.length} attuali?\n\n` +
-          "I campi presenti verranno rimossi e il salvataggio automatico verra' aggiornato. " +
-          "Se vuoi conservarli, esportali prima in GeoJSON."
+          `Import ${replacement.length} fields and REPLACE the current ${fields.length}?\n\n` +
+          "Your current fields AND their analysis settings will be replaced. " +
+          "Export your FIELDWISE configuration first if you want to keep them."
         );
         if (!confirmed) return;
       }
 
+      // Keep the previous configurations for rollback if import fails.
+      const previousDrafts = snapshotAnalysisDrafts();
       // Gli eventi generati dalla rimozione non devono assegnare altri numeri
       // o provocare un salvataggio dello stato intermedio vuoto.
       replacingRef.current = true;
@@ -413,8 +455,13 @@ export default function MapPage() {
 
         const results = draw.addFeatures(toTerraDrawFeatures(replacement));
         if (results.some((result) => !result.valid)) {
-          throw new Error("Uno o piu' appezzamenti sono stati rifiutati da Terra Draw.");
+          throw new Error("Terra Draw rejected one or more fields.");
         }
+
+        // Replace field-associated analysis settings together with the map.
+        // Never match configurations by field name, number or geometry.
+        replaceAnalysisDrafts(restoredDrafts);
+        saveFields(replacement, nextSavedNumber(replacement));
 
         // Sincronizziamo una sola volta Terra Draw, metadati e React.
         fieldMetaRef.current = new Map(replacement.map((field) => [
@@ -428,7 +475,7 @@ export default function MapPage() {
 
         setImportFeedback({
           kind: "success",
-          message: `Configurazione sostituita: ${replacement.length} appezzamenti caricati.`,
+          message: `Configuration restored: ${replacement.length} fields and their saved analysis settings.`,
         });
       } catch (importError) {
         // Ripristiniamo gli appezzamenti precedenti se l'aggiunta fallisce.
@@ -436,21 +483,23 @@ export default function MapPage() {
           draw.clear();
           const restored = draw.addFeatures(toTerraDrawFeatures(previousFields));
           if (restored.some((result) => !result.valid)) {
-            throw new Error("Alcuni terreni precedenti non sono stati ripristinati.");
+            throw new Error("Some existing fields could not be restored.");
           }
           fieldMetaRef.current = new Map(previousFields.map((field) => [
             field.id, { number: field.number, name: field.name },
           ]));
+          replaceAnalysisDrafts(previousDrafts);
+          saveFields(previousFields, nextSavedNumber(previousFields));
           fieldsRef.current = previousFields;
           setFields(previousFields);
         } catch (rollbackError) {
-          console.error("Ripristino dopo importazione fallita:", rollbackError);
+          console.error("Restore failed after import:", rollbackError);
           // Inibiamo i salvataggi, per non perdere il backup locale valido.
           setHydrated(false);
           setStorageStatus("error");
           throw new Error(
-            "Importazione non riuscita e ripristino incompleto. " +
-            "Non ricaricare o modificare altri campi: recupera il backup GeoJSON."
+            "Import failed and the previous fields could not all be restored. " +
+            "Do not reload or edit fields. Restore your GeoJSON backup."
           );
         }
         throw importError;
@@ -462,7 +511,7 @@ export default function MapPage() {
         kind: "error",
         message: error instanceof Error
           ? error.message
-          : "Impossibile importare il file GeoJSON.",
+          : "Could not import the GeoJSON file.",
       });
     }
   };
@@ -538,11 +587,30 @@ export default function MapPage() {
     }
   };
 
+  const handleAnalyzeField = (id: string) => {
+    if (!ready || !hydrated || !fieldsRef.current.some((field) => field.id === id)) return;
+
+    // Il salvataggio della mappa e' normalmente posticipato di 350 ms.
+    // Forziamolo prima di cambiare pagina, altrimenti Analizza potrebbe
+    // leggere dal localStorage una versione precedente del terreno.
+    try {
+      saveFields(fieldsRef.current, nextSavedNumber(fieldsRef.current));
+      setStorageStatus("saved");
+    } catch (error) {
+      console.error("Could not save the field before analysis:", error);
+      setStorageStatus("error");
+      window.alert("Could not save the field. Check your browser settings and try again.");
+      return;
+    }
+
+    router.push(`/analizza/${encodeURIComponent(id)}`);
+  };
+
   const handleRenameField = (id: string, name: string) => {
     const trimmed = name.trim().slice(0, 48);
     const meta = fieldMetaRef.current.get(id);
     if (!meta) return;
-    const finalName = trimmed || `Appezzamento ${meta.number}`;
+    const finalName = trimmed || `Field ${meta.number}`;
     fieldMetaRef.current.set(id, { ...meta, name: finalName });
     setFields((previous) => previous.map((field) =>
       field.id === id ? { ...field, name: finalName } : field
@@ -572,8 +640,16 @@ export default function MapPage() {
     const draw = drawRef.current;
     const field = fields.find((item) => item.id === id);
     if (!draw || !field) return;
-    if (!window.confirm(`Eliminare ${field.name} (n. ${field.number})?`)) return;
+    if (!window.confirm(`Delete ${field.name} (#${field.number})?`)) return;
 
+    try {
+      // Deleted identities must never leave settings that could be reused.
+      deleteAnalysisDraft(id);
+    } catch (error) {
+      console.error("Unable to delete field analysis settings:", error);
+      window.alert("Could not update saved analysis settings. The field was not deleted.");
+      return;
+    }
     draw.removeFeatures([id]);
     fieldMetaRef.current.delete(id);
     setFields((previous) => previous.filter((item) => item.id !== id));
@@ -583,8 +659,15 @@ export default function MapPage() {
   const handleClearFields = () => {
     const draw = drawRef.current;
     if (!draw || fields.length === 0) return;
-    if (!window.confirm("Vuoi cancellare tutti gli appezzamenti?")) return;
+    if (!window.confirm("Delete all fields?")) return;
 
+    try {
+      replaceAnalysisDrafts({});
+    } catch (error) {
+      console.error("Unable to delete saved analysis settings:", error);
+      window.alert("Could not update saved analysis settings. Fields were not deleted.");
+      return;
+    }
     draw.setMode("static");
     draw.clear();
     fieldMetaRef.current.clear();
@@ -613,11 +696,11 @@ export default function MapPage() {
 
   return (
     <main ref={frameRef} className={styles.mapFrame}>
-      <aside className={styles.sidebar} aria-label="Strumenti mappa">
+      <aside className={styles.sidebar} aria-label="Map tools">
         <div className={styles.sidebarIntro}>
-          <h1 className={styles.title}>Mappa di Cremona</h1>
+          <h1 className={styles.title}>Cremona field map</h1>
           <p className={styles.description}>
-            Esplora e delimita i tuoi campi entro {MAP_CONFIG.operationalRadiusKm} km da Cremona.
+            Explore and outline fields within {MAP_CONFIG.operationalRadiusKm} km of Cremona.
           </p>
           <div
             className={[
@@ -629,25 +712,25 @@ export default function MapPage() {
             aria-live="polite"
           >
             {outsideSavedCount > 0
-              ? "Salvataggio sospeso: geometrie da verificare."
+              ? "Saving paused: some field geometries need review."
               : storageStatus === "loading"
-                ? "Caricamento dei campi..."
+                ? "Loading fields…"
                 : storageStatus === "saving"
-                  ? "Salvataggio in corso..."
+                  ? "Saving…"
                   : storageStatus === "error"
-                    ? "Salvataggio non disponibile."
+                    ? "Saving unavailable."
                     : savedAt
-                      ? `Salvato automaticamente alle ${savedAt}`
-                      : "Salvataggio automatico attivo"}
+                      ? `Automatically saved at ${savedAt}`
+                      : "Autosave is active"}
           </div>
         </div>
 
         {outsideSavedCount > 0 && (
           <div role="alert" className={styles.areaNotice}>
-            <strong>{outsideSavedCount} campi salvati non compatibili</strong>
-            <p>Prima scarica il backup completo; poi puoi mantenere solo le geometrie valide.</p>
-            <button type="button" className={styles.compactAction} onClick={handleLegacyBackup}>Scarica backup</button>
-            <button type="button" className={styles.compactAction} onClick={handleAcceptArea}>Conserva solo i validi</button>
+            <strong>{outsideSavedCount} saved fields are incompatible</strong>
+            <p>Download the full backup first, then you can keep only valid field geometries.</p>
+            <button type="button" className={styles.compactAction} onClick={handleLegacyBackup}>Download backup</button>
+            <button type="button" className={styles.compactAction} onClick={handleAcceptArea}>Keep only valid fields</button>
           </div>
         )}
 
@@ -686,7 +769,7 @@ export default function MapPage() {
               aria-expanded={fieldWindowOpen}
               aria-controls="fields-floating-panel"
             >
-              <span>Appezzamenti <span className={styles.fieldCountBadge}>{fields.length}</span></span>
+              <span>Fields <span className={styles.fieldCountBadge}>{fields.length}</span></span>
               <span className={styles.summaryChevron} aria-hidden="true">{fieldWindowOpen ? '⌃' : '⌄'}</span>
             </button>
             {fieldWindowOpen && (
@@ -698,6 +781,7 @@ export default function MapPage() {
                   fields={fields}
                   selectedFieldId={selectedFieldId}
                   onSelectField={handleSelectField}
+                  onAnalyzeField={handleAnalyzeField}
                   onRenameField={handleRenameField}
                   onDeleteField={handleDeleteField}
                   onClearFields={handleClearFields}
@@ -709,7 +793,7 @@ export default function MapPage() {
         )}
       </aside>
 
-      <section ref={mapAreaRef} className={styles.mapArea} aria-label="Visualizzazione geografica">
+      <section ref={mapAreaRef} className={styles.mapArea} aria-label="Geographical view">
         <MapCanvas
           onMapReady={handleMapReady}
           onDrawReady={handleDrawReady}

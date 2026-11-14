@@ -8,8 +8,8 @@ import styles from "../styles/Navbar.module.css";
 
 const navigation = [
   { href: "/", label: "Home" },
-  { href: "/progetto", label: "Progetto" },
-  { href: "/contatti", label: "Contatti" },
+  { href: "/progetto", label: "Project" },
+  { href: "/contatti", label: "Team" },
 ];
 
 export default function Navbar() {
@@ -43,7 +43,7 @@ export default function Navbar() {
         <Link
           href="/"
           className={styles.brand}
-          aria-label="Vai alla Home"
+          aria-label="Go to Home"
           onClick={(event) => handleSamePageClick(event, "/")}
         >
           <span className={styles.brandIcon}>
@@ -52,25 +52,28 @@ export default function Navbar() {
           <span className={styles.brandName}>FIELDWISE</span>
         </Link>
 
-        <nav className={styles.navArea} aria-label="Navigazione principale">
+        <nav className={styles.navArea} aria-label="Main navigation">
           <div className={styles.links}>
-            {navigation.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`${styles.navLink} ${pathname === href ? styles.active : ""}`}
-                aria-current={pathname === href ? "page" : undefined}
-                onClick={(event) => handleSamePageClick(event, href)}
-              >
-                {label}
-              </Link>
-            ))}
+            {navigation.map(({ href, label }) => {
+              const active = pathname === href || (href === "/progetto" && pathname.startsWith("/progetto/"));
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`${styles.navLink} ${active ? styles.active : ""}`}
+                  aria-current={active ? "page" : undefined}
+                  onClick={(event) => handleSamePageClick(event, href)}
+                >
+                  {label}
+                </Link>
+              );
+            })}
             <span className={styles.navDivider} aria-hidden="true" />
             <Link
               href="/impostazioni"
               className={`${styles.settingsLink} ${pathname === "/impostazioni" ? styles.active : ""}`}
-              aria-label="Impostazioni"
-              title="Impostazioni"
+              aria-label="Settings"
+              title="Settings"
               aria-current={pathname === "/impostazioni" ? "page" : undefined}
               onClick={(event) => {
                 if (pathname === "/impostazioni") {

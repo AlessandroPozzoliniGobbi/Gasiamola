@@ -20,7 +20,7 @@ export default function Home() {
             />
           </div>
           <h1>FIELDWISE</h1>
-          <p className="landing-tagline">[Catch phrase]</p>
+          <p className="landing-tagline">Know your land. <strong>Grow your future.</strong></p>
           <div className="landing-actions">
             <Link href="/mappa" className="start-button">START</Link>
           </div>
