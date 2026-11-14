@@ -1,15 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import HomeLineArt from "../components/HomeLineArt";
 
 export default function Home() {
   return (
     <main className="landing" id="home">
-      {/* Il filo SVG continua ad attraversare tutte le sezioni della Home. */}
-      <HomeLineArt />
+      {/* Un unico paesaggio illustrato, continuo lungo tutta la Home. */}
+      <div className="landing-world" aria-hidden="true" />
 
-      <section className="landing-section landing-hero" data-line-section>
-        <div className="landing-scene landing-scene-hero" aria-hidden="true" />
+      <section className="landing-section landing-hero">
         <div className="landing-content landing-hero-content">
           <div className="home-logo-frame">
             <Image
@@ -29,8 +27,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="landing-section landing-step" data-line-section>
-        <div className="landing-scene landing-scene-topsoil" aria-hidden="true" />
+      <section className="landing-section landing-step">
         <div className="landing-content landing-step-content">
           <span className="landing-label">01</span>
           <h2>Select Your Land</h2>
@@ -41,8 +38,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="landing-section landing-step" data-line-section>
-        <div className="landing-scene landing-scene-midsoil" aria-hidden="true" />
+      <section className="landing-section landing-step">
         <div className="landing-content landing-step-content">
           <span className="landing-label">02</span>
           <h2>Analyze with One Click</h2>
@@ -54,8 +50,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="landing-section landing-step" data-line-section>
-        <div className="landing-scene landing-scene-deepsoil" aria-hidden="true" />
+      <section className="landing-section landing-step">
         <div className="landing-content landing-step-content">
           <span className="landing-label">03</span>
           <h2>A Project for the NASA Space Apps Challenge 2026</h2>
