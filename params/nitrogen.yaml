@@ -64,12 +64,15 @@ _meta:
       0) Primo giorno di una coltura: credito di precessione CRED della coltura precedente (Tab. 4 ER)
          CRED < 0: immobilizzazione N_min -> N_res di min(|CRED|, N_min), poi rilasciata come al passo 1bis
          CRED > 0: anticipo del rilascio N_res -> N_min di min(CRED, N_res)
-      1) MIN  = k2 x min(H, H_tetto) / 365 x n_humus x 1000 ;  H = H - k2 x min(H, H_tetto) / 365
+      f_T = q10^((T - T_media)/10) (suolo.temperatura.q10; T = temperatura media giornaliera, media di f_T ~ 1)
+      1) MIN  = k2 x min(H, H_tetto) / 365 x f_T x n_humus x 1000 ;  H = H - k2 x min(H, H_tetto) / 365 x f_T
          DISP = fattore_dispersione x MIN ;  DEP = deposizione_atmosferica / 365
          N_min = N_min + MIN - DISP + DEP
       1bis) Rilascio programmato: ogni apporto a N_res (N fresco dei residui dopo l'umificazione, N della cover
-         alla terminazione, immobilizzazioni) torna a N_min in modo uniforme nei suolo.residui.giorni_rilascio
-         giorni successivi all'evento (assunzione); N_res = somma dei rilasci non ancora avvenuti.
+         alla terminazione, immobilizzazioni) torna a N_min in suolo.residui.giorni_rilascio giorni normalizzati
+         dall'evento: quota del giorno = apporto x f_T / giorni_rilascio finche' la somma di f_T arriva a
+         giorni_rilascio (assunzione; piu' lento d'inverno, piu' rapido d'estate, massa conservata);
+         N_res = somma dei rilasci non ancora avvenuti.
       2) Coltura: U = resa x n_assorbito(coltura) sul ciclo (resa nota dal bilancio idrico e dai fattori);
          u_d = U x q_d con q_d = Tr_d / somma sul ciclo di Tr, Tr_d = traspirazione del giorno calcolata dal
          nucleo idrico (water.py, metodo a doppio coefficiente FAO-56 cap. 7: Tr = Ks x Kcb x ET0 con Kcb di
@@ -127,7 +130,8 @@ _meta:
     - "Concime: copre ogni giorno la parte di assorbimento che il suolo non copre (distribuzione frazionata ideale che segue la domanda). L'azoto del concime esposto tra distribuzione e assorbimento (dosi in blocco, lisciviazione dopo la concimazione) non è rappresentato, se non attraverso la perdita esplicita PERD_F = FERT x (1 - recupero_apparente)."
     - "Ripartizione giornaliera dell'assorbimento proporzionale alla traspirazione Ks x Kcb x ET0 calcolata dal bilancio idrico a doppio coefficiente (assunzione dichiarata; dal 2026-11-12 il bilancio idrico e il riparto usano la stessa traspirazione). La concentrazione di N nella biomassa e' trattata come costante nel ciclo (in campo e' piu' alta nelle prime fasi): l'assorbimento precoce e' sottostimato. Con ETa/ET0 (Kc singolo, evaporazione inclusa) il frumento assorbiva il 45% in nov-feb, con la traspirazione il 7%."
     - "Cover: assorbimento proporzionale a Ks x Kcb x ET0 con Kcb costante, cioe' all'ET0 (alta a settembre-ottobre e a marzo, bassa d'inverno); la crescita della copertura nel tempo non e' rappresentata. Misura del 2026-11-12 (doppio coefficiente e CN di AquaCrop; punto pilota, solo pioggia, mediana delle annate, stesso intervallo con e senza cover): il drenaggio e' praticamente uguale (dopo il mais 65 mm nudo, 68 con cover; dopo il frumento 76 e 75), quindi la riduzione della lisciviazione e' tutta un effetto di intercettazione. Lisciviazione per mm drenato ridotta del 51% dopo il mais (10,4 -> 5,5 kg N/ha) e del 62% dopo il frumento (15,1 -> 5,6), con irrigazione libera 43% e 58%. Dopo il mais la riduzione resta sotto il 56-70% pubblicato perche' l'N minerale alla semina della cover e' quasi nullo (mediana 4,4 kg N/ha: il concime non resta nel suolo) e la lisciviazione da intercettare e' solo quella dell'N mineralizzato in autunno-inverno; la cover raggiunge comunque il tetto di 51 kg N/ha. Dopo il frumento (N minerale alla semina 21,6 kg N/ha) la riduzione sta nell'intervallo pubblicato. Nessun parametro e' stato tarato su questo risultato."
-    - "Rilascio dei residui e delle immobilizzazioni uniforme in giorni_rilascio (assunzione, senza dipendenza da temperatura e umidita')."
+    - "Misura del 2026-11-14 dopo l'introduzione del fattore di temperatura (q10 = 2; rotazione mais-soia-frumento, punto pilota, mediana di 17 annate, stesso intervallo nudo e con cover): lisciviazione dopo il mais 9,6 -> 6,2 kg N/ha col suolo nudo e 6,9 -> 2,6 con la cover, riduzione dovuta alla cover 27% -> 58% (tetto irriguo 55%, irrigazione libera 58%); dopo il frumento 9,5 -> 10,4 nudo e 4,1 -> 5,1 con cover, riduzione 56% -> 51%. Con q10 1,7-3 la riduzione dopo il mais varia molto (circa 54-86% nella prova senza credito di precessione): parametro sensibile. Riferimento di campo: Capra et al. (2023, GCB Bioenergy) in pianura padana, segale -64% della lisciviazione autunnale rispetto al suolo nudo. Provato e scartato: applicare il credito negativo degli stocchi (-40 kg N) dalla raccolta invece che alla semina porta la lisciviazione autunnale dopo il mais quasi a zero e rende la cover peggiore del suolo nudo (il credito ER e' un effetto netto sulla coltura successiva, non un'immobilizzazione autunnale). I numeri della misura del 2026-11-12 riportati sopra sono superati."
+    - "Mineralizzazione dell'humus e rilascio dei residui modulati dalla temperatura con un Q10 (suolo.temperatura.q10), normalizzato sulla media della serie: si usa la temperatura dell'aria come proxy di quella del suolo; l'umidita' del suolo non e' considerata; il C/N dei singoli residui entra solo attraverso il credito di precessione ER."
     - "La frazione lisciviata usa SAT_mm dell'intero profilo del motore (1,5 m), non della sola zona radicale del segmento."
     - "Il MAS non viene ridotto per rese sotto la resa di riferimento (la nota 112 regola solo il superamento)."
     - "Cover: biomassa e humus proporzionali all'N assorbito (C/N costante) è un'assunzione; n_assorbito della segale è derivato, non misurato."
@@ -675,6 +679,16 @@ suolo:
       motivazione: "Il disciplinare ER (Tab. 4) da' solo l'effetto netto sulla coltura successiva e nessuna durata; nessun coefficiente tempo e' nei parametri. Dodici mesi coprono la coltura successiva e il primo inverno, l'ordine di grandezza della decomposizione della frazione labile di stocchi e paglie in clima temperato; la forma uniforme e' la piu' semplice che conserva la massa."
       sensibilita: true
       intervallo: [180, 730]
+  temperatura:
+    q10:
+      valore: 2.0
+      unita: "-"
+      nota: "Fattore giornaliero f_T = q10^((T - T_media)/10), T = temperatura media giornaliera dell'aria del meteo (proxy della temperatura del suolo), T_media = media della serie meteo, quindi media di f_T circa 1: il totale annuo di k2 (ER) non cambia, cambia la distribuzione nell'anno. Moltiplica la mineralizzazione dell'humus (passo 1) e scandisce il rilascio di N_res in giorni normalizzati (passo 1bis). q10 = 1 riproduce il motore senza temperatura."
+      verificato: false
+      assunzione: true
+      motivazione: "Valore centrale della letteratura letta solo negli abstract: Stanford, Frere e Schwaninger (1973, Soil Science 115) Q10 circa 2 su 11 suoli tra 5 e 35 gradi C; Liu et al. (2016, Global Change Biology 22) media globale 2,21 su 379 studi; Miller et al. (2018, Biology and Fertility of Soils 54) 2,87 (2,67-3,15) su 55 suoli agricoli. Da verificare nei testi completi prima di marcarlo verificato."
+      sensibilita: true
+      intervallo: [1.7, 3.0]
 
 # =============================================================================
 # LISCIVIAZIONE

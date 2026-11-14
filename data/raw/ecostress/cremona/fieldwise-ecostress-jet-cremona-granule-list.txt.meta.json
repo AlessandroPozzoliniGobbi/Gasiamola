@@ -1,0 +1,21 @@
+{
+  "file": "fieldwise-ecostress-jet-cremona-granule-list.txt",
+  "source": "AppEEARS (LP DAAC)",
+  "product": "ECO_L3T_JET.002",
+  "version": "002",
+  "url": "https://appeears.earthdatacloud.nasa.gov/api/bundle/9cd39cda-6413-433b-acbe-44425576bf1b/43fdc7bd-544b-401e-9d49-cdd1265f5880",
+  "params": {
+    "task_id": "9cd39cda-6413-433b-acbe-44425576bf1b",
+    "layers": [
+      "ETdaily",
+      "ETinstUncertainty",
+      "PTJPLSMinst",
+      "cloud",
+      "water"
+    ]
+  },
+  "downloaded_at_utc": "2026-11-14T11:47:41+00:00",
+  "bytes": 2067540,
+  "sha256": "189c1da2b5b684720f49ac4e34d0317e3b1ce4d40b5025ce691a0061dd6deeb7",
+  "notes": null
+}

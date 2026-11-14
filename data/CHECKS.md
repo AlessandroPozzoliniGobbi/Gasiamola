@@ -371,3 +371,18 @@ gli anni dal 2023 restano esclusi dall'ensemble; il confronto con una sola stazi
 letto con cautela (la rete di cinque pluviometri dava per POWER 1,17 nel 2023).
 D10. La differenza tra interpolazione bilineare e cella più vicina è trascurabile (−0,02 mm/giorno).
 D11. SMAP è utilizzabile per la validazione dell'umidità (fase 6) sui 2323 giorni di qualità raccomandata.
+
+## ECOSTRESS ET giornaliera (2026-11-14)
+
+Dati: ECOSTRESS Collection 2 ECO_L3T_JET.002 (layer `ETdaily`, `ETinstUncertainty`, `PTJPLSMinst`, `cloud`, `water`), AppEEARS (LP DAAC), richiesta `point` per 31 punti (il pilota 45,2; 10,0 e 30 punti a caso su seminativi WorldCover 2021 della provincia), 2018-07-01 → 2022-12-31. Client `fieldwise.data.ecostress` (login Earthdata da `~/.netrc`, nessuna credenziale nei file). I controlli sono fatti a mano sul file elaborato `data/processed/cremona/ecostress_et.csv`; non sono ancora in `python -m fieldwise.qc` (parte automatica di questo file).
+
+| Dataset | Controllo | Esito | Dettaglio |
+|---|---|---|---|
+| ECOSTRESS | Righe e qualità | ATTENZIONE | 20194 righe (31 punti, 2018-07-29 → 2022-12-25): 6535 valide (32,4%), 3814 con nube (18,9%), 9845 senza valore e senza nube (48,8%), 0 con acqua; solo le valide si usano |
+| ECOSTRESS | Intervallo valori | OK | ETdaily valida: min 0,00, max 5,83, media 1,70 mm/giorno; attesi [0, 10]; negativi: 0; ciclo stagionale evidente (media mensile da 0,02 a novembre a 2,74 a giugno) |
+| ECOSTRESS | Unità | ATTENZIONE | mm/giorno secondo il testo della guida utente (par. 5.4, p. 16); la tabella 10 e il catalogo .002 dicono W m⁻²: documentazione incoerente, vale il testo perché compatibile con i valori; la lettura alternativa darebbe circa 0,09 mm/giorno in piena estate |
+| ECOSTRESS | Passaggi validi per anno | ATTENZIONE | 2018 396 (solo da luglio), 2019 996, 2020 1351, 2021 1789, 2022 2003: la copertura cresce nel tempo; i mesi con meno di 5 passaggi non entrano nelle medie mensili |
+| ECOSTRESS | Tile sovrapposte | ATTENZIONE | 2457 righe (12%) sono lo stesso passaggio e punto letto da due tile diverse (valori leggermente diversi); si tengono entrambe come nelle prove; 5 punti su 31 cadono su due o quattro tile (P10, P17, P18, P28 su due, P12 su quattro): hanno 345-360 passaggi validi (P12 705) contro 164-175 degli altri 26 e pesano quindi il doppio (P12 quattro volte) nelle medie mensili |
+
+Decisione. D12. ECOSTRESS serve a verificare l'ET simulata, non è un input. Il livello è confrontato in mm/giorno ma ETdaily copre solo le ore di luce, il pixel è da 70 m, i passaggi sono a orari variabili e la stima è modellata: non si può dire se sbagli il modello o il satellite. Il meteo dei punti è quello della cella POWER del pilota (circa 50 km) e la coltura dei punti non è nota.
+

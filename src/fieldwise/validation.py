@@ -14,6 +14,12 @@ Tutto offline (solo cache). Scelte di metodo fissate prima di guardare i risulta
   contro la resa relativa simulata della stessa coltura e anno: monosuccessione e media delle
   rotazioni di tre colture (tutte le 216, con e senza cover) che la contengono in quell'anno.
 * D. Robustezza del punto C per il mais: Kc singolo e pioggia IMERG.
+* E. ECOSTRESS ET giornaliera (ECO_L3T_JET.002, 70 m, 2018-2022) contro ``eta`` del motore nei
+  giorni di passaggio: verifica dell'evapotraspirazione simulata, NON un input del modello.
+  Medie mensili tra i punti (mesi con almeno 5 passaggi), bootstrap a blocchi come per SMAP;
+  scarto medio, correlazione sui valori grezzi e sulle anomalie rispetto al mese di calendario.
+  La coltura simulata di ogni punto-anno e' un argomento esplicito (``colture``): la regola che
+  la sceglie non e' in questo modulo (vedi ``validate_ecostress``).
 
 Intervalli di confidenza al 95%: serie mensili (A) con bootstrap a blocchi mobili di 6 mesi
 (le anomalie di umidita' persistono per mesi: Fisher con n mesi sarebbe troppo stretto);
@@ -43,6 +49,7 @@ from . import config as _config
 from . import rotation as R
 from . import weather as _weather
 from .data import cache as _cache
+from .data import ecostress as _ecostress
 from .data import modis as _modis
 from .data import smap as _smap
 
@@ -58,6 +65,12 @@ BLOCK_MONTHS = 6
 N_BOOT = 5000
 SEED = 20261113
 MIN_DAYS_MONTH = 5
+ECOSTRESS_YEARS = (2018, 2022)     # fino al 2022: pioggia POWER non affidabile dopo (D1)
+ECOSTRESS_MIN_PASSAGGI = 5         # passaggi per mese (come MIN_DAYS_MONTH per SMAP)
+ECOSTRESS_COLTURE = ("mais", "soia", "frumento")
+ECOSTRESS_COLTURE_FILE = "ecostress_colture.csv"   # data/processed/cremona/, con il suo .meta.json
+ECOSTRESS_PESO_STAGIONE = 0.5      # regola 'mix_istat': in stagione se il peso delle colture in stagione e' >= 0,5
+WM2_TO_MM = 86400 / 2.45e6         # lettura alternativa dell'unita': W m-2 medi -> mm/giorno
 
 MAIS = R.Rotation(("mais",), (False,))
 MSF = R.Rotation(("mais", "soia", "frumento"), (False, False, False))
@@ -111,7 +124,10 @@ def corr_stats(x, y, ci: str = "fisher", block: int = BLOCK_MONTHS, n_boot: int 
     rs, ps = _st.spearmanr(x, y)
     rp, rs = float(rp), float(rs)
     if ci == "block":
-        cip, cis = _block_boot(x, y, block, n_boot, seed)
+        if n < block:      # meno elementi di un blocco: il bootstrap non e' definito, IC non stimato
+            cip = cis = [math.nan, math.nan]
+        else:
+            cip, cis = _block_boot(x, y, block, n_boot, seed)
         out["blocco"] = block
     else:
         cip = _fisher_ci(rp, n, 1.0 / math.sqrt(n - 3))
@@ -372,6 +388,225 @@ def validate_robustness(ctxs: dict) -> dict:
 
 
 # =============================================================================
+# E. ECOSTRESS: evapotraspirazione giornaliera osservata contro simulata
+# =============================================================================
+def mono_daily(ctx, crop: str, scenario: str, anno: int = 2000) -> pd.DataFrame:
+    """``ks``, ``eta``, ``etc`` giornalieri di un'unica simulazione continua della monosuccessione
+    di ``crop`` (come ``model_theta_daily``: avviamenti ripetuti fino all'ultimo ciclo che termina
+    entro il meteo) e indicatore ``in_stagione`` (giorni dal segmento 'coltura', cioe' tra semina e
+    raccolta simulate). Indice: data del giorno simulato."""
+    best = None
+    for n_avv in range(1, 40):
+        if not R.build_calendar(ctx, R.Rotation((crop,), (False,)), anno, n_avv).ok:
+            break
+        best = n_avv
+    if best is None:
+        raise ValueError(f"{crop} non simulabile dal {anno}")
+    o = R.simulate(ctx, R.Rotation((crop,), (False,)), anno, scenario, n_avviamento=best, dettaglio=True)
+    segs = o["segmenti"]
+    i0 = segs[0].start
+    w = o["acqua"]
+    n = len(w.ks)
+    stag = np.zeros(n, bool)
+    for sg in segs:
+        if sg.kind == "coltura":
+            stag[sg.start - i0: sg.end - i0 + 1] = True
+    return pd.DataFrame({"ks": np.asarray(w.ks, float), "eta": np.asarray(w.eta, float),
+                         "etc": np.asarray(w.etc, float), "in_stagione": stag},
+                        index=pd.DatetimeIndex(ctx.dates[i0:i0 + n]))
+
+
+def ecostress_monthly(d: pd.DataFrame, min_passaggi: int = ECOSTRESS_MIN_PASSAGGI) -> pd.DataFrame:
+    """Medie mensili di ``et_obs`` e ``eta_sim`` sui passaggi (tutti i punti insieme), solo mesi con
+    almeno ``min_passaggi`` passaggi. Indice: mese (Period)."""
+    g = d.groupby(d["data"].dt.to_period("M"))
+    m = g[["et_obs", "eta_sim"]].mean()
+    m["n_passaggi"] = g.size()
+    m.index.name = "mese"
+    return m[m["n_passaggi"] >= min_passaggi]
+
+
+def calendar_anomalies(m: pd.DataFrame) -> pd.DataFrame:
+    """Anomalie rispetto al mese di calendario: a ogni mese si toglie la media dello stesso mese
+    (gennaio, febbraio, ...) sugli anni disponibili, per osservato e simulato. I mesi presenti in
+    un solo anno non hanno anomalia (sarebbe zero) e sono esclusi. Con 5 anni al massimo la media
+    del mese e' una stima rozza."""
+    m = m.sort_index()
+    mon = m.index.month
+    cnt = m.groupby(mon)["et_obs"].transform("size")
+    h = m[cnt >= 2].copy()
+    for c in ("et_obs", "eta_sim"):
+        h[f"{c}_anom"] = h[c] - h.groupby(h.index.month)[c].transform("mean")
+    return h
+
+
+def _passaggi_stat(q: pd.DataFrame) -> dict:
+    if len(q) < 4:
+        return {"n_passaggi": int(len(q))}
+    x, y = q["et_obs"].to_numpy(float), q["eta_sim"].to_numpy(float)
+    return {"n_passaggi": int(len(q)), "n_punti": int(q["punto"].nunique()),
+            "media_obs": float(x.mean()), "media_sim": float(y.mean()),
+            "scarto_sim_meno_obs": float((y - x).mean()),
+            "rmse": float(np.sqrt(((y - x) ** 2).mean())),
+            "r_passaggi": float(np.corrcoef(x, y)[0, 1]),
+            "scarto_lettura_wm2": float((y - x * WM2_TO_MM).mean())}
+
+
+def _ecostress_subset(q: pd.DataFrame, anomalie: bool) -> tuple[dict, pd.DataFrame]:
+    r = _passaggi_stat(q)
+    if len(q):
+        m = ecostress_monthly(q)
+    else:
+        m = pd.DataFrame({"et_obs": [], "eta_sim": [], "n_passaggi": []},
+                         index=pd.PeriodIndex([], freq="M", name="mese"))
+    r["mensile"] = corr_stats(m["et_obs"], m["eta_sim"], ci="block")
+    r["mensile"]["n_mesi"] = int(len(m))
+    t = m.reset_index()
+    t["mese"] = t["mese"].astype(str)
+    if anomalie:
+        h = calendar_anomalies(m)
+        r["anomalie"] = corr_stats(h["et_obs_anom"], h["eta_sim_anom"], ci="block")
+        r["anomalie"]["n_mesi"] = int(len(h))
+        ha = h[["et_obs_anom", "eta_sim_anom"]].reset_index()
+        ha["mese"] = ha["mese"].astype(str)
+        t = t.merge(ha, on="mese", how="left")
+    return r, t
+
+
+def validate_ecostress(ctxs: dict, passaggi: pd.DataFrame, colture: pd.DataFrame,
+                       scenari=SCENARI) -> tuple[dict, pd.DataFrame]:
+    """Verifica dell'ET simulata contro ECOSTRESS ETdaily nei giorni di passaggio (non e' un input).
+
+    ``passaggi``: ``fieldwise.data.ecostress.load()``; si usano solo i passaggi validi fino al
+    ``ECOSTRESS_YEARS[1]``. ``colture``: tabella ``punto, anno, coltura`` (coltura in mais, soia,
+    frumento) che dice QUALE coltura simulare per ogni punto-anno: entrano solo i passaggi dei
+    punto-anno presenti. Il modulo non ha una regola per sceglierla (le colture dei punti non sono
+    note: sono pixel di seminativo a caso); la scelta cambia i numeri in modo sostanziale (vedi
+    ``reports/validation.md``). Le simulazioni usano la pioggia POWER e il meteo del punto pilota
+    per tutti i punti (cella POWER da circa 50 km).
+
+    Per ogni scenario d'acqua e sottoinsieme (tutti, stagione = tra semina e raccolta simulate,
+    fuori stagione, e per coltura in stagione) riporta: passaggi, punti, ET media osservata e
+    simulata, scarto medio (simulata - osservata, mm/giorno), RMSE e correlazione sui passaggi, e sulle
+    medie mensili: correlazione sui valori grezzi (ciclo stagionale compreso) e, per i tre
+    sottoinsiemi principali, sulle anomalie rispetto al mese di calendario (interannuale), con IC
+    95% da bootstrap a blocchi di 6 mesi. ``scarto_lettura_wm2``: lo scarto se ETdaily fosse in
+    W m-2 (tab. 10 della guida utente) invece che in mm/giorno (testo, par. 5.4).
+    """
+    ctx = ctxs["power"]
+    e = _ecostress.valid_passages(passaggi, ECOSTRESS_YEARS[1]).rename(columns={"et_mm_giorno": "et_obs"})
+    e = e[e["data"].dt.year >= ECOSTRESS_YEARS[0]].copy()
+    e["anno"] = e["data"].dt.year
+    n_valid = int(len(e))
+    col = colture[["punto", "anno", "coltura"]].drop_duplicates(["punto", "anno"])
+    e = e.merge(col, on=["punto", "anno"], how="inner")
+    res = {"anni": list(ECOSTRESS_YEARS), "scenario_rappresentativo": SCENARIO_RAPPRESENTATIVO,
+           "unita": "mm/giorno (guida utente ECOSTRESS Collection 2 v2, par. 5.4, p. 16; la tab. 10 e "
+                    "il catalogo .002 dicono W m-2)",
+           "passaggi_validi_2018_2022": n_valid, "passaggi_usati": int(len(e)),
+           "punti_usati": int(e["punto"].nunique()),
+           "coltura_dei_passaggi": e["coltura"].value_counts().to_dict(),
+           "min_passaggi_per_mese": ECOSTRESS_MIN_PASSAGGI, "scenari": {}}
+    tabs = []
+    for sc in scenari:
+        parts = []
+        for crop in ECOSTRESS_COLTURE:
+            u = e[e["coltura"] == crop].copy()
+            if u.empty:
+                continue
+            day = mono_daily(ctx, crop, sc)
+            u["eta_sim"] = day["eta"].reindex(u["data"]).to_numpy()
+            u["in_stagione"] = day["in_stagione"].reindex(u["data"]).to_numpy()
+            parts.append(u)
+        p = pd.concat(parts, ignore_index=True).dropna(subset=["eta_sim"])
+        p["in_stagione"] = p["in_stagione"].astype(bool)
+        out = {}
+        subsets = [("tutti", p, True), ("stagione", p[p["in_stagione"]], True),
+                   ("fuori_stagione", p[~p["in_stagione"]], True)]
+        subsets += [(f"stagione_{c}", p[p["in_stagione"] & (p["coltura"] == c)], False)
+                    for c in ECOSTRESS_COLTURE]
+        for nome, q, anom in subsets:
+            r, t = _ecostress_subset(q, anom)
+            out[nome] = r
+            t.insert(0, "sottoinsieme", nome)
+            t.insert(0, "scenario", sc)
+            tabs.append(t)
+        res["scenari"][sc] = out
+    return res, pd.concat(tabs, ignore_index=True)
+
+
+def ecostress_colture_table() -> pd.DataFrame | None:
+    """Tabella ``punto, anno, coltura`` salvata come dato del prodotto (``ecostress_colture.csv``,
+    con i metadati di origine accanto), oppure None se non c'e'."""
+    p = _cache.processed_dir(key="cremona", create=False) / ECOSTRESS_COLTURE_FILE
+    return pd.read_csv(p) if p.exists() else None
+
+
+def _pesi_istat(ist: pd.DataFrame) -> dict[int, dict[str, float]]:
+    """Per anno, il peso di mais, soia e frumento: superficie ISTAT della coltura / somma delle tre."""
+    a = ist[ist["crop"].isin(ECOSTRESS_COLTURE)].pivot_table(index="year", columns="crop",
+                                                              values="area_ha", aggfunc="sum")
+    a = a.reindex(columns=list(ECOSTRESS_COLTURE)).dropna()
+    a = a.div(a.sum(axis=1), axis=0)
+    return {int(y): {c: float(a.loc[y, c]) for c in ECOSTRESS_COLTURE} for y in a.index}
+
+
+def validate_ecostress_controlli(ctxs: dict, passaggi: pd.DataFrame, ist: pd.DataFrame,
+                                 scenari=SCENARI) -> tuple[dict, pd.DataFrame]:
+    """Regole di controllo senza riconoscimento della coltura, su TUTTI i passaggi validi 2018-2022.
+
+    Servono a dire quanto i risultati di ``validate_ecostress`` dipendono dalla scelta della coltura;
+    non la sostituiscono. Regole: ``tutti_mais``, ``tutti_soia``, ``tutti_frumento`` (ogni passaggio
+    simulato con quella coltura) e ``mix_istat`` (media delle tre colture pesata con le superfici
+    ISTAT dell'anno; un passaggio e' 'in stagione' se il peso delle colture che quel giorno sono in
+    stagione e' almeno ``ECOSTRESS_PESO_STAGIONE``). Stesse statistiche di ``validate_ecostress``
+    (tutti, stagione, fuori stagione; senza i sottoinsiemi per coltura). Tabella mensile con la colonna
+    ``regola``.
+    """
+    ctx = ctxs["power"]
+    e = _ecostress.valid_passages(passaggi, ECOSTRESS_YEARS[1]).rename(columns={"et_mm_giorno": "et_obs"})
+    e = e[e["data"].dt.year >= ECOSTRESS_YEARS[0]].copy()
+    pesi = {y: w for y, w in _pesi_istat(ist).items() if ECOSTRESS_YEARS[0] <= y <= ECOSTRESS_YEARS[1]}
+    e = e[e["data"].dt.year.isin(pesi)].reset_index(drop=True)
+    w_mix = pd.DataFrame([pesi[y] for y in e["data"].dt.year], index=e.index)
+    regole = {f"tutti_{c}": pd.DataFrame({k: float(k == c) for k in ECOSTRESS_COLTURE}, index=e.index)
+              for c in ECOSTRESS_COLTURE}
+    regole["mix_istat"] = w_mix
+    res = {"anni": list(ECOSTRESS_YEARS), "passaggi_validi": int(len(e)), "punti": int(e["punto"].nunique()),
+           "regole": {"tutti_mais": "ogni passaggio simulato come mais (monosuccessione)",
+                      "tutti_soia": "ogni passaggio simulato come soia",
+                      "tutti_frumento": "ogni passaggio simulato come frumento",
+                      "mix_istat": "media di mais, soia e frumento pesata con le superfici ISTAT dell'anno "
+                                   f"(in stagione se il peso delle colture in stagione e' >= {ECOSTRESS_PESO_STAGIONE})"},
+           "pesi_istat": {str(y): v for y, v in pesi.items()}, "scenari": {}}
+    tabs = []
+    for sc in scenari:
+        giorni = {c: mono_daily(ctx, c, sc) for c in ECOSTRESS_COLTURE}
+        eta = pd.DataFrame({c: giorni[c]["eta"].reindex(e["data"]).to_numpy() for c in ECOSTRESS_COLTURE})
+        stag = pd.DataFrame({c: giorni[c]["in_stagione"].reindex(e["data"]).to_numpy(dtype=float)
+                             for c in ECOSTRESS_COLTURE})
+        out = {}
+        for nome, w in regole.items():
+            attivi = w.to_numpy() > 0
+            ok = ~(eta.isna().to_numpy() & attivi).any(axis=1)
+            p = e[ok].copy()
+            p["eta_sim"] = (eta.fillna(0.0).to_numpy() * w.to_numpy()).sum(axis=1)[ok]
+            p["in_stagione"] = ((stag.fillna(0.0).to_numpy() * w.to_numpy()).sum(axis=1)[ok]
+                                >= ECOSTRESS_PESO_STAGIONE)
+            sub = {}
+            for nm, q in (("tutti", p), ("stagione", p[p["in_stagione"]]), ("fuori_stagione", p[~p["in_stagione"]])):
+                r, t = _ecostress_subset(q, True)
+                sub[nm] = r
+                t.insert(0, "sottoinsieme", nm)
+                t.insert(0, "regola", nome)
+                t.insert(0, "scenario", sc)
+                tabs.append(t)
+            out[nome] = sub
+        res["scenari"][sc] = out
+    return res, pd.concat(tabs, ignore_index=True)
+
+
+# =============================================================================
 # Figure
 # =============================================================================
 def _plt():
@@ -499,8 +734,15 @@ def _clean(o):
 
 
 def run_all(lat: float = _config.PILOT_LAT, lon: float = _config.PILOT_LON,
-            figures: bool = True) -> dict:
-    """Rigenera tabelle (CSV), ``validation_summary.json`` e figure. Solo cache."""
+            figures: bool = True, ecostress_colture: pd.DataFrame | None = None) -> dict:
+    """Rigenera tabelle (CSV), ``validation_summary.json`` e figure. Solo cache.
+
+    ``ecostress_colture``: tabella ``punto, anno, coltura`` per la verifica dell'ET con ECOSTRESS
+    (vedi ``validate_ecostress``). Se non e' data si usa quella salvata in
+    ``data/processed/cremona/ecostress_colture.csv`` (``ecostress_colture_table``); se non c'e'
+    nemmeno quella, la sezione ``ecostress`` non viene calcolata e non compare nel riepilogo (nessuna
+    regola predefinita: la scelta della coltura e' una decisione di metodo, non un default). Con la
+    tabella si calcolano anche le regole di controllo (``validate_ecostress_controlli``)."""
     ctxs = contexts(lat, lon)
     # controllo: pioggia 'power' e default coincidono fino al 2022
     d0, dp = ctxs["default"], ctxs["power"]
@@ -512,9 +754,21 @@ def run_all(lat: float = _config.PILOT_LAT, lon: float = _config.PILOT_LON,
     b, b_tab = validate_ndvi(ctxs, lat, lon)
     c, c_tab = validate_istat(ctxs)
     d = validate_robustness(ctxs)
+    e_res = e_tab = None
+    if ecostress_colture is None:
+        ecostress_colture = ecostress_colture_table()
+    if ecostress_colture is not None:
+        passaggi = _ecostress.load()
+        e_res, e_tab = validate_ecostress(ctxs, passaggi, ecostress_colture)
+        k_res, k_tab = validate_ecostress_controlli(ctxs, passaggi, istat_table())
+        e_res["controlli"] = k_res
+        e_tab.insert(1, "regola", "principale")
+        e_tab = pd.concat([e_tab, k_tab], ignore_index=True)
     a_tab.to_csv(out_dir / "validation_smap_mensile.csv", index=False)
     b_tab.to_csv(out_dir / "validation_ndvi_annuale.csv", index_label="anno")
     c_tab.to_csv(out_dir / "validation_istat.csv", index=False)
+    if e_tab is not None:
+        e_tab.to_csv(out_dir / "validation_ecostress_mensile.csv", index=False)
     figs = {"smap": "validazione_smap_anomalie.png", "ndvi": "validazione_ndvi_stress.png",
             "istat": "validazione_istat_rese.png", "caso_2022": "validazione_caso_2022.png"}
     if figures:
@@ -531,7 +785,9 @@ def run_all(lat: float = _config.PILOT_LAT, lon: float = _config.PILOT_LON,
                "smap": a, "ndvi": b, "istat": c, "robustezza_mais": d,
                "figure": {k2: f"reports/figure/{v}" for k2, v in figs.items()},
                "tabelle": ["validation_smap_mensile.csv", "validation_ndvi_annuale.csv",
-                           "validation_istat.csv"],
+                           "validation_istat.csv"]
+               + (["validation_ecostress_mensile.csv"] if e_tab is not None else []),
+               **({"ecostress": e_res} if e_res is not None else {}),
                "non_validato": ["azoto (concime, assorbimento, mineralizzazione)", "humus",
                                 "lisciviazione dei nitrati", "percolazione e ruscellamento"]}
     summary = _clean(summary)
@@ -563,6 +819,20 @@ def _print(summary: dict):
             print(f"  {c['coltura']:9s} {c['scenario']:18s} {c['simulazione']:16s} n {c['detrend']['n']} "
                   f"det r {_fmt(c['detrend'], 'pearson')} rho {_fmt(c['detrend'], 'spearman')} "
                   f"| diff r {_fmt(c['differenze_prime'], 'pearson')}")
+    if "ecostress" in summary:
+        print("E. ECOSTRESS (ET, medie mensili)")
+        for sc, sub in summary["ecostress"]["scenari"].items():
+            for nome in ("tutti", "stagione", "fuori_stagione"):
+                r = sub[nome]
+                print(f"  {sc:18s} {nome:15s} passaggi {r.get('n_passaggi', 0):5d} "
+                      f"scarto {r.get('scarto_sim_meno_obs', float('nan')):+.2f} mm/g "
+                      f"grezza r {_fmt(r['mensile'], 'pearson')} ({r['mensile']['n_mesi']} mesi) "
+                      f"anomalie r {_fmt(r['anomalie'], 'pearson')} ({r['anomalie']['n_mesi']} mesi)")
+            for regola, cs in summary["ecostress"].get("controlli", {}).get("scenari", {}).get(sc, {}).items():
+                r = cs["stagione"]
+                print(f"  {sc:18s} controllo {regola:15s} passaggi {r.get('n_passaggi', 0):5d} "
+                      f"scarto {r.get('scarto_sim_meno_obs', float('nan')):+.2f} mm/g "
+                      f"grezza r {_fmt(r['mensile'], 'pearson')} anomalie r {_fmt(r['anomalie'], 'pearson')} (stagione)")
     print("D. Robustezza mais")
     for c in summary["robustezza_mais"]["confronti"]:
         if "detrend" in c:
@@ -571,7 +841,7 @@ def _print(summary: dict):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="Validazione FIELDWISE (SMAP, NDVI, ISTAT), offline")
+    ap = argparse.ArgumentParser(description="Validazione FIELDWISE (SMAP, NDVI, ISTAT, ECOSTRESS), offline")
     ap.add_argument("--lat", type=float, default=_config.PILOT_LAT)
     ap.add_argument("--lon", type=float, default=_config.PILOT_LON)
     ap.add_argument("--no-figure", action="store_true")

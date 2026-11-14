@@ -2,7 +2,8 @@
 
 Punto pilota lat 45,2, lon 10,0 (provincia di Cremona). Codice: `src/fieldwise/validation.py`
 (`python -m fieldwise.validation`, offline). Risultati salvati: `data/processed/lat45.200_lon10.000/`
-`validation_summary.json`, `validation_smap_mensile.csv`, `validation_ndvi_annuale.csv`, `validation_istat.csv`.
+`validation_summary.json`, `validation_smap_mensile.csv`, `validation_ndvi_annuale.csv`, `validation_istat.csv`
+(e, per ECOSTRESS, `validation_ecostress_mensile.csv`).
 
 ## Regole seguite
 
@@ -196,6 +197,106 @@ correlazione di 0,5 ha un intervallo che va da circa 0,05 a 0,8.
 
 Le conclusioni non cambiano né con il metodo dell'evapotraspirazione né con la fonte della pioggia.
 
+## E. Evapotraspirazione simulata contro ECOSTRESS (2018–2022)
+
+ECOSTRESS (sensore sulla Stazione Spaziale, prodotto ECO_L3T_JET.002) stima l'evapotraspirazione giornaliera
+`ETdaily` su pixel da 70 m. Qui **non è un input del motore**: è un controllo indipendente dell'evapotraspirazione
+reale simulata (`eta`) nei giorni di passaggio. Unità: mm/giorno (guida utente Collection 2 v2, par. 5.4, p. 16;
+la tabella 10 della stessa guida e il catalogo del prodotto scrivono W m⁻²: la documentazione è incoerente, vale il
+testo perché è l'unica lettura compatibile con i valori). I numeri vengono da `validation_summary.json`
+(chiave `ecostress`) e da `validation_ecostress_mensile.csv`.
+
+**Metodo** (stesso di SMAP). 31 punti a caso sui seminativi della provincia (30 più il pilota); solo passaggi con
+valore valido (6535 su 20194: il resto è nube o senza valore); fino al 2022. Per ogni passaggio si prende l'`eta`
+simulata di quel giorno (monosuccessione della coltura scelta, meteo del punto pilota). Si fanno le medie mensili
+tra i punti, solo mesi con almeno 5 passaggi, e gli intervalli al 95% con bootstrap a blocchi mobili di 6 mesi.
+Si riportano: scarto medio (simulata − osservata, mm/giorno), correlazione sui **valori grezzi** (che include il
+ciclo stagionale) e correlazione sulle **anomalie** rispetto al mese di calendario (a ogni mese si toglie la media
+dello stesso mese negli altri anni: misura se il modello segue le differenze tra un anno e l'altro). La stagione di
+crescita è il periodo tra semina e raccolta simulate. Lo scenario d'acqua rappresentativo è `tetto_irriguo`
+(scelto a priori, come per le rese); gli altri sono riportati.
+
+**Quale coltura si simula in ogni punto.** I punti sono pixel di seminativo a caso, non campi noti. Il risultato
+principale usa la coltura riconosciuta da Sentinel-2 solo dove la classe è netta (mais, soia o frumento, senza
+ambiguità): 58 punto-anno, che danno **2436 passaggi validi su 23 punti** (mais 1307, soia 949, frumento 180). La
+tabella è `data/processed/cremona/ecostress_colture.csv`, con i metadati di origine accanto (script
+`experiments/dati_nuovi/prova_a.py`, regole in `experiments/dati_nuovi/regole_prefissate.md`, fissate prima di
+vedere i numeri). **Limite:** il riconoscimento da Sentinel-2 non ha superato il criterio generale (65% di
+punto-anno senza ambiguità contro 80%; vedi `reports/esperimenti_dati_nuovi.md`). Qui serve solo a scegliere quale
+coltura simulare dove la classe è netta; non è una mappa delle colture. È la regola della prova E, fissata prima di vedere i
+numeri della prova. Le regole senza riconoscimento sono riportate come **controllo di
+robustezza**, non come alternativa: scegliere una di esse adesso, dopo aver visto i risultati, sarebbe una scelta
+sui risultati.
+
+**Risultato principale, in stagione di crescita** (1258 passaggi, 27 mesi; scarto medio in mm/giorno):
+
+| Scenario | Scarto medio | Pearson, valori grezzi [IC 95%] | Pearson, anomalie [IC 95%] |
+|---|---|---|---|
+| solo pioggia | +0,57 | +0,73 [+0,51, +0,86] | +0,60 [+0,26, +0,82] |
+| **tetto irriguo** | **+1,61** | **+0,77 [+0,40, +0,94]** | **+0,39 [+0,13, +0,70]** |
+| irrigazione libera | +2,42 | +0,82 [+0,50, +0,95] | +0,35 [+0,15, +0,52] |
+
+Su tutto l'anno (tetto irriguo, 2436 passaggi, 40 mesi): scarto +1,01 mm/giorno, grezza +0,86 [+0,71, +0,95],
+anomalie +0,41 [+0,01, +0,71] (39 mesi). Fuori stagione (1178 passaggi): scarto +0,38, grezza +0,59, anomalie
++0,37 (uguali nei tre scenari, che differiscono solo per l'irrigazione). Per coltura in stagione, con il tetto irriguo,
+lo scarto è +2,08 per il mais (715 passaggi, 17 punti), +1,01 per la soia (452 passaggi, 7 punti), +0,80 per il
+frumento (91 passaggi, 2 punti): sono pochi punti, e i dati non dicono altro.
+
+**Regole di controllo, senza riconoscimento della coltura.** Stessi calcoli su **tutti** i 6535 passaggi validi
+(31 punti), simulando ogni passaggio come "tutti mais", "tutti soia", "tutti frumento", oppure con il **mix ISTAT**
+(media di mais, soia e frumento, pesata con le superfici ISTAT dell'anno; il passaggio è "in stagione" se il peso
+delle colture in stagione è almeno 0,5; il mais pesa dal 57% al 62% nei cinque anni, quindi la stagione del mix è
+di fatto quella del mais). In stagione di crescita:
+
+| Regola | Passaggi | Scarto, solo pioggia | Scarto, tetto irriguo | Scarto, irrigazione libera | Grezza, tetto irriguo [IC 95%] | Anomalie, tetto irriguo [IC 95%] |
+|---|---|---|---|---|---|---|
+| principale (classi nette) | 1258 | +0,57 | +1,61 | +2,42 | +0,77 [+0,40, +0,94] | +0,39 [+0,13, +0,70] |
+| tutti mais | 3425 | +0,47 | +1,97 | +2,48 | +0,67 [+0,24, +0,94] | +0,49 [+0,34, +0,69] |
+| tutti soia | 3273 | +0,47 | +1,09 | +2,60 | +0,58 [+0,10, +0,84] | +0,56 [+0,32, +0,75] |
+| tutti frumento | 3373 | +0,89 | +0,89 | +0,89 | +0,77 [+0,63, +0,94] | +0,23 [+0,00, +0,72] |
+| mix ISTAT | 3425 | +0,34 | +1,35 | +1,91 | +0,65 [+0,18, +0,90] | +0,59 [+0,41, +0,78] |
+
+Il frumento ha lo stesso scarto nei tre scenari perché nel modello non è irrigato. Con tutte le regole e tutti gli
+scenari la correlazione sulle anomalie sta tra +0,23 e +0,62 (la più bassa, +0,23, è "tutti soia" con irrigazione
+libera, con intervallo che comprende lo zero).
+
+**Che cosa dicono i numeri, tre cose distinte.**
+
+1. **Il ciclo stagionale è riprodotto.** Mese per mese l'evapotraspirazione simulata sale e scende come quella
+   stimata dal satellite: correlazione sui valori grezzi alta (in stagione +0,77 nel risultato principale, da +0,58
+   a +0,77 con le regole di controllo, con il tetto irriguo), con intervallo sopra lo zero sia in stagione sia fuori.
+   Questa correlazione, però, è dominata dal ciclo dell'anno (estate alta, inverno bassa) e da sola non dice nulla
+   sugli anni.
+2. **Il livello è sovrastimato in stagione, e di più con l'irrigazione simulata.** Con il tetto irriguo il motore
+   simula in media 1,6 mm/giorno più del satellite (risultato principale), con irrigazione libera 2,4 e con la sola
+   pioggia 0,6. Con le regole di controllo, con il tetto irriguo, lo scarto va da +0,89 a +1,97. **Il segno è
+   robusto, la grandezza no**: dipende dalla coltura che si assume. È un limite noto: **nessun parametro è stato
+   tarato** per ridurlo. Non si può dire chi sbagli (vedi i limiti): lo scarto minimo con la sola pioggia è un
+   indizio da approfondire, non una prova che i campi non siano irrigati.
+3. **La variabilità tra un anno e l'altro non è stabilita.** Tolto il ciclo, la correlazione sulle anomalie è
+   +0,39 nel risultato principale (tetto irriguo) e va da +0,23 a +0,59 con le regole di controllo. Gli intervalli
+   sono larghi e in alcuni casi arrivano a zero: ci sono solo cinque anni, quindi anche la media di ogni mese
+   di calendario è una stima rozza. Non si può dire che il modello segua le differenze tra un anno e l'altro, né
+   che non le segua.
+
+**Limiti.**
+
+- Solo 2018–2022: cinque anni, e il 2018 solo da luglio. Le anomalie per mese di calendario usano da uno a cinque anni.
+- `ETdaily` copre solo le ore di luce (sole alto), mentre il motore simula le 24 ore, anche se di notte
+  l'evapotraspirazione è piccola.
+- I passaggi avvengono a orari variabili (l'orbita non è eliosincrona) e il pixel è da 70 m: un punto non è un campo.
+- `ETdaily` è una stima modellata (mediana di quattro modelli), non una misura; l'errore dichiarato in letteratura
+  (circa 1,5 mm/giorno sui valori giornalieri) non è stato riletto in questa sessione.
+- Il meteo di tutti i punti è quello della cella POWER del pilota (circa 50 km): le differenze tra i punti vengono
+  solo dalla coltura e dalla data del passaggio.
+- La coltura dei punti non è nota (vedi sopra): per questo ci sono la regola principale e quelle di controllo.
+  5 punti su 31 (P10, P12, P17, P18, P28) cadono sul bordo tra due o quattro tile e hanno i passaggi doppi (2457
+  righe su 20194, il 12%; 1138 dei 6535 passaggi validi, il 17%); si tengono tutti, quindi pesano di più nelle medie
+  mensili.
+- L'unità (mm/giorno) viene dal testo della guida utente, mentre la tabella 10 e il catalogo scrivono W m⁻². Con la
+  lettura in W m⁻² lo scarto sarebbe molto più grande (+4,0 mm/giorno in stagione con il tetto irriguo): per questo
+  la lettura in mm/giorno è dichiarata. Le correlazioni non dipendono dall'unità, lo scarto sì.
+
 ## Sintesi
 
 - **SMAP:** la dinamica dell'umidità superficiale è riprodotta (anomalie mensili r ≈ 0,7, IC circa 0,6–0,8), ma
@@ -205,12 +306,18 @@ Le conclusioni non cambiano né con il metodo dell'evapotraspirazione né con la
 - **ISTAT:** il mais è confermato (r 0,70 [0,33, 0,88] nello scenario rappresentativo), la soia non è
   confermata (intervalli che comprendono lo zero), il frumento è negativo (−0,50 [−0,79, −0,03]).
   Le rese reali del frumento calano negli anni umidi, che il modello non penalizza.
+- **ECOSTRESS (evapotraspirazione):** il ciclo stagionale è riprodotto (r +0,77 sui valori grezzi in stagione, tetto
+  irriguo). Il livello è sovrastimato in stagione, di più con l'irrigazione simulata (+1,6 mm/giorno con il tetto
+  irriguo, +0,6 con la sola pioggia, +2,4 con irrigazione libera; con le regole di controllo da +0,9 a +2,0 con il
+  tetto irriguo): il segno è robusto, la grandezza no. La variabilità tra un anno e l'altro non è stabilita
+  (anomalie r +0,39 nel risultato principale, da +0,23 a +0,59 nei controlli; solo 5 anni). Nessuna taratura
+  (sezione E).
 
 ## Cosa NON è stato validato
 
 - Bilancio dell'azoto: concime, assorbimento, mineralizzazione, fissazione della soia. Non ci sono osservazioni.
 - Humus e sostanza organica: nessuna serie storica di campo.
 - Lisciviazione dei nitrati e percolazione: nessuna misura di drenaggio o di concentrazione.
-- Ruscellamento e volumi irrigui: nessun dato per anno.
+- Ruscellamento e volumi irrigui: nessun dato per anno. L'evapotraspirazione è confrontata con ECOSTRESS (sezione E), ma il livello assoluto resta incerto.
 - Effetto delle cover crop e penalità di rotazione: la resa provinciale non le separa.
 - Gli anni dopo il 2022, se non nell'analisi secondaria SMAP (pioggia POWER non affidabile).

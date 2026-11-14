@@ -19,8 +19,9 @@ import pandas as pd
 
 # -----------------------------------------------------------------------------
 # Priorita' -> indicatori della sintesi, con verso (+1 = piu' alto e' meglio, -1 = piu' basso).
-# E' una scelta di PRESENTAZIONE (come raggruppare gli indicatori in cinque domande che
+# E' una scelta di PRESENTAZIONE (come raggruppare gli indicatori in sei domande che
 # l'agricoltore capisce), non un parametro fisico del modello: non ha fonte e non entra nel motore.
+# 'profitto' e' il margine su concime e acqua (params/economia.yaml, economics.py): non e' un margine aziendale.
 # Una priorita' con piu' indicatori e' la media dei loro punteggi parziali con PESI UGUALI
 # (dichiarato: 'suolo' = meta' variazione di humus, meta' azoto lisciviato).
 # -----------------------------------------------------------------------------
@@ -30,6 +31,7 @@ PRIORITA = {
     "acqua": (("irrigazione_mm", -1),),
     "concime": (("concime_kg_n", -1),),
     "suolo": (("humus_t_ha", +1), ("n_lisciviato_kg_n", -1)),
+    "profitto": (("margine_lordo_eur_ha", +1),),
 }
 VERSI = {col: v for ind in PRIORITA.values() for col, v in ind}   # colonna -> verso
 NESSUNO = "nessuno"              # valore di ``equivalente_a`` per le classi non equivalenti ad altre
@@ -52,12 +54,14 @@ ETICHETTE = {
         "irrigazione_mm": "irrigazione (mm all'anno)", "concime_kg_n": "concime azotato (kg N/ha all'anno)",
         "n_lisciviato_kg_n": "azoto lisciviato (kg N/ha all'anno)",
         "humus_t_ha": "variazione di humus (t/ha all'anno)",
+        "margine_lordo_eur_ha": "margine su concime e acqua (\u20ac/ha all'anno)",
         "giorni_caldo": "giorni di stress da caldo all'anno", "ruscellamento_mm": "ruscellamento (mm all'anno)",
         "percolazione_mm": "percolazione (mm all'anno)", "deficit_n_kg_n": "carenza di azoto (kg N/ha all'anno)",
         "quota_oltre_limite_n": "annate con azoto sopra il limite normativo",
         "cover_realizzata_quota": "casi in cui la cover e' praticabile"},
     "priorita": {"resa": "resa", "rischio": "rischio (annata peggiore)", "acqua": "risparmio di acqua",
-                 "concime": "risparmio di concime", "suolo": "salute del suolo"},
+                 "concime": "risparmio di concime", "suolo": "salute del suolo",
+                 "profitto": "profitto (margine su concime e acqua)"},
     "scenari": {"solo_pioggia": "solo pioggia", "tetto_irriguo": "irrigazione limitata",
                 "irrigazione_libera": "irrigazione libera"},
     "regimi": {"lombardia_impegno_quinquennale": "Lombardia, impegno quinquennale",
@@ -70,9 +74,10 @@ ETICHETTE = {
 }
 _NOMI = {"resa_rel_mediana": "resa mediana", "resa_rel_min": "resa media della rotazione nell'annata peggiore",
          "irrigazione_mm": "irrigazione", "concime_kg_n": "concime azotato",
-         "n_lisciviato_kg_n": "azoto lisciviato", "humus_t_ha": "bilancio dell'humus"}
+         "n_lisciviato_kg_n": "azoto lisciviato", "humus_t_ha": "bilancio dell'humus",
+         "margine_lordo_eur_ha": "margine su concime e acqua"}
 _UNITA = {"irrigazione_mm": "mm", "concime_kg_n": "kg N/ha", "n_lisciviato_kg_n": "kg N/ha",
-          "humus_t_ha": "t/ha all'anno"}
+          "humus_t_ha": "t/ha all'anno", "margine_lordo_eur_ha": "\u20ac/ha all'anno"}
 _PRIORITA_FATTORE = ETICHETTE["fattori"]
 
 
@@ -292,6 +297,11 @@ def _evidenze_e_peggioramenti(riga, att, dif):
                 ev.append(frase)
             elif col != "resa_rel_min":      # il peggioramento della resa nell'annata peggiore sta in _rischi
                 peg.append(frase)
+    d = dif["margine_lordo_eur_ha"]
+    if d["percentuale"] is not None and abs(d["percentuale"]) >= 100 * SOGLIA_EVIDENZA:
+        aggiungi("margine_lordo_eur_ha", d["assoluta"] > 0,
+                 f"{_NOMI['margine_lordo_eur_ha']} {_num(d['attuale'], 0)} → {_num(d['valore'], 0)} "
+                 f"{_UNITA['margine_lordo_eur_ha']} ({_pct(d['percentuale'])})")
     d = dif["humus_t_ha"]
     if abs(d["assoluta"]) >= SOGLIA_HUMUS:
         aggiungi("humus_t_ha", d["assoluta"] > 0,

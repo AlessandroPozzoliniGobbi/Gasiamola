@@ -13,11 +13,11 @@ TUTTI_PESI = {k: 1 for k in rk.PRIORITA}
 
 def riga(classe, scenario="solo_pioggia", resa=0.8, minimo=0.6, irr=100.0, conc=150.0, hum=-0.2,
          liv=10.0, conf="conforme", attuale=False, fl="acqua", n=20, oltre=0.0, cover=0.0,
-         f_acqua=0.8, f_caldo=0.99, f_rot=1.0, real=1.0, eq="nessuno"):
+         f_acqua=0.8, f_caldo=0.99, f_rot=1.0, real=1.0, eq="nessuno", marg=1500.0):
     return {"classe": classe, "scenario": scenario, "n_simulazioni": n, "attuale": attuale,
             "conformita": conf, COL_REGIME: conf, "fattore_limitante": fl,
             "resa_rel_mediana": resa, "resa_rel_min": minimo, "irrigazione_mm": irr,
-            "concime_kg_n": conc, "humus_t_ha": hum, "n_lisciviato_kg_n": liv,
+            "concime_kg_n": conc, "humus_t_ha": hum, "n_lisciviato_kg_n": liv, "margine_lordo_eur_ha": marg,
             "f_acqua": f_acqua, "f_caldo": f_caldo, "f_rotazione": f_rot,
             "quota_oltre_limite_n": oltre, "quota_cover_non_praticata": cover,
             "cover_realizzata_quota": real, "equivalente_a": eq}
@@ -476,3 +476,11 @@ def test_pareto_solo_conformi_coerente_con_score(tre):
     assert set(tutte["classe"]) == {"A", "B", "C", "D", "E"}
     assert dict(zip(conf["classe"], conf["non_dominata"]))["A"]       # senza D, A non e' dominata
     assert not dict(zip(tutte["classe"], tutte["non_dominata"]))["A"]  # D la domina quando c'e'
+
+
+def test_profitto_ordina_per_margine_e_da_il_peso_alla_priorita():
+    s = sint(riga("A", marg=3000.0), riga("B", marg=1000.0), riga("C", marg=2000.0))
+    t = rk.score(s, {"profitto": 1}, "solo_pioggia")
+    assert list(t["classe"]) == ["A", "C", "B"]
+    assert "punt_profitto" in t.columns
+    assert rk.VERSI["margine_lordo_eur_ha"] == +1

@@ -313,3 +313,74 @@ def test_rilascio_residui_graduale(npar, yields):
     s_p, _, _ = nt.run_daily(s0, sp[0], sp[1], sp[2], sp[3], np.zeros(sp[0].size), sp[5], npar)
     assert 0.0 < s_p.n_res < n_res
     assert s_p.n_res == pytest.approx(n_res * (1 - (rel // 2) / rel), abs=1e-6)
+
+
+# =============================================================================
+# 8) Temperatura: fattore Q10 normalizzato (nitrogen.suolo.temperatura.q10)
+# =============================================================================
+
+def _sinusoide(n, t_media=13.0, ampiezza=10.0):
+    """Temperatura sintetica: giorno 0 = meta' gennaio (minimo), massimo a meta' luglio."""
+    d = np.arange(n)
+    return t_media - ampiezza * np.cos(2 * np.pi * d / 365.0)
+
+
+def test_fattore_temperatura_media_uno_e_monotono(npar):
+    t = _sinusoide(3 * 365)
+    f = nt.temperature_factor(t, 2.0)
+    assert f.mean() == pytest.approx(1.0, abs=1e-12)
+    assert f[0] < 1.0 < f[182]                         # gennaio sotto, luglio sopra la media
+    assert np.all(np.diff(f[:182]) > 0)                # cresce con la temperatura
+    assert np.array_equal(nt.temperature_factor(t, 1.0), np.ones_like(t))
+    t_nan = t.copy()
+    t_nan[5] = np.nan
+    assert nt.temperature_factor(t_nan, 2.0)[5] == 1.0
+
+
+def test_f_temp_unitario_identico_a_senza_temperatura(npar, yields):
+    args = build(CICLO, yields, seed=3)
+    s0 = state_with(npar, 40.0, n_res=20.0, cred=-15.0)
+    s_a, b_a, r_a = nt.run_daily(s0, *args, npar)
+    s_b, b_b, r_b = nt.run_daily(s0, *args, npar, f_temp=np.ones(args[0].size))
+    assert s_a == s_b
+    assert np.array_equal(r_a.l, r_b.l) and np.array_equal(r_a.n_min, r_b.n_min)
+    with pytest.raises(ValueError):
+        nt.run_daily(s0, *args, npar, f_temp=np.ones(args[0].size - 1))
+
+
+@pytest.mark.parametrize("q10", [1.7, 2.0, 3.0])
+@pytest.mark.parametrize("seed", [0, 1])
+def test_chiusura_con_temperatura(npar, yields, q10, seed):
+    args = build(CICLO * 3, yields, seed=seed)
+    ft = nt.temperature_factor(_sinusoide(args[0].size), q10)
+    s0 = nt.initial_state(npar)
+    s1, bils, res = nt.run_daily(s0, *args, npar, f_temp=ft)
+    assert abs(total_closure(s0, s1, bils, npar)) < TOL_N
+    assert np.abs(res.residuo).max() < TOL_N
+    assert all(abs(nt.n_balance_residual(b)) < TOL_N for b in bils)
+    assert min(s1.n_min, s1.n_res, s1.n_cov, s1.h) >= -EPS
+
+
+def test_rilascio_e_mineralizzazione_piu_lenti_in_inverno(npar, yields):
+    """A parita' di residui, l'N minerale cresce meno nel mese freddo che in quello caldo;
+    il rilascio totale resta l'N dei residui (massa conservata in giorni normalizzati)."""
+    zero = {c: 0.0 for c in npar.cred_int}
+    npar = dataclasses.replace(npar, cred_int=zero, cred_asp=zero)
+    nd_crop, nb = 140, 3 * 365
+    segment, kinds, crops, rese, _, share = build(
+        [(nt.SEG_CROP, "mais", nd_crop), (nt.SEG_BARE, None, nb)], yields)
+    n = segment.size
+    # giorno di raccolta = meta' gennaio: il primo mese nudo e' il piu' freddo
+    t = _sinusoide(n + 365)[365 - nd_crop:365 - nd_crop + n]
+    ft = nt.temperature_factor(t, 2.0)
+    s0 = state_with(npar, 60.0)
+    s1, bils, res = nt.run_daily(s0, segment, kinds, crops, rese, np.zeros(n), share, npar,
+                                 f_temp=ft)
+    inc = np.diff(res.n_min)[nd_crop:]
+    freddo, caldo = inc[:30].sum(), inc[167:197].sum()
+    assert freddo < 0.6 * caldo
+    s_h, _, _ = nt.run_daily(s0, segment[:nd_crop], kinds[:1], crops[:1], rese[:1],
+                             np.zeros(nd_crop), share[:nd_crop], npar, f_temp=ft[:nd_crop])
+    assert bils[1]["rilascio_res"] == pytest.approx(s_h.n_res, rel=1e-9)
+    assert s1.n_res == pytest.approx(0.0, abs=1e-6)
+

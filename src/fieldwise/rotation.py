@@ -194,6 +194,7 @@ class RotationContext:
     w0: _water.WaterState
     npar: _n.NitrogenParams
     n0: _n.NState
+    f_temp: np.ndarray           # fattore di temperatura dell'azoto sull'intera serie (media 1)
     scenarios: dict              # nome -> dict(cap={coltura: mm}, regime)
     _cycle: dict = field(default_factory=dict, repr=False)
     _heat: dict = field(default_factory=dict, repr=False)
@@ -354,7 +355,8 @@ def build_context(p: dict | None = None, forcing=None, lat: float | None = None,
         last_idx=last_idx, pheno=pheno, cum=cum, crop=info,
         gap=int(g(p, "rotation_rules.calendario_rotazione.giorni_minimi_raccolta_semina")),
         cover=cover, soil=soil, w0=_water.initial_water_state(soil), npar=npar,
-        n0=_n.initial_state(npar), scenarios=scen)
+        n0=_n.initial_state(npar), f_temp=_n.temperature_factor(tmean, npar.q10),
+        scenarios=scen)
 
 
 # =============================================================================
@@ -656,7 +658,8 @@ def simulate(ctx: RotationContext, rotation: Rotation, anno: int, scenario: str,
                      1.0 / days[res.segment])
     kinds = [s.kind for s in rc.segments]
     state, bils, nday = _n.run_daily(ctx.n0, res.segment, kinds, [s.crop for s in rc.segments],
-                                     rese, res.dp, share, ctx.npar)
+                                     rese, res.dp, share, ctx.npar,
+                                     f_temp=ctx.f_temp[rc.segments[0].start:rc.segments[-1].end + 1])
     h_at = [ctx.n0.h]
     for b in bils:
         h_at.append(h_at[-1] + b["d_h"])

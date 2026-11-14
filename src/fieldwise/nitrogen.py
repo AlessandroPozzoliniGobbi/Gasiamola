@@ -73,8 +73,9 @@ class NitrogenParams:
     Soia: fix_quota [-]. Suolo: disp [-], dep
     [kg N/ha/anno], anion_excl [-], sat_mm [mm], eff_norm [-]. Cover: cov_n_ass
     [kg N/ha], cov_npd [kg N/t s.s.], cov_eff [-], cov_rid_lisc [min, max].
-    n_min0 [kg N/ha] azoto minerale iniziale; rel_days [g] durata del rilascio uniforme
-    dell'N dei residui e delle immobilizzazioni. hp: parametri dell'humus.
+    n_min0 [kg N/ha] azoto minerale iniziale; rel_days [g normalizzati] durata del rilascio
+    dell'N dei residui e delle immobilizzazioni. hp: parametri dell'humus. q10 [-]: fattore
+    di temperatura di mineralizzazione e rilascio (`temperature_factor`; 1 = nessun effetto).
     """
     n_ass: dict
     n_asp: dict
@@ -97,6 +98,7 @@ class NitrogenParams:
     n_min0: float
     rel_days: int
     hp: _humus.HumusParams
+    q10: float = 1.0
 
     @property
     def n_per_t_humus(self) -> float:
@@ -191,7 +193,21 @@ def nitrogen_params(p: dict | None = None, soil: _water.SoilWaterParams | None =
         n_min0=initial_n_min(p, classe),
         rel_days=int(g(p, "nitrogen.suolo.residui.giorni_rilascio")),
         hp=_humus.humus_params(p, classe, cn),
+        q10=float(g(p, "nitrogen.suolo.temperatura.q10")),
     )
+
+
+def temperature_factor(tmean, q10: float) -> np.ndarray:
+    """f_T = q10^((T - T_media)/10) normalizzato a media 1 sulla serie (nitrogen.suolo.temperatura):
+    sposta nell'anno mineralizzazione e rilascio senza cambiarne il totale. Giorni senza dato: 1."""
+    t = np.asarray(tmean, dtype=np.float64)
+    ok = np.isfinite(t)
+    f = np.ones_like(t)
+    if q10 == 1.0 or not ok.any():
+        return f
+    f[ok] = q10 ** ((t[ok] - t[ok].mean()) / 10.0)
+    f[ok] /= f[ok].mean()
+    return f
 
 
 def initial_state(npar: NitrogenParams) -> NState:
@@ -224,13 +240,22 @@ KIND_CODE = {SEG_CROP: 0, SEG_COVER: 1, SEG_BARE: 2}
 
 
 @_water.njit(cache=True)
-def _schedule(rate, amount, start, ndays):
-    """Rilascio uniforme di ``amount`` nei giorni start..start+ndays-1."""
+def _schedule(rate, amount, start, ndays, ft):
+    """Rilascio di ``amount`` in ``ndays`` giorni normalizzati da ``start``: quota del giorno j =
+    amount ft[j] / ndays finche' la somma di ft arriva a ndays (con ft = 1: uniforme in ndays
+    giorni di calendario). Conserva la massa entro la fine di ``rate``."""
     if amount <= 0.0:
         return
-    r = amount / ndays
-    for j in range(start, start + ndays):
-        rate[j] += r
+    acc = 0.0
+    j = start
+    m = rate.shape[0]
+    while acc < ndays and j < m:
+        w = ft[j]
+        if acc + w > ndays:
+            w = ndays - acc
+        rate[j] += amount * w / ndays
+        acc += w
+        j += 1
 
 
 @_water.njit(cache=True)
@@ -257,11 +282,11 @@ def _humify_fresh(fresh, n_min, h_add, nph):
 @_water.njit(cache=True)
 def _kernel(seg, kind, dp, share, u_tot, legume, rec, resa, n_asp, hres_pot, cred_next,
             asport, k2, h_tetto, nph, disp_f, dep_day, lf_den, fix_quota, cov_bio_ref,
-            cov_nref, cov_npd, cov_eff, cov_h_per_t, ndays_rel, inv_days,
+            cov_nref, cov_npd, cov_eff, cov_h_per_t, ndays_rel, inv_days, ft,
             n_min, n_res, n_cov, h, cred, o_l, o_nmin, o_res, S):
     n = seg.shape[0]
-    rate = np.zeros(n + ndays_rel + 2)
-    _schedule(rate, n_res, 0, ndays_rel)
+    rate = np.zeros(n + ndays_rel + 2)      # ft ha la stessa lunghezza (1 oltre la serie)
+    _schedule(rate, n_res, 0, ndays_rel, ft)
     n_pl = 0.0
     fix_cum = 0.0
     for i in range(n):
@@ -287,7 +312,7 @@ def _kernel(seg, kind, dp, share, u_tot, legume, rec, resa, n_asp, hres_pot, cre
                     x = min(-c, max(n_min, 0.0))
                     n_min -= x
                     n_res += x
-                    _schedule(rate, x, i, ndays_rel)
+                    _schedule(rate, x, i, ndays_rel, ft)
                     S[k, _C_IMMCRED] += x
                     S[k, _C_CREDEFF] = -x
                 elif c > 0.0 and n_res > 0.0:   # credito positivo: anticipo del rilascio
@@ -299,7 +324,7 @@ def _kernel(seg, kind, dp, share, u_tot, legume, rec, resa, n_asp, hres_pot, cre
                     n_min += x
                     S[k, _C_CREDEFF] = x
         # 1) mineralizzazione dell'humus, dispersione, deposizione (tassi annui / 365)
-        hm = k2 * min(h, h_tetto) * inv_days
+        hm = k2 * min(h, h_tetto) * inv_days * ft[i]
         mn = hm * nph
         ds = disp_f * mn
         h -= hm
@@ -374,7 +399,7 @@ def _kernel(seg, kind, dp, share, u_tot, legume, rec, resa, n_asp, hres_pot, cre
                 fresh, n_min, h_add, nu, im = _humify_fresh(rn, n_min, h_add, nph)
                 h += h_add
                 n_res += fresh
-                _schedule(rate, fresh, i + 1, ndays_rel)
+                _schedule(rate, fresh, i + 1, ndays_rel, ft)
                 cred = cred_next[k]
                 S[k, _C_UEFF] = u_eff
                 S[k, _C_EXP] += ex
@@ -400,7 +425,7 @@ def _kernel(seg, kind, dp, share, u_tot, legume, rec, resa, n_asp, hres_pot, cre
                 fresh, n_min, h_add, nu, im = _humify_fresh(fresh, n_min, cov_h_per_t * ss, nph)
                 h += h_add
                 n_res += fresh
-                _schedule(rate, fresh, i + 1, ndays_rel)
+                _schedule(rate, fresh, i + 1, ndays_rel, ft)
                 S[k, _C_COVBIO] = ss
                 S[k, _C_NUMIFCOV] += nu
                 S[k, _C_IMMUMIF] += im
@@ -425,7 +450,7 @@ class DailyResult:
 
 
 def run_daily(state: NState, segment, kinds, crops, rese, dp, share, npar: NitrogenParams,
-              residui_asportati=False) -> tuple[NState, list, DailyResult]:
+              residui_asportati=False, f_temp=None) -> tuple[NState, list, DailyResult]:
     """Bilancio dell'azoto e dell'humus a passo giornaliero su tutta la serie (una chiamata
     per rotazione, dopo il bilancio idrico; _meta.equazioni.azoto_bilancio_giornaliero).
 
@@ -433,7 +458,9 @@ def run_daily(state: NState, segment, kinds, crops, rese, dp, share, npar: Nitro
     crops: coltura per segmento (None fuori dalle colture); rese: resa [t/ha] per segmento
     (ignorata fuori dalle colture); dp: percolazione profonda giornaliera [mm]; share: quota
     giornaliera dell'assorbimento del segmento (somma 1 su ogni segmento colturale e di cover,
-    es. ETa/ET0 normalizzato); residui_asportati: bool o sequenza per segmento.
+    es. ETa/ET0 normalizzato); residui_asportati: bool o sequenza per segmento; f_temp:
+    fattore di temperatura giornaliero f_T (`temperature_factor`, normalizzato sull'intera serie
+    meteo) per mineralizzazione e rilascio; None = nessun effetto della temperatura (f_T = 1).
     Restituisce (stato finale, voci del bilancio per segmento, serie giornaliere)."""
     hp = npar.hp
     nph = npar.n_per_t_humus
@@ -455,6 +482,12 @@ def run_daily(state: NState, segment, kinds, crops, rese, dp, share, npar: Nitro
             hres[k] = _humus.residue_humus(c, r, hp)
             credn[k] = npar.cred_asp[c] if asp[k] else npar.cred_int[c]
     n = seg.shape[0]
+    ft = np.ones(n + int(npar.rel_days) + 2)          # stessa lunghezza del calendario dei rilasci
+    if f_temp is not None:
+        f_temp = np.asarray(f_temp, dtype=np.float64)
+        if f_temp.shape != (n,):
+            raise ValueError(f"f_temp: attesi {n} giorni, ricevuti {f_temp.shape}")
+        ft[:n] = f_temp
     o_l, o_nmin, o_res = np.zeros(n), np.zeros(n), np.zeros(n)
     S = np.zeros((nseg, _NCOL))
     n_min, n_res, n_cov, h, cred, n_pl = _kernel(
@@ -463,7 +496,7 @@ def run_daily(state: NState, segment, kinds, crops, rese, dp, share, npar: Nitro
         credn, asp, hp.k2, hp.h_tetto, nph, npar.disp, npar.dep * _humus.years(1.0),
         (1.0 - npar.anion_excl) * npar.sat_mm, npar.fix_quota, hp.cov_biomassa,
         npar.cov_n_ass, npar.cov_npd, npar.cov_eff, _humus.cover_humus(hp, 1.0),
-        int(npar.rel_days), _humus.years(1.0), float(state.n_min), float(state.n_res),
+        int(npar.rel_days), _humus.years(1.0), ft, float(state.n_min), float(state.n_res),
         float(state.n_cov), float(state.h), float(state.cred), o_l, o_nmin, o_res, S)
     new = NState(n_min=n_min, n_res=n_res, n_cov=n_cov + n_pl, h=h, cred=cred)
     days = np.bincount(seg, minlength=nseg)
@@ -558,5 +591,6 @@ def run_segments(state: NState, segmenti: Iterable[tuple], npar: NitrogenParams)
 
 __all__ = ["NState", "NitrogenParams", "nitrogen_params", "initial_state", "update_segment",
            "n_balance_residual", "humus_balance_residual", "run_segments", "segment_water",
-           "mas_limit", "leaching_fraction", "run_daily", "DailyResult", "initial_n_min", "SEG_CROP", "SEG_BARE",
+           "mas_limit", "leaching_fraction", "run_daily", "DailyResult", "initial_n_min",
+           "temperature_factor", "SEG_CROP", "SEG_BARE",
            "SEG_COVER"]
