@@ -17,7 +17,6 @@ runs.pkl
 data/raw/istat/_ratelimit/
 data/logs/
 # fuori dal repository pubblico: qui solo motore e backend (restano in locale)
-app/
 tests/test_app.py
 graphify-out/
 legacy/
