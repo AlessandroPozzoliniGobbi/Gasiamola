@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS } from "../../lib/analysisStorage";
 import { REPORT_METRICS, formatMetric, labelRotation, type CompletedReport,
   type RotationMetrics, type RotationResult } from "../../lib/reportTypes";
 import styles from "../../styles/reports.module.css";
-import { downloadMarkdownReport } from "../../lib/reportMarkdown";
+import { openPdfReport } from "../../lib/reportPrint";
+import { downloadExcelReport } from "../../lib/reportExcel";
 
 type Tab = "overview" | "compare" | "insights" | "economics" | "details";
 const TABS: { id: Tab; title: string }[] = [
@@ -54,8 +55,7 @@ function OutcomeCard({ result, title, highlight = false }: {
 
 function ComparisonPlot({ report }: { report: CompletedReport }) {
   const [metric, setMetric] = useState<keyof RotationMetrics>("relativeYieldMedian");
-  const allowedMetrics = REPORT_METRICS.filter((m) => report.inputs.advancedEconomics === true || m.key !== "grossMarginEurHa");
-  const selected = allowedMetrics.find((m) => m.key === metric)!;
+  const selected = REPORT_METRICS.find((m) => m.key === metric)!;
   const entries = [
     { label: "Current", result: report.results.current },
     ...report.results.alternatives.slice(0, 2).map((result, index) => ({ label: `Alternative ${index + 1}`, result })),
@@ -75,7 +75,7 @@ function ComparisonPlot({ report }: { report: CompletedReport }) {
         <label className={styles.metricSelector}>
           <span className={styles.srOnly}>Metric to compare</span>
           <select value={metric} onChange={(e) => setMetric(e.target.value as keyof RotationMetrics)}>
-            {allowedMetrics.map((m) => <option value={m.key} key={m.key}>{m.shortLabel}</option>)}
+            {REPORT_METRICS.map((m) => <option value={m.key} key={m.key}>{m.shortLabel}</option>)}
           </select>
         </label>
       </div>
@@ -104,6 +104,27 @@ function ComparisonPlot({ report }: { report: CompletedReport }) {
   );
 }
 
+function MarginDifference({ value, baseline, isCurrent }: {
+  value: number | null; baseline: number | null; isCurrent: boolean;
+}) {
+  if (isCurrent) {
+    return <><strong className={styles.economicBaseline}>Baseline</strong><span className={styles.economicComparison}>Reference rotation · Δ 0 EUR/ha/year</span></>;
+  }
+  if (value === null || baseline === null || !Number.isFinite(value) || !Number.isFinite(baseline)) {
+    return <><strong className={styles.economicUnknown}>Not available</strong><span className={styles.economicComparison}>A comparable margin was not supplied.</span></>;
+  }
+  const difference = value - baseline;
+  const rounded = Math.abs(difference) < 1 ? Math.round(difference * 10) / 10 : Math.round(difference);
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "±";
+  const direction = rounded > 0 ? "Higher" : rounded < 0 ? "Lower" : "Unchanged";
+  return <>
+    <strong className={`${styles.economicDifference} ${difference >= 0 ? styles.economicPositive : styles.economicNegative}`}>
+      Δ {sign}{Math.abs(rounded).toLocaleString("en-GB")} <small>EUR/ha/year</small>
+    </strong>
+    <span className={styles.economicComparison}>{direction} partial margin versus the current rotation</span>
+  </>;
+}
+
 function BulletSection({ title, items, fallback }: { title: string; items: string[]; fallback: string }) {
   return <div className={styles.bulletBox}>
     <h3>{title}</h3>
@@ -114,9 +135,21 @@ function BulletSection({ title, items, fallback }: { title: string; items: strin
 
 export default function ReportDashboard({ report, demo = false }: { report: CompletedReport; demo?: boolean }) {
   const [tab, setTab] = useState<Tab>("overview");
-  const showEconomics = report.inputs.advancedEconomics === true;
-  const visibleNotes = (items: string[]) => showEconomics ? items : items.filter((text) => !/partial gross margin|economic margin/i.test(text));
+  // Legacy reports predate the optional advanced-analysis input; preserve their Economics tab.
+  const showEconomics = !("advancedEconomics" in report.inputs) || report.inputs.advancedEconomics === true;
+  const visibleTabs = TABS.filter((item) => showEconomics || item.id !== "economics");
+  useEffect(() => {
+    if (tab === "economics" && !showEconomics) setTab("overview");
+  }, [tab, showEconomics]);
+  const tabIndex = visibleTabs.findIndex((item) => item.id === tab);
+  const previousTab = visibleTabs[tabIndex - 1];
+  const nextTab = visibleTabs[tabIndex + 1];
+  const changeTab = (next: Tab) => {
+    setTab(next);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "auto" });
+  };
   const best = report.results.alternatives[0] ?? null;
+  const visibleNotes = (notes: string[]) => showEconomics ? notes : notes.filter((item) => !/partial gross margin|economic margin/i.test(item));
   const outcomes = [report.results.current, ...report.results.alternatives.slice(0, 2)];
   const date = new Date(report.createdAt);
   const dateLabel = Number.isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
@@ -142,21 +175,32 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             <p>Compare rotations, explore environmental trade-offs and see the evidence behind each result.</p>
           </div>
           <div className={styles.exportArea}>
-            <button type="button" disabled title="PDF export will be enabled after backend integration" className={styles.secondaryButton}>Export PDF</button>
-            <button type="button" disabled={demo} onClick={() => downloadMarkdownReport(report)}
-              title={demo ? "Not available for fictional demo data" : "Download a Markdown copy of this completed report"}
-              className={styles.secondaryButton}>Export Markdown</button>
-            <small>PDF export is planned; Markdown is available for completed reports.</small>
+            <button type="button" onClick={() => openPdfReport(report, demo)}
+              title="Open the complete, print-ready report and save it as PDF"
+              className={styles.secondaryButton}>Export PDF</button>
+            <button type="button" onClick={() => downloadExcelReport(report, demo)}
+              title="Download the tabular data used by all comparison charts"
+              className={styles.secondaryButton}>Export Excel</button>
+            <small>PDF opens a print-ready document · Excel contains the underlying tables.</small>
           </div>
         </header>
 
         <nav className={styles.tabNavigation} aria-label="Report sections">
-          {TABS.filter((item) => showEconomics || item.id !== "economics").map((item) => <button type="button" key={item.id} onClick={() => setTab(item.id)}
+          {visibleTabs.map((item) => <button type="button" key={item.id} onClick={() => changeTab(item.id)}
             className={`${styles.tabButton} ${tab === item.id ? styles.tabActive : ""}`}
             aria-current={tab === item.id ? "page" : undefined}>
-            {item.title}{item.id === "economics" && <span className={styles.tabSoon}>{report.results.current.metrics.grossMarginEurHa == null ? "Soon" : "New"}</span>}
+            {item.title}
           </button>)}
         </nav>
+
+        <div className={styles.reportSideNavigation} role="group" aria-label="Navigate report sections">
+          {previousTab && <button type="button" className={`${styles.sideArrow} ${styles.sideArrowPrevious}`}
+            onClick={() => changeTab(previousTab.id)} aria-label={`Previous section: ${previousTab.title}`}
+            title={`Previous: ${previousTab.title}`}><span aria-hidden="true">←</span></button>}
+          {nextTab && <button type="button" className={`${styles.sideArrow} ${styles.sideArrowNext}`}
+            onClick={() => changeTab(nextTab.id)} aria-label={`Next section: ${nextTab.title}`}
+            title={`Next: ${nextTab.title}`}><span aria-hidden="true">→</span></button>}
+        </div>
 
         {tab === "overview" && <div className={styles.content}>
           <section className={styles.recommendation}>
@@ -174,7 +218,6 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             <BulletSection title="Why this rotation?" items={visibleNotes(best?.evidence ?? [])} fallback="No evidence supplied by the model." />
             <BulletSection title="What to consider" items={visibleNotes(best?.risks ?? [])} fallback="No risk notes supplied by the model." />
           </div>
-          <button type="button" className={styles.textButton} onClick={() => setTab("compare")}>Explore the full comparison →</button>
         </div>}
 
         {tab === "compare" && <div className={styles.content}>
@@ -218,64 +261,60 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             </section>
           ) : <>
             <div className={styles.sectionIntro}><span className={styles.smallCaps}>04 / ECONOMIC OUTLOOK</span>
-              <h2>Evaluate the economic trade-offs.</h2>
-              <p>A partial annual gross margin, not a complete farm budget. Based on the engine&apos;s static price assumptions.</p>
+              <h2>Economic difference versus today.</h2>
+              <p>Each alternative shows the change in annual partial margin relative to your current rotation, not the total revenue.</p>
             </div>
             <div className={styles.outcomeGrid}>
               {outcomes.map((item, index) => <article className={styles.outcomeCard} key={index}>
                 <span className={styles.smallCaps}>{index === 0 ? "Current rotation" : `Alternative ${index}`}</span>
                 <h3>{labelRotation(item.label)}</h3>
-                <p className={styles.metricValue}>{formatMetric("grossMarginEurHa", item.metrics.grossMarginEurHa ?? null)}</p>
+                <MarginDifference value={item.metrics.grossMarginEurHa} baseline={report.results.current.metrics.grossMarginEurHa} isCurrent={index === 0} />
               </article>)}
             </div>
-            <div className={styles.panel}><h3>What is included?</h3>
-              <p>Crop revenue minus nitrogen fertilizer and irrigation costs, averaged over historical simulation years (EUR/ha/year).</p>
+            <div className={styles.panel}><h3>How to read these differences</h3>
+              <p>Δ partial margin = alternative margin − current-rotation margin. Each margin is crop revenue minus nitrogen fertilizer and irrigation costs, averaged over historical simulation years (EUR/ha/year).</p>
               <p className={styles.footnote}>Excludes seeds, crop protection, machinery, labor and fixed costs. Prices are static; results are not profit forecasts.</p>
             </div>
           </>}
         </div>}
 
-        {tab === "details" && <div className={styles.content}>
-          <div className={styles.sectionIntro}><span className={styles.smallCaps}>05 / ANALYSIS DETAILS</span><h2>Traceable by design.</h2>
-            <p>Review the field snapshot, inputs, model provenance and limitations for this report.</p></div>
-          <div className={styles.detailsGrid}>
-            <section className={styles.panel}><h3>Field snapshot</h3>
-              <dl className={styles.detailList}>
-                <div><dt>Field name</dt><dd>{report.field.name}</dd></div>
-                <div><dt>Field number</dt><dd>#{report.field.number}</dd></div>
-                <div><dt>Area estimate</dt><dd>{report.field.areaHectares === null ? "Unavailable" : `${report.field.areaHectares.toFixed(2)} ha`}</dd></div>
-                <div><dt>Reference point</dt><dd>{report.field.representativePoint ? `${report.field.representativePoint[1].toFixed(5)}° N, ${report.field.representativePoint[0].toFixed(5)}° E` : "Unavailable"}</dd></div>
-                <div><dt>Original field ID</dt><dd className={styles.breakText}>{report.field.id}</dd></div>
+        {tab === "details" && <div className={`${styles.content} ${styles.detailsCompact}`}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.smallCaps}>{showEconomics ? "05" : "04"} / ANALYSIS DETAILS</span>
+            <h2>Traceable by design.</h2>
+            <p>The essentials at a glance. Export PDF for the full technical record, interpretation and charts.</p>
+          </div>
+          <div className={styles.detailsCompactGrid}>
+            <section className={styles.panel}><h3>Field</h3>
+              <dl className={styles.compactList}>
+                <div><dt>Field</dt><dd>{report.field.name} · #{report.field.number}</dd></div>
+                <div><dt>Area</dt><dd>{report.field.areaHectares === null ? "Not available" : `${report.field.areaHectares.toFixed(2)} ha`}</dd></div>
+                <div><dt>Reference point</dt><dd>{report.field.representativePoint ? `${report.field.representativePoint[1].toFixed(4)}° N, ${report.field.representativePoint[0].toFixed(4)}° E` : "Not available"}</dd></div>
               </dl>
             </section>
-            <section className={styles.panel}><h3>Analysis inputs</h3>
-              <dl className={styles.detailList}>
-                <div><dt>Rotation</dt><dd>{report.inputs.rotation.map((r) => `${CROP_LABELS[r.crop]}${r.coverAfter ? " + rye" : ""}`).join(" → ")}</dd></div>
+            <section className={styles.panel}><h3>Analysis setup</h3>
+              <dl className={styles.compactList}>
+                <div><dt>Crop rotation</dt><dd>{report.inputs.rotation.map((r) => `${CROP_LABELS[r.crop]}${r.coverAfter ? " + rye" : ""}`).join(" → ")}</dd></div>
                 <div><dt>Irrigation</dt><dd>{IRRIGATION_LABELS[report.inputs.irrigation]}</dd></div>
-                {PRIORITY_KEYS.filter((key) => showEconomics || key !== "profitto").map((key) => <div key={key}><dt>{PRIORITY_LABELS[key]}</dt><dd>{report.inputs.priorities[key]} / 10</dd></div>)}
-                <div><dt>Economic insights</dt><dd>{showEconomics ? "Included (fixed engine assumptions)" : "Not requested"}</dd></div>
+                <div><dt>Priorities</dt><dd className={styles.compactPriorityText}>
+                  {PRIORITY_KEYS.filter((k) => showEconomics || k !== "profitto")
+                    .map((k) => `${PRIORITY_LABELS[k]} ${report.inputs.priorities[k] ?? "—"}`).join(" · ")}
+                </dd></div>
               </dl>
             </section>
-            <section className={styles.panel}><h3>Scientific provenance</h3>
-              <dl className={styles.detailList}>
-                <div><dt>Engine version</dt><dd>{report.engine.version ?? "Not provided"}</dd></div>
-                {report.engine.modelPoint && <div><dt>Simulation input point</dt><dd>{report.engine.modelPoint[1].toFixed(3)}° N, {report.engine.modelPoint[0].toFixed(3)}° E</dd></div>}
-                {report.engine.localData && <>
-                  <div><dt>Soil data source</dt><dd>SoilGrids 250 m ({report.engine.localData.soilDataMethod.toUpperCase()})</dd></div>
-                  <div><dt>Soil pixel displacement</dt><dd>{report.engine.localData.soilPixelShiftMeters.toFixed(0)} m</dd></div>
-                  <div><dt>Surface texture</dt><dd>{report.engine.localData.surfaceTexture}</dd></div>
-                  <div><dt>Runoff Curve Number</dt><dd>{report.engine.localData.curveNumber} (group {report.engine.localData.aquaCropRunoffGroup})</dd></div>
-                  <div><dt>Estimated water availability</dt><dd>{report.engine.localData.profileAvailableWaterMm.toFixed(1)} mm (0–150 cm)</dd></div>
-                </>}
-                <div><dt>Dataset period</dt><dd>{report.engine.dataPeriod ?? "Not provided"}</dd></div>
-                <div><dt>Scenario</dt><dd>{report.results.scenario}</dd></div>
-                <div><dt>Compared rotations</dt><dd>{report.results.comparedRotations ?? "Not provided"}</dd></div>
-                <div><dt>Report ID</dt><dd className={styles.breakText}>{report.id}</dd></div>
+            <section className={styles.panel}><h3>Model &amp; provenance</h3>
+              <dl className={styles.compactList}>
+                <div><dt>Engine</dt><dd>{report.engine.version ?? "Not provided"}</dd></div>
+                <div><dt>Data period</dt><dd>{report.engine.dataPeriod ?? "Not provided"}</dd></div>
+                <div><dt>Source</dt><dd>{report.engine.sourceMode === "local_estimate" ? "Local gridded estimate" : report.engine.sourceMode === "pilot_reference" ? "Cremona reference" : report.engine.sourceMode === "pilot_point" ? "Cremona pilot" : "Not specified"}</dd></div>
+                <div><dt>Rotations compared</dt><dd>{report.results.comparedRotations ?? "Not provided"}</dd></div>
+                {report.engine.localData && <div><dt>Soil</dt><dd>{report.engine.localData.surfaceTexture} · CN {report.engine.localData.curveNumber}</dd></div>}
               </dl>
             </section>
-            <section className={styles.panel}><h3>Important limitations</h3>
-              <p>{report.engine.methodologyNote ?? "Detailed methodology notes were not supplied with this report."}</p>
-              <p className={styles.footnote}>Simulations describe historical scenarios, not future weather predictions. Indicators may be subject to model and input uncertainty. Interpret results with local agronomic context.</p>
+            <section className={styles.panel}><h3>Interpretation &amp; limits</h3>
+              <p className={styles.compactCaveat}>Historical-climate ensemble, not a forecast. Estimates at one representative point may not reflect variations across the field.</p>
+              <p className={styles.compactCaveat}>Scores depend on the compared rotations and your priorities. Economic margins exclude several farm costs.</p>
+              <p className={styles.compactAside}>Full model notes, individual risks, soil parameters and reproducibility data are included in the PDF.</p>
             </section>
           </div>
         </div>}

@@ -1,0 +1,45 @@
+{
+  "file": "soilgrids_rest.json",
+  "source": "soilgrids",
+  "product": "SoilGrids 250m",
+  "version": "2.0",
+  "url": "https://rest.isric.org/soilgrids/v2.0/properties/query",
+  "params": {
+    "lat": 45.204,
+    "lon": 9.505,
+    "properties": [
+      "sand",
+      "clay",
+      "silt",
+      "soc",
+      "bdod",
+      "cfvo"
+    ],
+    "depths_cm": [
+      "0-5",
+      "5-15",
+      "15-30",
+      "30-60",
+      "60-100",
+      "100-200"
+    ],
+    "values": [
+      "mean",
+      "Q0.05",
+      "Q0.5",
+      "Q0.95",
+      "uncertainty"
+    ],
+    "via": "rest",
+    "pixel": {
+      "via": "rest",
+      "shift_m": 0.0,
+      "queried_lat": 45.204,
+      "queried_lon": 9.505
+    }
+  },
+  "downloaded_at_utc": "2026-11-14T20:23:43+00:00",
+  "bytes": 8136,
+  "sha256": "5fc4512c2740d97d4bcfd41a44d71d553b4e0910530a9c77287788967b4fa7bc",
+  "notes": "via=rest; pixel del punto valido, nessuno spostamento"
+}
