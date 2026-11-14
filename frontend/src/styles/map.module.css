@@ -37,23 +37,23 @@
   left: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 13px;
   width: 360px;
   max-width: calc(100% - 28px);
   height: auto;
   max-height: calc(100% - 28px);
   min-width: 0;
   min-height: 0;
-  padding: 16px;
+  padding: 17px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   box-sizing: border-box;
-  background: #f3f7f0;
+  background: rgba(249, 252, 247, .975);
   color: #193d2b;
-  border: 1px solid #bdd4c0;
-  border-radius: 14px;
-  box-shadow: 0 8px 28px rgba(23, 55, 37, .18);
+  border: 1px solid #d0e1d0;
+  border-radius: 20px;
+  box-shadow: 0 14px 42px rgba(23, 55, 37, .15);
   scrollbar-color: #b7cdbc transparent;
   scrollbar-width: thin;
 }
@@ -89,7 +89,7 @@
   position: static;
   padding: 8px 10px;
   border: 1px solid #c7dec9;
-  border-radius: 7px;
+  border-radius: 11px;
   background: #e5f1e6;
   color: #24543a;
   font-size: 12px;
@@ -126,7 +126,7 @@
   margin: 0;
   padding: 9px;
   border: 1px solid #e7d49c;
-  border-radius: 7px;
+  border-radius: 11px;
   background: #fff9e9;
   color: #755214;
   font-size: 11px;
@@ -143,8 +143,8 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid #c3d8c7;
-  border-radius: 10px;
+  border: 1px solid #d1e1d2;
+  border-radius: 14px;
   background: #fffefa;
 }
 .mapAccordionSummary {
@@ -189,7 +189,7 @@
   text-align: center;
   color: #254b35;
   border: 1px solid #c9dccc;
-  border-radius: 7px;
+  border-radius: 10px;
   background: #fff;
   cursor: pointer;
   font-family: inherit;
@@ -218,8 +218,8 @@
   width: 100%;
   min-height: 43px;
   padding: 9px 12px;
-  border: 1px solid #c3d8c7;
-  border-radius: 10px;
+  border: 1px solid #d1e1d2;
+  border-radius: 14px;
   background: #fffefa;
   color: #234a35;
   font: inherit;
@@ -252,8 +252,8 @@
   flex-direction: column;
   min-width: 0;
   min-height: 160px;
-  border: 1px solid #b6d0bc;
-  border-radius: 10px;
+  border: 1px solid #c5d8c8;
+  border-radius: 16px;
   background: #fffefa;
   box-shadow: 0 7px 20px rgba(17, 61, 37, .15);
   overflow: hidden;
@@ -295,8 +295,8 @@
   gap: 8px;
   min-height: 43px;
   padding: 8px 10px;
-  border-bottom: 1px solid #c7ddcb;
-  background: #e9f2e7;
+  border-bottom: 1px solid #d4e4d5;
+  background: #f0f6ee;
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -312,7 +312,7 @@
   width: 27px;
   height: 27px;
   border: 1px solid #bbd3bf;
-  border-radius: 6px;
+  border-radius: 9px;
   background: white;
   color: #214c34;
   cursor: pointer;
@@ -328,17 +328,17 @@
 .fieldPanel { display: flex; flex-direction: column; gap: 12px; min-height: 0; padding-top: 18px; border-top: 1px solid #dbe8dd; }
 .fieldPanel > .sectionTitle { margin: 0; }
 .fieldList { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-.fieldRow { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 6px; border: 1px solid #d2dfd5; border-radius: 8px; background: white; }
-.fieldNumber { display: grid; place-items: center; flex: 0 0 26px; height: 26px; border-radius: 5px; background: #dcefe0; color: #205c3b; font-size: 12px; font-weight: 700; }
+.fieldRow { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 6px; border: 1px solid #d2dfd5; border-radius: 12px; background: white; }
+.fieldNumber { display: grid; place-items: center; flex: 0 0 26px; height: 26px; border-radius: 9px; background: #dcefe0; color: #205c3b; font-size: 12px; font-weight: 700; }
 .fieldSelectButton { flex: 1; min-width: 0; border: 0; background: transparent; color: #233b2c; text-align: left; font-size: 13px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fieldSelectActive { color: #17633d; font-weight: 700; }
-.fieldIconButton { display: grid; place-items: center; flex: 0 0 26px; height: 27px; border: 1px solid #cbdacb; border-radius: 5px; background: #fff; color: #244d36; cursor: pointer; }
+.fieldIconButton { display: grid; place-items: center; flex: 0 0 26px; height: 27px; border: 1px solid #cbdacb; border-radius: 9px; background: #fff; color: #244d36; cursor: pointer; }
 .fieldIconButton:hover { background: #edf6ec; }
 .fieldEditForm { display: flex; align-items: center; flex: 1; gap: 4px; min-width: 0; }
-.fieldEditInput { flex: 1; min-width: 0; padding: 5px; border: 1px solid #75ad87; border-radius: 4px; color: #24372b; background: white; font-size: 12px; }
+.fieldEditInput { flex: 1; min-width: 0; padding: 5px; border: 1px solid #75ad87; border-radius: 8px; color: #24372b; background: white; font-size: 12px; }
 .fieldDeleteButton { color: #b42318; border-color: #e2aaa5; }
 .fieldDeleteButton:hover:not(:disabled) { background: #fff0ef; }
-.fieldButton { width: 100%; padding: 12px; border: 1px solid #cbdacb; border-radius: 6px; background: white; color: #244d36; text-align: left; font-size: 14px; cursor: pointer; }
+.fieldButton { width: 100%; padding: 12px; border: 1px solid #cbdacb; border-radius: 10px; background: white; color: #244d36; text-align: left; font-size: 14px; cursor: pointer; }
 .fieldButton:hover { background: #edf6ec; }
 .fieldButtonActive, .fieldButtonActive:hover { background: #e5f1e6; border-color: #75ad87; font-weight: 600; }
 .dangerButton { color: #b42318; border-color: #e2aaa5; }
@@ -352,9 +352,9 @@
 /* Pulsanti storici ancora utilizzabili da componenti secondari. */
 .toolbar { display: flex; flex-direction: column; gap: 12px; }
 .buttonRow { display: flex; gap: 8px; }
-.controlButton { width: 48px; height: 44px; border: 1px solid #c9dccc; border-radius: 6px; background: white; color: #244d36; font-size: 18px; font-weight: 600; cursor: pointer; }
+.controlButton { width: 48px; height: 44px; border: 1px solid #c9dccc; border-radius: 10px; background: white; color: #244d36; font-size: 18px; font-weight: 600; cursor: pointer; }
 .controlButton:hover { background: #edf6ec; }
-.actionButton { width: 100%; padding: 12px; border: 1px solid #c9dccc; border-radius: 6px; background: white; color: #244d36; font-size: 14px; cursor: pointer; text-align: center; }
+.actionButton { width: 100%; padding: 12px; border: 1px solid #c9dccc; border-radius: 10px; background: white; color: #244d36; font-size: 14px; cursor: pointer; text-align: center; }
 .actionButton:hover { background: #edf6ec; }
 .actionButton:disabled { opacity: .45; cursor: not-allowed; }
 .placeholder { padding-top: 20px; border-top: 1px solid #ddd; }
@@ -407,7 +407,7 @@
     max-height: min(55dvh, calc(100% - 20px));
     padding: 12px;
     border: 1px solid #bdd4c0;
-    border-radius: 12px;
+    border-radius: 18px;
   }
   .title { font-size: 19px; }
   .basemapToggle { width: 64px; height: 64px; bottom: 55px; right: 12px; }

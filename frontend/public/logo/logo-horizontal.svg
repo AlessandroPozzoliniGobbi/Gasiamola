@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" role="img" aria-labelledby="title desc">
-  <title id="title">Logo completo con segnaposto nome sito</title>
-  <desc id="desc">Logo con satellite, germoglio e campi, seguito da segnaposto per nome sito e catch phrase.</desc>
+  <title id="title">FIELDWISE - logo orizzontale</title>
+  <desc id="desc">Logo con satellite, germoglio e campi, seguito dal nome FIELDWISE e da una catch phrase modificabile.</desc>
   <g transform="translate(20 10) scale(.58)">
     <g fill="none" stroke="#256f4d" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
       <path d="M92 334C54 213 103 91 217 47c65-25 139-20 198 13"/>
@@ -23,6 +23,6 @@
     <path d="M102 391c58-13 116-7 171 18-35 8-72 24-108 47-26-17-47-39-63-65Z" fill="#dff0d9"/>
     <path d="M176 456c51-35 96-50 135-45 42 5 78 2 108-10-32 43-78 78-134 97-41-5-78-20-109-42Z" fill="#c6e3bb"/>
   </g>
-  <text x="360" y="135" fill="#213c30" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700">[NOME SITO]</text>
+  <text x="360" y="135" fill="#213c30" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700">FIELDWISE</text>
   <text x="364" y="195" fill="#65786d" font-family="Arial, Helvetica, sans-serif" font-size="30" font-style="italic">[Catch phrase]</text>
 </svg>

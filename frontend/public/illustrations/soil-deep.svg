@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 650" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="ground" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f9f6ec"/><stop offset=".60" stop-color="#f7f3ea"/><stop offset="1" stop-color="#eee7d9"/></linearGradient><linearGradient id="water" x1="0" x2="1"><stop stop-color="#bcd7cb" stop-opacity=".32"/><stop offset=".5" stop-color="#a5d0cb" stop-opacity=".62"/><stop offset="1" stop-color="#c9ddd3" stop-opacity=".35"/></linearGradient></defs>
+  <rect width="1600" height="650" fill="url(#ground)"/>
+  <!-- Lower horizons, rock and groundwater, never opaque over the content. -->
+  <g fill="none" stroke="#c09b76" stroke-width="2.2" opacity=".29">
+    <path d="M0 100q252-7 426 6t407-11t384 12t383-7"/>
+    <path d="M0 250q213 11 415-5t401 4t389-3t395 4"/>
+    <path d="M0 505q214-17 409 4t386-7t416 3t389-12"/>
+  </g>
+  <!-- Roots taper off naturally as we move down. -->
+  <g fill="none" stroke="#9d7a59" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" opacity=".68">
+    <path d="M177-25Q183 74 149 143T139 288T115 420"/>
+    <path d="M161 116Q225 143 246 204T258 320 M139 278Q84 311 62 385 M128 382Q178 409 183 488 M245 199Q288 182 316 202"/>
+    <path d="M1420-25Q1393 64 1416 149T1435 300T1424 450"/>
+    <path d="M1410 120Q1339 150 1325 222T1286 330 M1433 270Q1496 310 1511 385 M1429 432Q1376 463 1367 520"/>
+    <path d="M143 284Q105 273 73 287 M181 469Q228 487 233 538 M1323 224Q1300 204 1272 219 M1503 387Q1540 377 1565 397" stroke-width="1.7"/>
+  </g>
+  <!-- Rock clusters in natural warm neutrals. -->
+  <g stroke="#baa186" stroke-width="2.2" stroke-linejoin="round">
+    <path d="M30 451l45-40 60 13 18 53-48 27-72-14Z" fill="#ded0ba"/>
+    <path d="M87 423l22 29-15 41" fill="none" opacity=".55"/>
+    <path d="M293 351l29-26 46 7 19 34-28 30-51-6Z" fill="#e0d0b7"/>
+    <path d="M300 545l31-20 31 12 7 32-26 22-43-17Z" fill="#e6d9c5"/>
+    <path d="M1464 440l38-32 65 15 10 53-51 28-54-18Z" fill="#ded0ba"/>
+    <path d="M1512 420l-15 40 25 28" fill="none" opacity=".56"/>
+    <path d="M1255 314l26-30 45 5 16 35-32 29-42-8Z" fill="#e8dac5"/>
+    <path d="M1305 551l46-28 39 14 14 35-32 33-60-17Z" fill="#e6d9c5"/>
+  </g>
+  <!-- Water gathers and runs underneath the rocky strata. -->
+  <path d="M0 588q131-31 260-3t233 11t284-8t308 4t260-7t255 6v59H0Z" fill="url(#water)"/>
+  <path d="M0 590q131-31 260-3t233 11t284-8t308 4t260-7t255 6" fill="none" stroke="#8cbeb8" stroke-width="2.3" opacity=".55"/>
+  <path d="M0 610q120-20 241-1t243 2t292-6t318 10t285-13t221 3" fill="none" stroke="#a5c9bd" stroke-width="2" opacity=".49"/>
+  <!-- Fine grains anchor the empty margins without overwhelming the text. -->
+  <g fill="#af9679" opacity=".37"><circle cx="62" cy="193" r="3"/><circle cx="327" cy="156" r="4"/><circle cx="103" cy="310" r="3.5"/><circle cx="271" cy="459" r="3"/><circle cx="354" cy="489" r="4"/><circle cx="1284" cy="164" r="3"/><circle cx="1541" cy="211" r="4"/><circle cx="1320" cy="424" r="3.5"/><circle cx="1490" cy="554" r="3"/><circle cx="1403" cy="354" r="3"/></g>
+</svg>

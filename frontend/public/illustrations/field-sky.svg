@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 780" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Illustration of farmland, sunshine, birds, wheat, wind and a small tractor">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f9fcf8"/><stop offset=".74" stop-color="#fcfdf7"/><stop offset="1" stop-color="#edf4e6"/></linearGradient>
+    <radialGradient id="sunlight"><stop stop-color="#ffe6a5" stop-opacity=".55"/><stop offset="1" stop-color="#ffe6a5" stop-opacity="0"/></radialGradient>
+    <linearGradient id="backField" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#d5e7c6"/><stop offset="1" stop-color="#b8d2a9"/></linearGradient>
+    <linearGradient id="frontField" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#e2edcf"/><stop offset="1" stop-color="#c6d7a8"/></linearGradient>
+    <linearGradient id="soil" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#d9c6a3"/><stop offset="1" stop-color="#cbb38f"/></linearGradient>
+  </defs>
+  <rect width="1600" height="780" fill="url(#sky)"/>
+  <!-- Quiet light in the upper-right corner. -->
+  <circle cx="1308" cy="153" r="145" fill="url(#sunlight)"/>
+  <g fill="none" stroke="#d9bc7d" stroke-width="2.6" stroke-linecap="round" opacity=".66">
+    <circle cx="1308" cy="153" r="49" fill="#f7e8b4" fill-opacity=".68" stroke="#e9cd8c"/>
+    <path d="M1308 78v-16 M1308 244v-16 M1233 153h-18 M1401 153h-18 M1255 100l-13-13 M1374 219l-13-13 M1255 206l-13 13 M1374 87l-13 13"/>
+  </g>
+  <!-- Clouds and air currents, kept away from the main title. -->
+  <g stroke="#cadcc9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#fff" fill-opacity=".75">
+    <path d="M110 175c12-17 35-20 52-12 11-25 43-34 67-22 10 5 17 13 22 22 16-4 35 4 42 20 4 11 0 24-11 30H112c-24-8-25-27-2-38Z"/>
+    <path d="M1422 302c11-13 27-16 41-9 10-19 32-25 51-16 11 6 17 13 19 21 26-2 40 29 12 40h-124c-23-3-26-24 1-36Z"/>
+    <path d="M345 112c8-13 24-16 36-12 6-16 26-22 39-14 8 4 13 10 15 17 22-3 32 24 9 31h-97c-17-5-19-17-2-22Z" opacity=".72"/>
+  </g>
+  <g fill="none" stroke="#a2c2b0" stroke-width="2.5" stroke-linecap="round" opacity=".68">
+    <path d="M84 315c75-32 146-16 192-7 59 12 100 4 123-11"/>
+    <path d="M128 336c49-11 101-9 144-2"/>
+    <path d="M1365 421c54-18 104-15 148-8"/>
+    <path d="M1393 444c36-4 75-2 113 6"/>
+  </g>
+  <g fill="none" stroke="#5e886e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".70">
+    <path d="M1044 176q16-19 33-2q14-17 29-4"/>
+    <path d="M1103 224q13-15 25-2q13-14 24-3"/>
+    <path d="M995 240q10-12 22-2q10-11 20-3"/>
+    <path d="M436 206q11-15 24-3q11-13 24-2"/>
+  </g>
+  <!-- Landscape sits below the central call to action. -->
+  <path d="M0 612C210 569 380 566 587 606c202 43 358 4 513-20 177-28 334-1 500 16v178H0Z" fill="url(#backField)"/>
+  <path d="M0 666c220-81 397-75 571-40 209 43 358 56 568 8 203-46 345-22 461 22v124H0Z" fill="url(#frontField)"/>
+  <path d="M0 711c206-44 446-27 665-17 226 10 452-24 654-29 99-3 193 19 281 49v66H0Z" fill="#dbe7c0"/>
+  <!-- Delicate crop furrows follow the hills, not a hard grid. -->
+  <g fill="none" stroke="#91b28a" stroke-width="2" stroke-linecap="round" opacity=".42">
+    <path d="M0 653c234-54 397-37 583-9 223 37 367 29 575-10 181-34 320-5 442 19"/>
+    <path d="M0 688c208-46 401-31 608-13 229 19 418-12 605-25 157-11 267 12 387 33"/>
+    <path d="M-20 737c208-27 423-21 627-18 198 3 406-22 593-21 171 1 285 23 425 41"/>
+    <path d="M56 780c179-81 221-104 277-142 M300 780c104-68 159-91 218-135 M561 780c67-58 108-82 161-113 M833 780c48-50 70-67 103-103 M1095 780c-1-48-3-75-7-108 M1359 780c-54-71-78-95-122-128"/>
+  </g>
+  <!-- A quiet small tractor, avoiding any text. -->
+  <g transform="translate(1348 621)" stroke="#466a50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-86 61h190" fill="none" stroke="#91b28a" opacity=".7"/>
+    <path d="M-49 10h51l19 29h43l8 17H-61l-6-18h18Z" fill="#729d72"/>
+    <path d="M-25 10v-30h28l23 30Z" fill="#eff5e8"/>
+    <path d="M-25-20h28l23 30h-51Z" fill="#e9f2e5"/>
+    <path d="M-11-20v30" fill="none"/>
+    <path d="M-41 38h-18v-16h12" fill="none"/>
+    <rect x="65" y="15" width="28" height="27" rx="5" fill="#91b185"/>
+    <path d="M74 15v-12" fill="none"/>
+    <circle cx="-34" cy="58" r="23" fill="#42584b"/>
+    <circle cx="-34" cy="58" r="11" fill="#dfebd8"/>
+    <circle cx="69" cy="59" r="17" fill="#42584b"/>
+    <circle cx="69" cy="59" r="8" fill="#dfebd8"/>
+  </g>
+  <!-- Harvest-ready wheat at the left. -->
+  <g fill="none" stroke="#8b9960" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M132 778C130 722 125 641 108 566 M181 778c-12-81-17-140-10-201 M94 780c10-85 3-142-20-183 M219 780c0-72 13-127 33-172"/>
+    <path d="M128 721q-31-34-60-27q18 34 60 34 M173 722q37-27 65-11q-24 30-65 24 M95 751q-30-36-55-35q10 29 55 41 M210 752q25-32 52-29q-17 28-52 34" fill="#c4d5a5" fill-opacity=".56"/>
+  </g>
+  <g fill="#d7c28a" stroke="#b59b63" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M108 572q-32-28-27-48q23 7 28 24q3-37 21-42q6 22-16 48q30-18 38-6q-9 23-39 24q24-8 27 13q-16 16-31-1q-26 1-29-18q17-12 29 6Z"/>
+    <path d="M171 584q-25-29-21-47q25 4 24 23q7-35 27-38q3 24-21 48q28-16 38-4q-9 22-40 20q23 0 22 18q-16 14-27-2q-26-1-26-17q13-12 24-1Z"/>
+    <path d="M75 601q-28-32-29-50q27 7 32 29q-1-35 16-45q10 19-11 47q30-17 36-4q-11 21-34 23q20 2 18 17q-15 14-25-4q-22 0-27-17q13-10 24 4Z"/>
+    <path d="M248 612q-25-22-25-41q25 2 28 20q4-31 21-38q7 21-15 43q25-10 32 2q-10 18-34 17q18 4 15 17q-15 10-22-5q-23 0-24-16q11-11 24 1Z"/>
+  </g>
+  <!-- The grass enters a thin warm-earth seam. -->
+  <path d="M0 764q210-18 409-4t389 2t395-3t407 1v20H0Z" fill="url(#soil)" opacity=".91"/>
+  <path d="M0 763q210-18 409-4t389 2t395-3t407 1" fill="none" stroke="#ab956e" stroke-width="2.4" opacity=".6"/>
+</svg>

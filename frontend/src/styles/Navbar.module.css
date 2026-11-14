@@ -1,129 +1,126 @@
-
+/* Barra coerente con i pannelli della mappa: verde scuro, salvia e bordi morbidi. */
+.navbar, .navbar * { box-sizing: border-box; }
 .navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 6%;
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom: 1px solid #edf1ed;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
+  width: 100%;
+  background: rgba(252, 254, 250, 0.96);
+  border-bottom: 1px solid #dce9dc;
+  box-shadow: 0 2px 16px rgba(30, 64, 39, 0.045);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
 }
 
-.brand {
-  color: #16752d;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.links {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.links a {
-  color: #263b2d;
-  font-size: 14px;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.links a:hover {
-  color: #16812f;
-}
-
-@media (max-width: 600px) {
-  .navbar {
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .links {
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  color: #213c30;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.navbar {
+.navbarInner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  padding: 16px 24px;
-
-  background: rgba(255, 255, 255, 0.95);
+  gap: 24px;
+  width: min(100% - 64px, 1480px);
+  min-height: 78px;
+  margin: 0 auto;
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-
+  gap: 12px;
+  min-width: 0;
+  color: #193d2b;
+  font-weight: 750;
+  font-size: 17px;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
   text-decoration: none;
+  white-space: nowrap;
 }
 
+.brandIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  background: #eef6ec;
+  border: 1px solid #d7e7d5;
+  border-radius: 17px;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.brandIcon img { display: block; width: 43px; height: 43px; }
+.brand:hover .brandIcon { background: #e2f0df; transform: translateY(-1px); }
+
+.navArea { display: flex; justify-content: flex-end; min-width: 0; }
 .links {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 4px;
+  padding: 5px;
+  background: #f0f6ef;
+  border: 1px solid #e0ebe0;
+  border-radius: 17px;
 }
 
-.links a {
-  color: #213c30;
-  text-decoration: none;
-}
-
+.navLink,
 .settingsLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  width: 38px;
-  height: 38px;
-
-  border-radius: 30%;
-
-  font-size: 30px;
+  height: 41px;
+  min-width: 44px;
+  padding: 0 17px;
+  border-radius: 12px;
+  color: #476251;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
   text-decoration: none;
-
-  transition: background-color 0.2s ease;
+  transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
+.navLink:hover,
 .settingsLink:hover {
-  background: #f0f5f1;
+  color: #193d2b;
+  background: #e2efe1;
+}
+
+.navLink.active,
+.settingsLink.active {
+  color: #1e5939;
+  background: #ffffff;
+  box-shadow: 0 1px 5px rgba(30, 64, 39, 0.10);
+}
+
+.navDivider { width: 1px; height: 24px; margin: 0 3px; background: #cddfce; }
+.settingsLink { padding: 0; width: 42px; }
+
+.brand:focus-visible,
+.navLink:focus-visible,
+.settingsLink:focus-visible {
+  outline: 3px solid #2b8054;
+  outline-offset: 3px;
 }
 
 @media (max-width: 700px) {
-  .navbar {
+  .navbarInner {
     flex-direction: column;
-    justify-content: center;
-    gap: 14px;
-
-    padding: 14px 18px;
+    gap: 9px;
+    width: calc(100% - 24px);
+    padding: 10px 0 11px;
   }
+  .brand { justify-content: center; gap: 9px; font-size: 15px; }
+  .brandIcon { width: 39px; height: 39px; border-radius: 12px; }
+  .brandIcon img { width: 34px; height: 34px; }
+  .navArea { justify-content: center; width: 100%; }
+  .links { gap: 2px; width: min(100%, 420px); justify-content: space-around; border-radius: 14px; padding: 4px; }
+  .navLink { height: 37px; min-width: 0; flex: 1 1 auto; padding: 0 9px; font-size: 12px; }
+  .settingsLink { height: 37px; flex: 0 0 38px; width: 38px; }
+  .settingsLink svg { width: 20px; height: 20px; }
+  .navDivider { height: 22px; margin: 0 2px; }
+}
 
-  .brand {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .links {
-    width: 100%;
-
-    justify-content: center;
-
-    gap: 18px;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .brandIcon, .navLink, .settingsLink { transition: none; }
 }
