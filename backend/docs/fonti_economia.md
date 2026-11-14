@@ -41,3 +41,27 @@ confermare prima di citarli.
 
 ## Cosa non e' nel margine
 Seme, difesa, meccanizzazione, costi fissi, contributi PAC. Scelta dell'utente: i costi sono solo quelli che il modello simula.
+
+## 4. Altri costi colturali per coltura (EUR/ha coltivato) — aggiunto il 2026-11-14
+
+Seme, difesa, lavorazioni, semina, raccolta, essiccazione, trasporti: tutto tranne concime azotato e irrigazione,
+che il modello calcola. Tutti `assunzione: true`, valori di partenza modificabili dall'agricoltore nell'app.
+
+- ilNuovoAgricoltore, "Cereali e soia: quanti quintali/ettaro bisogna produrre per pareggiare i costi di produzione?"
+  (data non indicata nella parte letta, via risultati di ricerca): mais 2320, frumento tenero 1100, soia 1570 EUR/ha,
+  "modello tradizionale" con operazioni meccaniche, mezzi tecnici e trasporti.
+  URL: https://www.ilnuovoagricoltore.it/cereali-e-soia-quanti-quintaliettaro-bisogna-produrre-per-pareggiare-i-costi-di-produzione/
+- Terra e Vita (Edagricole), soia irrigua: circa 1800 EUR/ha esclusa la remunerazione del terreno, di cui circa 380 di
+  irrigazione e poco meno di 300 di raccolta e trasporto.
+  URL: https://terraevita.edagricole.it/seminativi/semine-autunnali-grano-duro-in-ritirata/
+- Riscontri: Ismea, costo medio frumento tenero raccolto 2025 poco sopra 230 EUR/t; Palmieri (Edagricole), mais
+  irriguo Pianura Padana circa 3267 EUR/ha con 12 t/ha (costo pieno). Le tabelle Edagricole non sono più
+  raggiungibili (HTTP 404).
+
+| Coltura | Fonte (EUR/ha) | Tolto (concime N simulato) | Valore usato | Intervallo |
+|---|---|---|---|---|
+| Mais | 2320 | ~260 kg N x 1,4 = 365 | 1950 | 1700-2320 |
+| Frumento tenero | 1100 | ~160 kg N x 1,4 = 224 | 880 | 800-1100 |
+| Soia | 1570 / ~1420 senza irrigazione | nulla (niente concime N) | **1500 (assunzione tra le due fonti)** | 1420-1570 |
+
+Si assume che il costo delle fonti non comprenda l'irrigazione (per la soia di Terra e Vita è tolta esplicitamente).

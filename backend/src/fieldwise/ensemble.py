@@ -17,8 +17,10 @@ Colonne della sintesi (le usa `ranking.py`):
 (percentile calcolato PER CLASSE su tutte le simulazioni dei suoi membri),
 ``irrigazione_mm``, ``concime_kg_n``, ``n_lisciviato_kg_n``, ``humus_t_ha`` (variazione annua),
 ``giorni_caldo``, ``ruscellamento_mm``, ``percolazione_mm``, ``deficit_n_kg_n``,
-``margine_lordo_eur_ha`` (ricavo meno costo di concime e acqua, EUR/ha all'anno, MEDIA sulle annate
-perche' e' il valore atteso; vedi ``economics.py`` e ``params/economia.yaml``),
+``ricavo_eur_ha``, ``costo_concime_eur_ha``, ``costo_irrigazione_eur_ha``, ``costo_altri_eur_ha``,
+``margine_lordo_eur_ha`` (EUR/ha all'anno, MEDIE sulle annate perche' sono valori attesi) e
+``colture_anno_<coltura>`` (ettari di quella coltura per ettaro e per anno, per ricalcolare gli altri costi
+con i valori dell'agricoltore; vedi ``economics.py`` e ``params/economia.yaml``),
 ``f_acqua``, ``f_caldo``, ``f_rotazione`` (medie), ``fattore_limitante``,
 ``quota_oltre_limite_n``, ``quota_cover_non_praticata``, ``cover_richieste`` (intervalli con cover
 richiesta nel ciclo), ``cover_realizzata_quota`` (quota di quegli intervalli in cui la cover e' stata
@@ -58,7 +60,7 @@ NESSUNO = "nessuno"                   # nessuna annata scartata
 FATTORI = ("acqua", "caldo", "rotazione")
 PREFISSO_RESA_T_HA = "resa_t_ha_"      # + coltura: resa in t/ha (colonne di dettaglio e sintesi)
 PERCENTILE_RISCHIO = 10               # percentile basso della resa relativa
-COL_MARGINE = "margine_lordo_eur_ha"  # margine su concime e acqua (EUR/ha all'anno); media, non mediana
+COL_MARGINE = _eco.COL_MARGINE         # margine (EUR/ha all'anno); media sulle annate, non mediana
 
 # (colonna del dettaglio, chiave in simulate()['indicatori']) -- stesso nome del motore, unita' esplicita
 _INDICATORI = (
@@ -249,7 +251,7 @@ def run_ensemble(ctx=None, lat=None, lon=None, rotazioni=None, scenari=None, n_a
                 riga = {"etichetta": v["label"], "classe": v["classe"], "anno_partenza": int(anno),
                         "anno_valutato": out["anno_valutato"], "scenario": sc, **conf}
                 riga.update({col: ind[k] for col, k in _INDICATORI})
-                riga[COL_MARGINE] = _eco.margine_anno(p, out)
+                riga.update(_eco.componenti(p, out, colture_principali))
                 riga.update(
                     cover_richieste=sum(1 for iv in out["intervalli"] if iv["cover_richiesta"]),
                     cover_non_praticate=nudi,
@@ -314,6 +316,11 @@ def _equivalenze(voci, cover_vista, dettaglio) -> dict:
     return out
 
 
+def _colonne_economia(ctx) -> tuple:
+    """Colonne economiche del dettaglio aggregate con la media nella sintesi."""
+    return (*_eco.COLONNE, *(f"{_eco.PREFISSO_COLTURE_ANNO}{c}" for c in rt.main_crops(ctx.p)))
+
+
 def _sintesi(dettaglio, voci, scenari, regimi, ctx, scarti, n_membri, attuale, equivalenze):
     """Una riga per (classe ciclica, scenario) in ordine di classe e di scenario."""
     classi = list(dict.fromkeys(v["classe"] for v in voci))
@@ -345,7 +352,8 @@ def _sintesi(dettaglio, voci, scenari, regimi, ctx, scarti, n_membri, attuale, e
                          resa_rel_minima_coltura=float(np.median(g["resa_rel_minima"])))
                 for c in _MEDIANE:
                     r[c] = float(np.median(g[c].to_numpy(float)))
-                r[COL_MARGINE] = float(g[COL_MARGINE].mean())     # valore atteso sulle annate
+                for c in _colonne_economia(ctx):                   # medie: valore atteso sulle annate
+                    r[c] = float(g[c].mean())
                 for f in FATTORI:
                     r[f"f_{f}"] = float(g[f"f_{f}"].mean())
                 r["quota_oltre_limite_n"] = float((g["n_colture_oltre_mas"] > 0).mean())
@@ -356,7 +364,7 @@ def _sintesi(dettaglio, voci, scenari, regimi, ctx, scarti, n_membri, attuale, e
                                                   g["res_azoto_rotazione_kg"].abs().max()))
             else:
                 for c in ("resa_rel_mediana", "resa_rel_min", "resa_rel_p10", "resa_rel_minima_coltura",
-                          *_MEDIANE, COL_MARGINE, "f_acqua", "f_caldo", "f_rotazione", "quota_oltre_limite_n",
+                          *_MEDIANE, *_colonne_economia(ctx), "f_acqua", "f_caldo", "f_rotazione", "quota_oltre_limite_n",
                           "quota_cover_non_praticata", "res_acqua_max_mm", "res_azoto_max_kg"):
                     r[c] = nan
             medie = [r[f"f_{f}"] for f in FATTORI]

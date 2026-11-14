@@ -47,3 +47,35 @@ irrigazione_eur_mm:
   nota: "Stima da 5 aziende, non una tariffa. Intervallo osservato 0,28-1,58."
   verificato: false
   intervallo: [0.28, 1.58]
+
+# Costi colturali NON simulati dal modello (seme, difesa, lavorazioni, semina, raccolta, essiccazione, trasporti),
+# per ettaro coltivato. Concime azotato e irrigazione sono esclusi perche' li calcola il modello (sopra).
+# Valori di partenza: nell'app l'agricoltore li sostituisce con i propri.
+altri_costi_eur_ha:
+  mais:
+    valore: 1950.0
+    unita: "EUR/ha coltivato"
+    assunzione: true
+    derivato: true
+    motivazione: "Costo colturale del mais da granella 2320 EUR/ha (modello tradizionale: operazioni meccaniche, mezzi tecnici e trasporti; ilNuovoAgricoltore, 'Cereali e soia: quanti quintali/ettaro bisogna produrre per pareggiare i costi di produzione?', data non indicata nella pagina letta via ricerca) meno il concime azotato, che il modello calcola a parte: circa 260 kg N/ha x 1,4 EUR/kg = 365 EUR/ha. 2320 - 365 = 1955, arrotondato a 1950. Si assume che il costo della fonte non comprenda l'irrigazione. Riscontro: costo medio del mais irriguo in Pianura Padana circa 3267 EUR/ha con 12 t/ha (Palmieri, Edagricole 2023/24), che comprende anche irrigazione, concime e probabilmente costi fissi."
+    nota: "URL della fonte: https://www.ilnuovoagricoltore.it/cereali-e-soia-quanti-quintaliettaro-bisogna-produrre-per-pareggiare-i-costi-di-produzione/ . Valore di partenza: nell'app e' modificabile."
+    verificato: false
+    intervallo: [1700.0, 2320.0]
+  frumento:
+    valore: 880.0
+    unita: "EUR/ha coltivato"
+    assunzione: true
+    derivato: true
+    motivazione: "Costo colturale del frumento tenero 1100 EUR/ha (stessa fonte del mais, ilNuovoAgricoltore) meno il concime azotato calcolato dal modello: circa 160 kg N/ha x 1,4 EUR/kg = 224 EUR/ha. 1100 - 224 = 876, arrotondato a 880. Riscontro: costo medio Ismea del frumento tenero raccolto 2025 poco sopra 230 EUR/t (con 6,5 t/ha in Lombardia, circa 1500 EUR/ha comprensivo di concime e costi fissi)."
+    nota: "URL della fonte: https://www.ilnuovoagricoltore.it/cereali-e-soia-quanti-quintaliettaro-bisogna-produrre-per-pareggiare-i-costi-di-produzione/ . Valore di partenza: nell'app e' modificabile."
+    verificato: false
+    intervallo: [800.0, 1100.0]
+  soia:
+    valore: 1500.0
+    unita: "EUR/ha coltivato"
+    assunzione: true
+    derivato: true
+    motivazione: "ASSUNZIONE. Due fonti non concordi: 1570 EUR/ha (ilNuovoAgricoltore, stessa tabella di mais e frumento) e circa 1800 EUR/ha per la soia irrigua di cui circa 380 di irrigazione, quindi circa 1420 senza irrigazione (Terra e Vita, Edagricole). La soia non riceve concime azotato nel modello, quindi non si toglie nulla per l'azoto. Scelto 1500, tra i due valori. Riscontri parziali: seme 80-210 EUR/ha, diserbo 70-180 EUR/ha, trebbiatura 170-323 EUR/ha (listini contoterzisti 2022-2023)."
+    nota: "URL delle fonti: https://www.ilnuovoagricoltore.it/cereali-e-soia-quanti-quintaliettaro-bisogna-produrre-per-pareggiare-i-costi-di-produzione/ e https://terraevita.edagricole.it/seminativi/semine-autunnali-grano-duro-in-ritirata/ . Valore di partenza: nell'app e' modificabile."
+    verificato: false
+    intervallo: [1420.0, 1570.0]
