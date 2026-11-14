@@ -1,7 +1,7 @@
 /** Frontend-only analysis draft. This is not a backend API payload yet. */
 export type CropId = "mais" | "soia" | "frumento";
 export type IrrigationScenario = "solo_pioggia" | "tetto_irriguo" | "irrigazione_libera";
-export type PriorityId = "resa" | "rischio" | "acqua" | "concime" | "suolo";
+export type PriorityId = "resa" | "rischio" | "acqua" | "concime" | "suolo" | "profitto";
 
 export type CropStep = {
   crop: CropId;
@@ -33,9 +33,10 @@ export const PRIORITY_LABELS: Record<PriorityId, string> = {
   acqua: "Water savings",
   concime: "Fertilizer savings",
   suolo: "Soil health",
+  profitto: "Economic margin",
 };
 
-export const PRIORITY_KEYS: PriorityId[] = ["resa", "rischio", "acqua", "concime", "suolo"];
+export const PRIORITY_KEYS: PriorityId[] = ["resa", "rischio", "acqua", "concime", "suolo", "profitto"];
 export const CROP_KEYS: CropId[] = ["mais", "soia", "frumento"];
 export const IRRIGATION_KEYS: IrrigationScenario[] = ["solo_pioggia", "tetto_irriguo", "irrigazione_libera"];
 
@@ -53,8 +54,12 @@ export function defaultAnalysisDraft(): AnalysisDraft {
       { crop: "frumento", coverAfter: false },
     ],
     irrigation: "tetto_irriguo",
-    priorities: { resa: 5, rischio: 5, acqua: 5, concime: 5, suolo: 5 },
+    priorities: { resa: 5, rischio: 5, acqua: 5, concime: 5, suolo: 5, profitto: 5 },
   };
+}
+
+function normalizeAnalysisDraft(draft: AnalysisDraft): AnalysisDraft {
+  return { ...draft, priorities: { ...draft.priorities, profitto: draft.priorities.profitto ?? 5 } };
 }
 
 export function isAnalysisDraft(value: unknown): value is AnalysisDraft {
@@ -68,10 +73,12 @@ export function isAnalysisDraft(value: unknown): value is AnalysisDraft {
     });
   return draft.version === 1 && validSteps &&
     IRRIGATION_KEYS.includes(draft.irrigation as IrrigationScenario) &&
-    !!draft.priorities && PRIORITY_KEYS.every((key) => {
+    !!draft.priorities && typeof draft.priorities === "object" &&
+    PRIORITY_KEYS.filter((key) => key !== "profitto").every((key) => {
       const n = draft.priorities?.[key];
       return typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= PRIORITY_MAX;
-    });
+    }) && (draft.priorities.profitto === undefined ||
+      (Number.isInteger(draft.priorities.profitto) && draft.priorities.profitto >= 0 && draft.priorities.profitto <= PRIORITY_MAX));
 }
 
 function readAll(): Record<string, AnalysisDraft> {
@@ -83,7 +90,7 @@ function readAll(): Record<string, AnalysisDraft> {
   }
   const result: Record<string, AnalysisDraft> = Object.create(null);
   for (const [id, draft] of Object.entries(value)) {
-    if (isAnalysisDraft(draft)) result[id] = draft;
+    if (isAnalysisDraft(draft)) result[id] = normalizeAnalysisDraft(draft);
   }
   return result;
 }
@@ -100,7 +107,7 @@ export function loadAnalysisDraft(fieldId: string): AnalysisDraft {
 export function saveAnalysisDraft(fieldId: string, draft: AnalysisDraft): void {
   if (!isAnalysisDraft(draft)) throw new Error("Invalid analysis configuration.");
   const all = readAll();
-  all[fieldId] = draft;
+  all[fieldId] = normalizeAnalysisDraft(draft);
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
 }
 
@@ -118,7 +125,7 @@ export function replaceAnalysisDrafts(drafts: Record<string, AnalysisDraft>): vo
     if (!id || id.length > 128 || !isAnalysisDraft(draft)) {
       throw new Error("The field backup contains invalid analysis settings.");
     }
-    checked[id] = draft;
+    checked[id] = normalizeAnalysisDraft(draft);
   }
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(checked));
 }

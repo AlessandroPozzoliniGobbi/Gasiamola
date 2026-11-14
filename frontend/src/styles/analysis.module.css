@@ -428,3 +428,9 @@
 @media (max-width: 700px) {
   .page { background-position: center center, 65% bottom; }
 }
+
+/* Engine integration: explicit pilot-reference consent and error feedback. */
+.referenceOption{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin:15px 0 5px;border:1px solid rgba(123,160,125,.55);border-radius:13px;background:rgba(228,242,222,.72);color:#254b32;font-size:12px;line-height:1.55;cursor:pointer}
+.referenceOption input{flex:0 0 auto;margin-top:3px;accent-color:#277b4b;width:16px;height:16px}
+.referenceOption strong{font-weight:800}
+.referenceOption small{font-size:11px;color:#54715d}

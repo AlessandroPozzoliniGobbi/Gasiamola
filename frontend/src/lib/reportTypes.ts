@@ -10,6 +10,7 @@ export type RotationMetrics = {
   fertilizerKgN: number | null;
   nitrogenLeachingKgN: number | null;
   humusChangeTonsHa: number | null;
+  grossMarginEurHa: number | null; // EUR/ha/year; excludes many farm costs
 };
 
 export type RotationResult = {
@@ -40,6 +41,17 @@ export type CompletedReport = {
     version: string | null;
     dataPeriod: string | null;
     methodologyNote: string | null;
+    sourceMode?: "pilot_point" | "pilot_reference" | "local_estimate";
+    modelPoint?: [number, number]; // [longitude, latitude] for the model inputs
+    localData?: {
+      aquaCropRunoffGroup: string;
+      curveNumber: number;
+      soilPixelShiftMeters: number;
+      soilDataMethod: string;
+      surfaceTexture: string;
+      surfaceAvailableWaterMm: number;
+      profileAvailableWaterMm: number;
+    } | null;
   };
   results: {
     scenario: string;
@@ -69,11 +81,13 @@ export const REPORT_METRICS: {
   { key: "fertilizerKgN", label: "Nitrogen fertilizer", shortLabel: "Fertilizer", unit: "kg N/ha", higherIsBetter: false },
   { key: "nitrogenLeachingKgN", label: "Nitrogen leaching", shortLabel: "Nitrogen leaching", unit: "kg N/ha", higherIsBetter: false },
   { key: "humusChangeTonsHa", label: "Annual humus change", shortLabel: "Humus change", unit: "t/ha/year", higherIsBetter: true },
+  { key: "grossMarginEurHa", label: "Partial gross margin", shortLabel: "Economic margin", unit: "EUR/ha/year", higherIsBetter: true },
 ];
 
 export function formatMetric(key: keyof RotationMetrics, value: number | null): string {
   if (value === null || !Number.isFinite(value)) return "Not available";
   if (key.startsWith("relativeYield")) return `${(value * 100).toFixed(1)}%`;
+  if (key === "grossMarginEurHa") return `${value.toLocaleString("en-GB", { maximumFractionDigits: 0 })} EUR/ha/year`;
   if (key === "humusChangeTonsHa") return `${value > 0 ? "+" : ""}${value.toFixed(2)} t/ha/year`;
   const unit = key === "irrigationMm" ? "mm" : "kg N/ha";
   return `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })} ${unit}`;

@@ -1,0 +1,35 @@
+{
+  "adapterVersion": 1,
+  "engineVersion": "0.2.0",
+  "point": [
+    10.495,
+    45.168
+  ],
+  "calculatedAt": "2026-11-14T17:56:09.742698+00:00",
+  "parametersHash": "00b4363ad4c4e5ee29e1e549ae3447cc3156fe8b62a1860ddd75f14c0ec06b34",
+  "files": {
+    "power_daily.csv": "2c9530a9af0216e4add04e062165cf702795b9415e46d1670afead31c16ea8c0",
+    "soilgrids_agg.csv": "c9dfc9b7d864d6b312ea3f4fe5aea7fe28925afe2cbef8927a1cddfcda56f22e",
+    "ensemble_sintesi.csv": "736cd6c4648fc3f7e3ca83c4dc32f1a20a27a9ceb28c974a5c7811de3699fc1b",
+    "ensemble_meta.json": "6115200dc45b2f38c77b4b6aa0f5350e3ac6acba726d0981849a4d85e062b186"
+  },
+  "paramsFiles": {
+    "cover_crop.yaml": "bbfd66802a3749594c4cff85d6e2bf96a48768190a7df2246e7fccdcb82601e2",
+    "crops.yaml": "dff8ae15dfc950b75609b607a6cebf2721ae7d549cb0f7d84924d83db2abfd61",
+    "economia.yaml": "c68972133179b0ee0ff2a9f5e54c6da46e3ca4431132f11c04209a09a9b7aff3",
+    "heat.yaml": "54966bab20c172fc275a87766666d62702c497285753ebf7616c41d30ca9bf29",
+    "nitrogen.yaml": "99e342b0b1024578d15c97a01bc120ac79b028c6ea3a3df295616e4d5db292e7",
+    "rotation_rules.yaml": "9e6e57ceaf7f9190211678de903b7e14f1e77ae0bd08270a3480f4a05488e893",
+    "scenarios.yaml": "30fd930ad0b45f84cda0443600d9e1cd8730ccc90b87e2c0ee404a481e8ac6e1",
+    "soil.yaml": "61ea9b37c781d01c786d3680a9313df3d887815a54b3523ac5e9cebbf1c818d8"
+  },
+  "details": {
+    "aquaCropRunoffGroup": "C",
+    "curveNumber": 72,
+    "soilPixelShiftMeters": 0.0,
+    "soilDataMethod": "rest",
+    "surfaceTexture": "clay loam",
+    "surfaceAvailableWaterMm": 46.3,
+    "profileAvailableWaterMm": 216.8
+  }
+}

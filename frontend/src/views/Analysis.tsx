@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { FieldItem } from "../types/field";
 import { loadSavedFields } from "../lib/fieldStorage";
 import { getLabelPosition } from "../lib/fieldGeometry";
@@ -13,6 +14,9 @@ import {
   type AnalysisDraft, type CropId, type IrrigationScenario, type PriorityId,
 } from "../lib/analysisStorage";
 import AnalysisFieldMap from "../components/map/AnalysisFieldMap";
+import AnalysisProcessing from "../components/reports/AnalysisProcessing";
+import { analyzeField, prepareLocalField } from "../lib/engineApi";
+import { saveCompletedReport } from "../lib/reportStorage";
 import styles from "../styles/analysis.module.css";
 
 type Props = { fieldId: string };
@@ -25,6 +29,11 @@ type LoadState =
 type DraftSaveStatus = "saved" | "saving" | "error";
 
 export default function Analysis({ fieldId }: Props) {
+  const router = useRouter();
+  const [running, setRunning] = useState(false);
+  const [processingStage, setProcessingStage] = useState("Preparing your field analysis...");
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [usePilotReference, setUsePilotReference] = useState(false);
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [draft, setDraft] = useState<AnalysisDraft | null>(null);
   const [saveStatus, setSaveStatus] = useState<DraftSaveStatus>("saved");
@@ -100,6 +109,32 @@ export default function Analysis({ fieldId }: Props) {
   const point = field ? getLabelPosition(field) : null;
   const hectares = field ? estimateFieldHectares(field) : null;
   const weightSum = draft ? Object.values(draft.priorities).reduce((a, b) => a + b, 0) : 0;
+
+  const runAnalysis = async () => {
+    if (!field || !point || !draft || weightSum === 0 || running) return;
+    setAnalysisError(null);
+    setRunning(true);
+    try {
+      if (!usePilotReference) {
+        setProcessingStage("Checking field-specific climate and soil data...");
+        await prepareLocalField(point, setProcessingStage);
+      }
+      setProcessingStage("Comparing rotations and saving your report...");
+      const report = await analyzeField({
+        id: field.id, name: field.name, number: field.number,
+        areaHectares: hectares,
+        polygonCoordinates: field.coordinates,
+        representativePoint: point,
+      }, draft, usePilotReference);
+      await saveCompletedReport(report);
+      router.push(`/reports/${encodeURIComponent(report.id)}`);
+    } catch (error) {
+      setAnalysisError(error instanceof Error ? error.message : "The analysis could not be completed.");
+      setRunning(false);
+    }
+  };
+
+  if (running && field) return <AnalysisProcessing fieldName={field.name} stage={processingStage} />;
 
   return (
     <main data-fieldwise-analysis className={styles.page}>
@@ -231,17 +266,24 @@ export default function Analysis({ fieldId }: Props) {
                     <p>These settings are saved locally for this field. You can edit them anytime.</p>
                   </div>
                   <div className={styles.summaryChips}>
-                    <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>5 priorities</span>
+                    <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>6 priorities</span>
                   </div>
+                  <label className={styles.referenceOption}>
+                    <input type="checkbox" checked={usePilotReference} onChange={(e) => setUsePilotReference(e.target.checked)} />
+                    <span><strong>Use Cremona pilot reference data</strong><br />
+                      <small>Optional fallback for testing. Uses Cremona pilot soil and climate, NOT local conditions. Keep this unchecked for a location-conditioned analysis.</small>
+                    </span>
+                  </label>
                   <div className={styles.submitActions}>
                     <button className={styles.resetButton} type="button" onClick={() => {
                       if (window.confirm("Reset this field's analysis settings to the defaults?")) updateDraft(() => defaultAnalysisDraft());
                     }}>Reset settings</button>
-                    <button type="button" className={styles.runButton} disabled title="Backend integration is not yet available">
-                      Run analysis <span>Coming soon</span>
+                    <button type="button" className={styles.runButton} disabled={weightSum === 0 || running} onClick={runAnalysis}>
+                      Run analysis <span>→</span>
                     </button>
                   </div>
-                  <p className={styles.helper}>The simulation is not connected yet. No results, reports, or NDVI values have been generated.</p>
+                  <p className={styles.helper}>Field-local mode downloads NASA POWER and SoilGrids data for your field&apos;s representative point (within 100 km of Cremona). The first preparation can take several minutes and requires an online backend. These are experimental gridded estimates, not field measurements. NDVI is not available yet.</p>
+                  {analysisError && <p className={styles.alert} role="alert">{analysisError}</p>}
                   <details className={styles.technicalDetails}>
                     <summary>Backend-ready identifiers (for integration)</summary>
                     <p>Crop rotation: <code>{rotationBackendLabel(draft.rotation)}</code></p>

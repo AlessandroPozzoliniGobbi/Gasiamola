@@ -6,6 +6,7 @@ import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS } from "
 import { REPORT_METRICS, formatMetric, labelRotation, type CompletedReport,
   type RotationMetrics, type RotationResult } from "../../lib/reportTypes";
 import styles from "../../styles/reports.module.css";
+import { downloadMarkdownReport } from "../../lib/reportMarkdown";
 
 type Tab = "overview" | "compare" | "insights" | "economics" | "details";
 const TABS: { id: Tab; title: string }[] = [
@@ -127,6 +128,10 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
         {demo && <div role="status" className={styles.demoBanner}>
           <strong>DEMO PREVIEW — FICTIONAL DATA.</strong> These values are for interface testing only. No FIELDWISE analysis was performed. This report is not saved.
         </div>}
+        {report.engine.sourceMode === "pilot_reference" &&
+          <div className={styles.demoBanner} role="status"><strong>CREMONA REFERENCE DATASET.</strong> This report uses pilot-point climate and soil data, not measurements for this field. It is an exploratory comparison only.</div>}
+        {report.engine.sourceMode === "local_estimate" &&
+          <div className={styles.demoBanner} role="status"><strong>LOCATION-CONDITIONED ESTIMATE.</strong> Local NASA POWER and SoilGrids predictions are used at one representative point. This is experimental, not a measured or validated field-scale forecast.</div>}
         <header className={styles.reportHeader}>
           <div>
             <span className={styles.eyebrow}>FIELD REPORT · {dateLabel}</span>
@@ -135,8 +140,10 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
           </div>
           <div className={styles.exportArea}>
             <button type="button" disabled title="PDF export will be enabled after backend integration" className={styles.secondaryButton}>Export PDF</button>
-            <button type="button" disabled title="Markdown export will be enabled after backend integration" className={styles.secondaryButton}>Export Markdown</button>
-            <small>Export coming with engine integration</small>
+            <button type="button" disabled={demo} onClick={() => downloadMarkdownReport(report)}
+              title={demo ? "Not available for fictional demo data" : "Download a Markdown copy of this completed report"}
+              className={styles.secondaryButton}>Export Markdown</button>
+            <small>PDF export is planned; Markdown is available for completed reports.</small>
           </div>
         </header>
 
@@ -144,7 +151,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
           {TABS.map((item) => <button type="button" key={item.id} onClick={() => setTab(item.id)}
             className={`${styles.tabButton} ${tab === item.id ? styles.tabActive : ""}`}
             aria-current={tab === item.id ? "page" : undefined}>
-            {item.title}{item.id === "economics" && <span className={styles.tabSoon}>Soon</span>}
+            {item.title}{item.id === "economics" && <span className={styles.tabSoon}>{report.results.current.metrics.grossMarginEurHa == null ? "Soon" : "New"}</span>}
           </button>)}
         </nav>
 
@@ -198,13 +205,31 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
         </div>}
 
         {tab === "economics" && <div className={styles.content}>
-          <section className={styles.comingSoon}>
-            <span className={styles.economicsIcon} aria-hidden="true">€</span>
-            <span className={styles.smallCaps}>04 / ECONOMIC OUTLOOK</span>
-            <h2>Economic analysis is on its way.</h2>
-            <p>We are preparing this area for the economic engine. Indicators, assumptions, and comparisons will be defined when validated backend outputs are available.</p>
-            <span className={styles.softPill}>Coming soon · No economic estimates yet</span>
-          </section>
+          {report.results.current.metrics.grossMarginEurHa == null ? (
+            <section className={styles.comingSoon}>
+              <span className={styles.economicsIcon} aria-hidden="true">€</span>
+              <span className={styles.smallCaps}>04 / ECONOMIC OUTLOOK</span>
+              <h2>Economic analysis is on its way.</h2>
+              <p>The demo preview does not contain economic estimates. Real reports show the engine&apos;s partial gross margin.</p>
+              <span className={styles.softPill}>Coming soon</span>
+            </section>
+          ) : <>
+            <div className={styles.sectionIntro}><span className={styles.smallCaps}>04 / ECONOMIC OUTLOOK</span>
+              <h2>Evaluate the economic trade-offs.</h2>
+              <p>A partial annual gross margin, not a complete farm budget. Based on the engine&apos;s static price assumptions.</p>
+            </div>
+            <div className={styles.outcomeGrid}>
+              {outcomes.map((item, index) => <article className={styles.outcomeCard} key={index}>
+                <span className={styles.smallCaps}>{index === 0 ? "Current rotation" : `Alternative ${index}`}</span>
+                <h3>{labelRotation(item.label)}</h3>
+                <p className={styles.metricValue}>{formatMetric("grossMarginEurHa", item.metrics.grossMarginEurHa ?? null)}</p>
+              </article>)}
+            </div>
+            <div className={styles.panel}><h3>What is included?</h3>
+              <p>Crop revenue minus nitrogen fertilizer and irrigation costs, averaged over historical simulation years (EUR/ha/year).</p>
+              <p className={styles.footnote}>Excludes seeds, crop protection, machinery, labor and fixed costs. Prices are static; results are not profit forecasts.</p>
+            </div>
+          </>}
         </div>}
 
         {tab === "details" && <div className={styles.content}>
@@ -230,6 +255,14 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             <section className={styles.panel}><h3>Scientific provenance</h3>
               <dl className={styles.detailList}>
                 <div><dt>Engine version</dt><dd>{report.engine.version ?? "Not provided"}</dd></div>
+                {report.engine.modelPoint && <div><dt>Simulation input point</dt><dd>{report.engine.modelPoint[1].toFixed(3)}° N, {report.engine.modelPoint[0].toFixed(3)}° E</dd></div>}
+                {report.engine.localData && <>
+                  <div><dt>Soil data source</dt><dd>SoilGrids 250 m ({report.engine.localData.soilDataMethod.toUpperCase()})</dd></div>
+                  <div><dt>Soil pixel displacement</dt><dd>{report.engine.localData.soilPixelShiftMeters.toFixed(0)} m</dd></div>
+                  <div><dt>Surface texture</dt><dd>{report.engine.localData.surfaceTexture}</dd></div>
+                  <div><dt>Runoff Curve Number</dt><dd>{report.engine.localData.curveNumber} (group {report.engine.localData.aquaCropRunoffGroup})</dd></div>
+                  <div><dt>Estimated water availability</dt><dd>{report.engine.localData.profileAvailableWaterMm.toFixed(1)} mm (0–150 cm)</dd></div>
+                </>}
                 <div><dt>Dataset period</dt><dd>{report.engine.dataPeriod ?? "Not provided"}</dd></div>
                 <div><dt>Scenario</dt><dd>{report.results.scenario}</dd></div>
                 <div><dt>Compared rotations</dt><dd>{report.results.comparedRotations ?? "Not provided"}</dd></div>

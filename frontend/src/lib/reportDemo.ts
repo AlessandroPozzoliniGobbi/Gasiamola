@@ -5,7 +5,7 @@ const metrics = (relativeYieldMedian: number, relativeYieldWorst: number, relati
   irrigationMm: number, fertilizerKgN: number, nitrogenLeachingKgN: number,
   humusChangeTonsHa: number): RotationMetrics => ({
   relativeYieldMedian, relativeYieldWorst, relativeYieldP10,
-  irrigationMm, fertilizerKgN, nitrogenLeachingKgN, humusChangeTonsHa,
+  irrigationMm, fertilizerKgN, nitrogenLeachingKgN, humusChangeTonsHa, grossMarginEurHa: null,
 });
 const result = (label: string, score: number, m: RotationMetrics,
   evidence: string[], risks: string[]): RotationResult => ({ label, score, metrics: m, evidence, risks });
