@@ -1,12 +1,12 @@
 {
   "adapterVersion": 2,
   "engineVersion": "0.2.0",
-  "engineCodeHash": "f8d163b0c77b7552bd48330389f0172cb010c46c361c30e0f4546034e0d02795",
+  "engineCodeHash": "bf840350b98996d3a4865d6597a7000f7979e7aef0663eb5e154acad01bb9d84",
   "point": [
     10.443,
     45.406
   ],
-  "calculatedAt": "2026-11-15T02:11:06.391605+00:00",
+  "calculatedAt": "2026-11-15T08:20:11.027109+00:00",
   "parametersHash": "8178d1eb45b47e79db3cb2947a98ae70fff9d7df786223c45f1675c884ca38fa",
   "files": {
     "power_daily.csv": "ce8fd48fdc1f23de42ab1c94ddf911fbe89b183371621fe695daecdc7404cafd",
@@ -14,7 +14,7 @@
     "soilgrids_agg.csv": "a1e165461098d4caae549ae236d0845c075bcb1a22f0659aa3a0db25fe8077a9",
     "ensemble_sintesi.csv": "4d0a3c2ab288b6041bd8ba95632e5c29f2a07db62faffe05d5a571614346d57e",
     "ensemble_dettaglio.csv": "feae89af92a53a9dd77cd6e184ad1d8d0e627c65206bfc6531514f5d1898fcff",
-    "ensemble_meta.json": "1b027fe6d870d44258728f9c4f9c813b97d500f81fecabfec80aab523a5dfa26"
+    "ensemble_meta.json": "3c9f96ae7d6121a1f43590dd5a19eb65f6934b5f08d261e1f06bac846837ea44"
   },
   "paramsFiles": {
     "cmip6.yaml": "52bbef07664f206676719795f40f89e4b783a18889c75009e53a0efcaa08489d",

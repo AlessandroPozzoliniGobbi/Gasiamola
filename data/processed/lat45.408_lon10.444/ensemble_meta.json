@@ -1,10 +1,10 @@
 {
-  "calcolato_il": "2026-11-15T02:08:27+00:00",
+  "calcolato_il": "2026-11-15T08:19:36+00:00",
   "lat": 45.408,
   "lon": 10.444,
   "n_simulazioni": 11016,
   "n_scartate": 3888,
-  "tempo_s": 11.039,
+  "tempo_s": 21.525,
   "n_classi": 76,
   "scenari": [
     "solo_pioggia",
