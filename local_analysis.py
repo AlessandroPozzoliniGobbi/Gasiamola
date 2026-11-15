@@ -52,6 +52,11 @@ def engine_code_hash() -> str:
     root = Path(__file__).resolve().parent / "src" / "fieldwise"
     h = hashlib.sha256()
     for f in sorted(root.rglob("*.py")):
+        # The optional nine-year optimizer does not participate in historical
+        # ensemble preparation. Its UI/output changes must not invalidate the
+        # expensive NASA POWER / SoilGrids caches produced by the main engine.
+        if f.name == "beam_optimizer.py":
+            continue
         h.update(f.relative_to(root).as_posix().encode())
         h.update(f.read_bytes().replace(b"\r\n", b"\n"))
     return h.hexdigest()

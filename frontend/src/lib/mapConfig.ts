@@ -26,6 +26,8 @@ export const MAP_CONFIG = {
   satelliteTileJson: mapTilerKey
     ? `https://api.maptiler.com/tiles/satellite-v2/tiles.json?key=${encodeURIComponent(mapTilerKey)}`
     : null,
+  // MapLibre reads the actual tile URLs from MapTiler TileJSON instead of assuming
+  // a specific image extension or tile version.
   // Raggio definito solo in demoArea.json (condiviso con l'API).
   operationalRadiusKm: DEMO_AREA.radiusKm,
 };

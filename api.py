@@ -741,6 +741,87 @@ def get_economics_defaults():
     return _economics_assumptions()
 
 
+# An optional long-running workflow. The existing /analyze endpoint is unchanged.
+class BeamSearchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    point: tuple[FiniteCoordinate, FiniteCoordinate]
+    use_pilot_reference: bool = Field(default=False, strict=True)
+    objectives: tuple[Literal["resa", "guadagno", "costo"],
+                      Literal["resa", "guadagno", "costo"],
+                      Literal["resa", "guadagno", "costo"]] = ("resa", "guadagno", "costo")
+    irrigation_regime: Literal["solo_pioggia", "tetto_irriguo", "irrigazione_libera"] = "tetto_irriguo"
+    regime_normativo: Literal[
+        "lombardia_impegno_quinquennale", "lombardia_impegno_triennale_SRA01_2026",
+        "emilia_romagna_impegno_quinquennale", "emilia_romagna_adesione_singola_coltura",
+    ] = "lombardia_impegno_quinquennale"
+    climate_mode: Literal["storico", "cmip6"] = "storico"
+    ssp_code: Literal["ssp126", "ssp245", "ssp585"] = "ssp245"
+    horizon_years: Literal[5, 10, 15, 20] = 10
+    other_crop_costs_eur_ha: dict[str, CropCost] = Field(default_factory=dict)
+    beam_width: Literal[4, 8] = 8
+
+    @field_validator("point")
+    @classmethod
+    def check_point(cls, value):
+        return AnalyzeRequest.check_point(value)
+
+    @field_validator("other_crop_costs_eur_ha")
+    @classmethod
+    def check_costs(cls, value):
+        return AnalyzeRequest.check_crop_costs(value)
+
+
+@app.post("/api/v1/beam-search")
+def start_beam_search(request: BeamSearchRequest):
+    """Compute a coherent nine-year path in a background job, never in HTTP.
+
+    A field outside the pilot cell must have its own prepared SoilGrids profile,
+    unless the farmer explicitly requests *pilot reference* (clearly labelled).
+    """
+    from beam_jobs import start
+    if _outside_area(request.point):
+        raise HTTPException(status_code=422, detail={
+            "code": "OUTSIDE_DEMO_AREA", "message": "Field outside the supported demo area."})
+    if is_pilot_cell(request.point) or request.use_pilot_reference:
+        model_point = PILOT
+        source_mode = "pilot_reference" if not is_pilot_cell(request.point) else "pilot_point"
+    else:
+        model_point = normalized_point(request.point)
+        local_rec, reason, detail = local_record_status(model_point)
+        if local_rec is None:
+            raise HTTPException(status_code=409, detail={
+                "code": "LOCAL_DATA_NOT_READY" if reason == "missing" else "LOCAL_DATA_STALE",
+                "message": "Prepare this field's climate and soil data first using Run analysis. "
+                           "The nine-year optimizer will not substitute Cremona soil automatically. "
+                           + (str(detail)[:120] if detail else ""),
+            })
+        source_mode = "local_estimate"
+    settings = dict(
+        model_point=model_point, objectives=request.objectives,
+        irrigation_regime=request.irrigation_regime,
+        regime_normativo=request.regime_normativo, solo_conformi=True,
+        climate_mode=request.climate_mode, ssp_code=request.ssp_code,
+        horizon_years=request.horizon_years, beam_width=request.beam_width,
+        other_crop_costs_eur_ha=request.other_crop_costs_eur_ha,
+    )
+    result = start(settings)
+    if result["status"] == "busy":
+        raise HTTPException(status_code=429, detail={
+            "code": "OPTIMIZATION_BUSY", "message": result["stage"]})
+    return {**result, "sourceMode": source_mode, "modelPoint": model_point}
+
+
+@app.get("/api/v1/beam-search/{job_id}")
+def beam_search_status(job_id: str):
+    from beam_jobs import status
+    result = status(job_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail={
+            "code": "OPTIMIZATION_NOT_FOUND",
+            "message": "This job was not found. The server may have restarted; run it again."})
+    return result
+
+
 @app.get("/api/v1/limitations")
 def get_limitations(scenario: Literal["solo_pioggia", "tetto_irriguo", "irrigazione_libera"] = "tetto_irriguo"):
     return limitations(scenario, applies_to_pilot_data=True)

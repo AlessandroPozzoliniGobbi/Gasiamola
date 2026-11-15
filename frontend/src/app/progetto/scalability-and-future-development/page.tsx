@@ -2,62 +2,63 @@ import type { Metadata } from "next";
 import ProjectChapter from "../../../components/project/ProjectChapter";
 import styles from "../../../styles/project.module.css";
 
-export const metadata: Metadata = { title: "Scalability & Future Development | FIELDWISE" };
+export const metadata: Metadata = { title: "Future Development | FIELDWISE" };
 
-const growthAreas = [
-  {
-    number: "01",
-    title: "Beyond the pilot area",
-    description: "Expand geographic coverage when reliable local weather, soil and crop information is available. Adapt agronomic rules to each new region rather than applying the pilot assumptions everywhere.",
-  },
-  {
-    number: "02",
-    title: "More crops and farming systems",
-    description: "Extend rotation options, irrigation constraints and crop-specific parameters step by step, supported by quality-controlled data and local agronomic expertise.",
-  },
-  {
-    number: "03",
-    title: "Faster analyses at scale",
-    description: "Explore precomputed climate and soil data, reusable simulation results and queued processing for many fields, with monitoring of computation costs and data freshness.",
-  },
-  {
-    number: "04",
-    title: "Validation before wider adoption",
-    description: "Compare outputs with field observations, document uncertainty and invite farmers and specialists to test whether recommendations are practical and understandable.",
-  },
-] as const;
+const roadmap = [
+  { no: "01", title: "Climate stress tests", detail: "Explore CMIP6 delta-change scenarios for +5, +10, +15 and +20 years under SSP1-2.6, SSP2-4.5 and SSP5-8.5. Recalculate daily ET₀ after applying monthly temperature, rainfall and radiation changes to historical POWER weather." },
+  { no: "02", title: "Additional crops", detail: "Introduce sunflower, sorghum, sugar beet, potato and pulses with validated parameters. Rice requires a dedicated flooded-paddy module rather than a simple crop coefficient." },
+  { no: "03", title: "Geographical adaptation", detail: "Use location-appropriate soil profiles and investigate weather interpolation, elevation effects and terrain shading. Coarse climate grids will still limit field-scale precision." },
+  { no: "04", title: "Efficient computation", detail: "Reuse soil preparation, compatible simulations and precomputed terrain information. Benchmark execution time, memory consumption and concurrent requests before claiming production scalability." },
+  { no: "05", title: "Independent field validation", detail: "Compare additional soils, crops and locations with field and station measurements; publish parameter provenance, sensitivity and model limitations." },
+];
 
-export default function ScalabilityPage() {
+export default function FutureDevelopmentPage() {
   return (
     <ProjectChapter slug="scalability-and-future-development">
-      <section className={styles.roadmapSection} aria-labelledby="roadmap-heading">
-        <div className={styles.roadmapIntroduction}>
-          <span className={styles.roadmapEyebrow}>PROPOSED ROADMAP / NOT YET IMPLEMENTED</span>
-          <h2 id="roadmap-heading">From a regional prototype to a scalable platform</h2>
+      <div className={styles.projectEditorial}>
+        <section className={styles.projectTextSection}>
+          <span className={styles.projectKicker}>DEVELOPMENT ROADMAP</span>
+          <h2>Beyond historical scenarios and a single pilot region.</h2>
           <p>
-            FIELDWISE currently demonstrates an approach to comparing crop rotations through
-            environmental data and a simulation engine. Growing the project requires more than
-            faster software: each new location and crop needs appropriate data, calibration and validation.
+            Future work combines climate stress testing with better agricultural coverage. The aim
+            is not simply to increase the number of simulations: every new region and crop also
+            requires quality-controlled inputs and independent validation.
           </p>
-        </div>
-        <div className={styles.roadmapGrid}>
-          {growthAreas.map((area) => (
-            <article className={styles.roadmapCard} key={area.number}>
-              <span className={styles.roadmapNumber}>{area.number}</span>
-              <h3>{area.title}</h3>
-              <p>{area.description}</p>
-            </article>
-          ))}
-        </div>
-        <aside className={styles.roadmapCaution}>
-          <strong>What must come first?</strong>
+        </section>
+        <section className={styles.roadmapSection} aria-label="Technical roadmap">
+          <div className={styles.roadmapGrid}>
+            {roadmap.map((item) => (
+              <article className={styles.roadmapCard} key={item.no}>
+                <span className={styles.roadmapNumber}>{item.no}</span>
+                <h3>{item.title}</h3><p>{item.detail}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className={styles.projectTextSection}>
+          <span className={styles.projectKicker}>ILLUSTRATIVE CLIMATE SCENARIO FROM THE REPORT</span>
+          <h2>A short-term stress test, not a weather forecast.</h2>
+          <div className={styles.projectMetrics}>
+            <div><strong>881 → 890</strong><span>Modelled annual ET₀, mm; SSP1-2.6 at +5 years</span></div>
+            <div><strong>−0.8 pp</strong><span>Relative yield change in the tested diversified rotation</span></div>
+            <div><strong>−27.4 €</strong><span>Change in partial margin, per ha/year</span></div>
+          </div>
           <p>
-            Geographic availability, model validation, regional farming rules and transparent
-            uncertainty reporting remain prerequisites for trustworthy recommendations. These
-            are development directions, not claims of existing production-scale coverage.
+            In the report's Field 1 example, the simulated relative yield moves from 94.4% to 93.7%
+            and the margin from about 908 to 881 €/ha/year. The scenario holds soil parameters
+            and input prices constant so that the climate perturbation is isolated. It is an
+            exploratory comparison, not a validated prediction of a future harvest.
+          </p>
+        </section>
+        <aside className={styles.projectNotice}>
+          <strong>Necessary safeguards for expansion</strong>
+          <p>
+            New regions need suitable soil and agronomic configurations; interpolating weather does
+            not create finer observations. New crops require crop-specific parameters and independent
+            comparisons, and any practical rollout needs farmers' feedback and operational benchmarks.
           </p>
         </aside>
-      </section>
+      </div>
     </ProjectChapter>
   );
 }

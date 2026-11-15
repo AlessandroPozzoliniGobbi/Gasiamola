@@ -638,3 +638,5 @@
 .costActions .resetButton { min-height: 36px; padding: 7px 11px; }
 .regulatoryWarning { color: #90682c; background: #fffaee; border: 1px solid #e9dcbf; border-radius: 10px; padding: 10px 13px; font-size: 12px; line-height: 1.5; margin: 13px 0 0; }
 @media (max-width: 700px) { .costInputGrid { grid-template-columns: 1fr; } }
+
+.satelliteNotice { margin: 7px 0 11px; border: 1px solid #ecc999; background: #fff8eb; color: #87541e; border-radius: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.5; }

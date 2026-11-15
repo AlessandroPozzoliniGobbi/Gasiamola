@@ -253,6 +253,8 @@ def run_beam_search_9y(
     ssp_code: str = "ssp245",
     horizon_years: int = 10,
     beam_width: int = BEAM_WIDTH_DEFAULT,
+    model_params: dict | None = None,
+    other_crop_costs_eur_ha: dict[str, float] | None = None,
 ) -> dict:
     """Beam Search sequenziale su 3 trienni (9 anni) con maschera normativa a 0 ms.
 
@@ -295,7 +297,15 @@ def run_beam_search_9y(
     # ------------------------------------------------------------------
     # 0. Parametri e contesto
     # ------------------------------------------------------------------
-    p = _params.load_params()
+    # A prepared field may supply its own SoilGrids-derived parameter tree.
+    # Never silently use Cremona soil for a field outside the pilot cell.
+    import copy
+    p = copy.deepcopy(model_params) if model_params is not None else _params.load_params()
+    if other_crop_costs_eur_ha:
+        for crop, amount in other_crop_costs_eur_ha.items():
+            if crop not in {"mais", "soia", "frumento"} or not (0 <= float(amount) <= 100_000):
+                raise ValueError("Invalid crop cost override")
+            p["economia"]["altri_costi_eur_ha"][crop]["valore"] = float(amount)
 
     if regime_normativo is None:
         regime_normativo = ranking.REGIME_PREDEFINITO
@@ -378,7 +388,7 @@ def run_beam_search_9y(
         if conformi:
             return conformi, False
         # Fallback automatico a conforme_solo_in_deroga
-        if in_deroga:
+        if in_deroga and not solo_conformi:
             return in_deroga, True
         # Nessun candidato: ritorna lista vuota
         return [], False
@@ -398,6 +408,7 @@ def run_beam_search_9y(
         "ctx_k": ctx,
         "anno_k": anno_1,
         "trienni": [],
+        "heritage": [],
         "out_prev": None,
         "prev_crops": None,
     }]
@@ -650,32 +661,69 @@ def run_beam_search_9y(
         new_beam = []
         for cand in top:
             cand_out = cand["out"]
+            cand_metrics = cand["metrics"]
+            cand_rot = cand["rotation"]
+            parent = cand["beam_state"]
             sf = cand_out["stato_finale"]
             w_fin = sf["acqua"]
             n_fin = sf["azoto"]
-
-            # Contesto con stato suolo propagato
-            ctx_next = dataclasses.replace(
-                cand["ctx_k"],
-                w0=w_fin,
-                n0=n_fin,
-            )
-
-            # Anno del prossimo triennio
-            rot_cand = cand["rotation"]
-            anno_next = _anno_successivo(cand["ctx_k"], cand_out, rot_cand)
-
+            child_triennium = {
+                "numero": k_triennio + 1,
+                "obiettivo": str(obiettivo_k),
+                "rotazione_label": str(cand_rot.label),
+                "anno_partenza": int(cand["anno_k"]),
+                "anno_valutato": int(cand_out["anno_valutato"]),
+                "inizio": str(cand_out["inizio"]),
+                "fine": str(cand_out["fine"]),
+                "conformita": {key: str(val) if val is not None else None
+                               for key, val in cand_out.get("conformita", {}).items()},
+                "stato_conformita": cand["stato_conformita"],
+                "colture": [{
+                    "coltura": str(c["coltura"]), "semina": str(c["semina"]),
+                    "raccolta": str(c["raccolta"]), "resa_t_ha": float(c["resa"]),
+                    "resa_relativa": float(c["resa_relativa"]),
+                    "irrigazione_mm": float(c["irrigazione"]),
+                    "concime_kg_n_ha": float(c["concime"]),
+                } for c in cand_out["colture"]],
+                "resa_t_ha": float(cand_metrics["resa_t_ha"]),
+                "resa_rel_pct": float(cand_metrics["resa_rel_pct"]),
+                "costo_totale_eur_ha": float(cand_metrics["costo_totale_eur_ha"]),
+                "guadagno_eur_ha": float(cand_metrics["guadagno_eur_ha"]),
+                "best_sim_resa_t_ha": benchmarks.get("best_sim_resa_t_ha"),
+                "best_sim_resa_rel_pct": benchmarks.get("best_sim_resa_rel_pct"),
+                "best_sim_costo_eur_ha": benchmarks.get("best_sim_costo_eur_ha"),
+                "best_sim_guadagno_eur_ha": benchmarks.get("best_sim_guadagno_eur_ha"),
+                "fallback_siccita": bool(cand.get("fallback_siccita", False)),
+            }
+            heritage = {
+                "da_triennio": k_triennio + 1,
+                "a_triennio": k_triennio + 2,
+                "acqua_totale_mm": float(w_fin.w1 + w_fin.w2),
+                "de_superficiale_mm": float(w_fin.de),
+                "n_min_kg_n_ha": float(n_fin.n_min),
+                "n_res_kg_n_ha": float(n_fin.n_res),
+                "humus_t_ha": float(n_fin.h),
+                "credito_precessione_kg_n_ha": float(n_fin.cred),
+            }
+            ctx_next = dataclasses.replace(cand["ctx_k"], w0=w_fin, n0=n_fin)
+            anno_next = _anno_successivo(cand["ctx_k"], cand_out, cand_rot)
             new_beam.append({
                 "ctx_k": ctx_next,
                 "anno_k": anno_next,
-                "trienni": beam_state["trienni"] + [triennio_dict],
+                "trienni": parent["trienni"] + [child_triennium],
+                "heritage": parent["heritage"] + ([heritage] if k_triennio < 2 else []),
                 "out_prev": cand_out,
-                "prev_crops": rot_cand.crops,
+                "prev_crops": cand_rot.crops,
             })
 
         beam = new_beam
 
     # ------------------------------------------------------------------
+    # The displayed 3 cycles MUST belong to the same surviving path. Each
+    # branch already propagates its own water and nitrogen state to its child.
+    trienni_risultati = beam[0]["trienni"]
+    eredita_suolo_list = beam[0]["heritage"]
+
     # 7. Performance
     # ------------------------------------------------------------------
     t_end = time.perf_counter()

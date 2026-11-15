@@ -585,3 +585,8 @@
 @media (max-width: 768px) {
   .floatingDocked { height: min(265px, 34dvh); max-height: 34dvh; resize: none; }
 }
+
+/* Explicit MapTiler diagnostics rather than a silent, apparently broken switch. */
+.satelliteNotice { position: absolute; right: 17px; bottom: 110px; z-index: 25; max-width: min(340px, calc(100% - 34px)); padding: 11px 13px; background: #fff8ed; color: #88531d; border: 1px solid #e8c698; border-radius: 12px; font-size: 12px; line-height: 1.45; box-shadow: 0 4px 16px rgba(52,46,29,.1); }
+.basemapPreviewSatellite { background: linear-gradient(145deg, #647d57 5%, #8e9b60 26%, #a98d60 34%, #526a4e 50%, #738a63 69%, #9c9c72 84%, #435c46 100%); }
+.basemapPreviewStreet { background: linear-gradient(155deg, #e9eddd 0 27%, #f7f7ef 27% 35%, #b9d0bb 35% 55%, #f6f5e6 55% 64%, #d4e0cd 64% 100%); }
