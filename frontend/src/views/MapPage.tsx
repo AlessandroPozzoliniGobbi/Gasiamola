@@ -13,6 +13,7 @@ import FieldStoragePanel from "../components/map/FieldStoragePanel";
 import FieldLabels from "../components/map/FieldLabels";
 import MapStyleSwitcher from "../components/map/MapStyleSwitcher";
 import { MAP_CONFIG } from "../lib/mapConfig";
+import { checkSatelliteAccess } from "../lib/satelliteDiagnostics";
 import { readUiPreferences } from "../lib/uiPreferences";
 import { getOperationalBounds, isPolygonAllowed } from "../lib/allowedArea";
 import { isSimpleFieldPolygon } from "../lib/polygonValidation";
@@ -53,13 +54,30 @@ export default function MapPage() {
   const [fields, setFields] = useState<FieldItem[]>([]);
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [basemap, setBasemap] = useState<Basemap>("cartographic");
-  // Keep the switcher label aligned with the user's preferred initial basemap.
+  const [satelliteChecked, setSatelliteChecked] = useState(false);
+  const [satelliteIssue, setSatelliteIssue] = useState<string | null>(null);
   useEffect(() => {
-    const next = readUiPreferences().defaultBasemap;
-    if (next === "satellite" && MAP_CONFIG.satelliteTileJson) {
-      queueMicrotask(() => setBasemap("satellite"));
-    }
+    const controller = new AbortController();
+    void checkSatelliteAccess(controller.signal).then((issue) => {
+      if (controller.signal.aborted) return;
+      setSatelliteChecked(true);
+      setSatelliteIssue(issue);
+      if (issue) {
+        const map = mapRef.current;
+        if (map?.getLayer("satellite-layer")) map.setLayoutProperty("satellite-layer", "visibility", "none");
+        setBasemap("cartographic");
+      }
+    });
+    return () => controller.abort();
   }, []);
+  // Activate the user's default only after MapTiler access and the map are ready.
+  useEffect(() => {
+    if (!ready || !satelliteChecked || satelliteIssue || !mapInstance) return;
+    if (readUiPreferences().defaultBasemap !== "satellite") return;
+    if (!mapInstance.getLayer("satellite-layer")) return;
+    mapInstance.setLayoutProperty("satellite-layer", "visibility", "visible");
+    queueMicrotask(() => setBasemap("satellite"));
+  }, [ready, satelliteChecked, satelliteIssue, mapInstance]);
   const [hydrated, setHydrated] = useState(false);
   const [storageStatus, setStorageStatus] = useState<StorageStatus>("loading");
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -711,7 +729,7 @@ export default function MapPage() {
 
   const handleToggleBasemap = () => {
     const map = mapRef.current;
-    if (!map?.getLayer("satellite-layer")) return;
+    if (!map?.getLayer("satellite-layer") || !satelliteChecked || satelliteIssue) return;
     const next: Basemap = basemap === "satellite" ? "cartographic" : "satellite";
     map.setLayoutProperty("satellite-layer", "visibility", next === "satellite" ? "visible" : "none");
     setBasemap(next);
@@ -835,10 +853,12 @@ export default function MapPage() {
           onDrawingFinished={handleDrawingFinished}
         />
         <FieldLabels map={mapInstance} fields={fields} selectedFieldId={selectedFieldId} />
+        {satelliteIssue && <div className={styles.satelliteNotice} role="status">{satelliteIssue}</div>}
         <MapStyleSwitcher
           basemap={basemap}
           onToggle={handleToggleBasemap}
-          disabled={!ready || !MAP_CONFIG.satelliteTileJson}
+          disabled={!ready || !MAP_CONFIG.satelliteTileJson || !satelliteChecked || Boolean(satelliteIssue)}
+          unavailableReason={satelliteIssue}
         />
 
       </section>

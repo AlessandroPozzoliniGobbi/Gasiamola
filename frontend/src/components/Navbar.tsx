@@ -10,6 +10,7 @@ const navigation = [
   { href: "/", label: "Home" },
   { href: "/mappa", label: "Map" },
   { href: "/progetto", label: "Project" },
+  { href: "/presentation", label: "Presentation" },
   { href: "/reports", label: "Reports" },
   { href: "/contatti", label: "Team" },
 ];

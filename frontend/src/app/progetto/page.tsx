@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PROJECT_TOTAL_CHAPTERS } from "../../lib/projectSections";
 import styles from "../../styles/project.module.css";
 
 export const metadata: Metadata = {
   title: "Project Overview | FIELDWISE",
-  description: "FIELDWISE is a crop-rotation decision-support project created for the NASA Space Apps Challenge 2026.",
+  description: "Explore FIELDWISE: crop-rotation simulation, independent validation and agricultural decision support developed for NASA Space Apps Challenge 2026.",
 };
 
 export default function ProjectPage() {
@@ -12,51 +13,52 @@ export default function ProjectPage() {
     <article className={`${styles.contentCard} ${styles.overviewCard}`}>
       <div className={styles.overviewBody}>
         <div className={styles.overviewIntro}>
-          <span className={styles.sectionLabel}>CHAPTER 01 / 09 · PROJECT OVERVIEW</span>
+          <span className={styles.sectionLabel}>CHAPTER 01 / {String(PROJECT_TOTAL_CHAPTERS).padStart(2, "0")} · PROJECT OVERVIEW</span>
           <h1 className={styles.pageTitle}>Know your land. Grow your future.</h1>
           <p className={styles.lead}>
-            Agriculture depends on decisions made under uncertainty. Water scarcity, soil degradation
-            and changing weather patterns make it increasingly difficult to choose what to grow
-            and how to manage limited resources.
+            What should a farmer grow next, when water is limited, weather is uncertain and
+            today's choices affect the next harvest? FIELDWISE makes crop-rotation alternatives
+            easier to compare.
           </p>
           <p className={styles.overviewSecondary}>
-            Created for the <strong>NASA Space Apps Challenge 2026</strong>, FIELDWISE responds to
-            <em> Field Shift: Adapting Farms with NASA Data</em>. It brings together Earth observation,
-            soil information and crop-rotation simulations to help farmers compare alternatives
-            rather than rely on a single prediction.
+            Created at the <strong>NASA Space Apps Challenge 2026</strong>, at Politecnico di Milano,
+            for <em> Field Shift: Adapting Farms with NASA Data</em>. The prototype combines daily
+            NASA POWER weather, soil data and a deterministic agronomic model to examine
+            production, resource use, soil indicators and an economic margin.
           </p>
         </div>
-
-        <div className={styles.overviewHighlights} aria-label="The project at a glance">
+        <div className={styles.overviewHighlights} aria-label="Project highlights">
           <div className={styles.overviewHighlight}>
-            <span>THE CHALLENGE</span>
-            <p>Make scientific environmental data useful for real farming decisions.</p>
+            <span>THE PILOT</span>
+            <p><strong>Cremona, Italy.</strong> Maize, soybean and soft wheat, with optional rye cover crops.</p>
           </div>
           <div className={styles.overviewHighlight}>
-            <span>THE PROTOTYPE</span>
-            <p>Explore maize, soybean and soft-wheat rotations around a pilot area in Cremona.</p>
+            <span>THE COMPARISON</span>
+            <p><strong>216</strong> initial crop/cover combinations, reduced to <strong>45</strong> distinct classes per irrigation scenario.</p>
           </div>
           <div className={styles.overviewHighlight}>
-            <span>THE PRINCIPLE</span>
-            <p>Show resource use, soil effects, economic trade-offs and uncertainty together.</p>
+            <span>THE EVIDENCE</span>
+            <p>Selected responses agree with independent satellite and yield observations; rankings remain uncertain.</p>
           </div>
         </div>
       </div>
-
       <section className={styles.overviewMission} aria-label="Our mission">
-        <span className={styles.projectKicker}>WHY IT MATTERS</span>
+        <span className={styles.projectKicker}>DECISION SUPPORT, NOT AUTOMATIC PRESCRIPTION</span>
         <p>
-          History shows how vulnerable agriculture can become when choices are constrained and
-          risks are poorly understood. FIELDWISE does not replace the farmer or the agronomist:
-          it makes selected evidence easier to compare, while leaving practical decisions to
-          people who know the land.
+          FIELDWISE compares modelled alternatives under clearly stated assumptions. It does not
+          forecast individual harvests or replace farmers and agronomists. The report documents
+          the pilot results, unresolved limitations and development roadmap.
         </p>
       </section>
-
+      <div className={styles.projectMetrics} aria-label="Pilot study at a glance">
+        <div><strong>2000–2022</strong><span>Reference weather period</span></div>
+        <div><strong>17</strong><span>Successful historical starting years</span></div>
+        <div><strong>3</strong><span>Irrigation management scenarios</span></div>
+      </div>
       <footer className={styles.overviewFooter}>
         <div className={styles.overviewInfo}>
-          <span className={styles.overviewNumber}>09</span>
-          <span>Project chapters: methodology, data, results, stakeholders, limitations and more.</span>
+          <span className={styles.overviewNumber}>{String(PROJECT_TOTAL_CHAPTERS).padStart(2, "0")}</span>
+          <span>Short chapters distilled from the full 25-page technical report, available to download above.</span>
         </div>
         <Link className={styles.primaryLink} href="/progetto/analytical-framework">
           Explore the framework <span aria-hidden="true">→</span>

@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { FieldItem } from "../../types/field";
 import { getFieldBounds, getLabelPosition } from "../../lib/fieldGeometry";
 import { MAP_CONFIG } from "../../lib/mapConfig";
+import { checkSatelliteAccess } from "../../lib/satelliteDiagnostics";
 import styles from "../../styles/analysis.module.css";
 
 setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString());
@@ -18,6 +19,17 @@ export default function AnalysisFieldMap({ field }: { field: FieldItem }) {
   const [error, setError] = useState<string | null>(null);
   const [basemap, setBasemap] = useState<Basemap>("cartographic");
   const [satelliteReady, setSatelliteReady] = useState(false);
+  const [satelliteIssue, setSatelliteIssue] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void checkSatelliteAccess(controller.signal).then((issue) => {
+      if (controller.signal.aborted) return;
+      setSatelliteIssue(issue);
+      setSatelliteReady(!issue && Boolean(MAP_CONFIG.satelliteTileJson));
+    });
+    return () => controller.abort();
+  }, []);
   const [mapLoaded, setMapLoaded] = useState(false);
 
   useEffect(() => {
@@ -53,6 +65,9 @@ export default function AnalysisFieldMap({ field }: { field: FieldItem }) {
           type: "raster",
           url: MAP_CONFIG.satelliteTileJson,
           tileSize: 512,
+          minzoom: 0,
+          maxzoom: 20,
+          attribution: '© <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">MapTiler</a>',
         });
         map.addLayer({
           id: "analysis-satellite",
@@ -60,7 +75,6 @@ export default function AnalysisFieldMap({ field }: { field: FieldItem }) {
           source: "analysis-satellite",
           layout: { visibility: "none" }, // Street map is always the initial view.
         });
-        setSatelliteReady(true);
       }
       map.addSource("selected-field", { type: "geojson", data: polygon });
       map.addLayer({
@@ -141,11 +155,12 @@ export default function AnalysisFieldMap({ field }: { field: FieldItem }) {
           <button type="button" aria-pressed={basemap === "satellite"}
             className={`${styles.mapViewButton} ${basemap === "satellite" ? styles.mapViewActive : ""}`}
             onClick={() => chooseBasemap("satellite")} disabled={!mapLoaded || !satelliteReady}
-            title={!MAP_CONFIG.satelliteTileJson ? "Satellite imagery requires the MapTiler key" : undefined}>
+            title={satelliteIssue ?? undefined}>
             Satellite
           </button>
         </div>
       </div>
+      {satelliteIssue && <p className={styles.satelliteNotice} role="status">{satelliteIssue}</p>}
       <div className={styles.mapShell}>
         <div ref={elementRef} className={styles.mapCanvas}
           aria-label={`Read-only map showing the boundaries of ${field.name}`} role="region" />

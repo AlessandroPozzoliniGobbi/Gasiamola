@@ -6,7 +6,6 @@ import { TerraDraw, TerraDrawPolygonMode, TerraDrawSelectMode } from "terra-draw
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_CONFIG } from "../../lib/mapConfig";
-import { readUiPreferences } from "../../lib/uiPreferences";
 import {
   getAreaMaskGeoJSON, getAreaOutlineGeoJSON, getOperationalBounds,
   isPointAllowed, isPolygonAllowed,
@@ -63,12 +62,15 @@ export default function MapCanvas({
           type: "raster",
           url: MAP_CONFIG.satelliteTileJson,
           tileSize: 512,
+          minzoom: 0,
+          maxzoom: 20,
+          attribution: '© <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">MapTiler</a>',
         });
         map.addLayer({
           id: "satellite-layer",
           type: "raster",
           source: "satellite-source",
-          layout: { visibility: readUiPreferences().defaultBasemap === "satellite" ? "visible" : "none" },
+          layout: { visibility: "none" },
         });
       }
 

@@ -5,11 +5,12 @@ import styles from "../../../styles/project.module.css";
 export const metadata: Metadata = { title: "Analytical Framework | FIELDWISE" };
 
 const criteria = [
-  { heading: "Production", metric: "Relative crop yield", detail: "Compare performance across different crop sequences." },
-  { heading: "Resilience", metric: "Worst historical outcome", detail: "Understand how a rotation behaves in difficult past seasons." },
-  { heading: "Resources", metric: "Water & nitrogen demand", detail: "Examine the irrigation and fertilizer requirements of each option." },
-  { heading: "Soil", metric: "Humus & nitrogen leaching", detail: "Consider long-term soil indicators alongside production." },
-  { heading: "Economics", metric: "Modelled partial margin", detail: "Include crop revenue and selected production costs, not total farm profit." },
+  { heading: "Yield", metric: "Median historical relative yield", detail: "Higher yield relative to configured crop potential is preferred." },
+  { heading: "Risk", metric: "Worst historical relative yield", detail: "A downside indicator based on the observed minimum, not a loss probability." },
+  { heading: "Water", metric: "Net irrigation / year", detail: "Lower water demand is preferred, subject to production trade-offs." },
+  { heading: "Fertilizer", metric: "Fertilizer nitrogen / year", detail: "Reduce modelled nitrogen application requirements where feasible." },
+  { heading: "Soil", metric: "Humus change & nitrogen leaching", detail: "More humus and less leaching are both considered." },
+  { heading: "Profit", metric: "Annualised partial margin", detail: "Compare selected variable costs and revenue; not total farm profit." },
 ] as const;
 
 export default function FrameworkPage() {
@@ -40,12 +41,13 @@ export default function FrameworkPage() {
 
         <section className={styles.projectTextSection}>
           <span className={styles.projectKicker}>HOW OPTIONS ARE COMPARED</span>
-          <h2>Several priorities. One transparent comparison.</h2>
+          <h2>Six priorities. One transparent comparison.</h2>
           <p>
             The current rotation serves as a <strong>simulated baseline</strong>. Alternatives are tested using
             common historical weather and management assumptions, allowing like-for-like comparisons.
-            The user can adjust the importance of each criterion; different priorities can legitimately
-            lead to different recommendations.
+            The user can adjust the importance of each of six priorities; different weights can
+            legitimately lead to different recommendations. The underlying seven indicators
+            are normalised within the comparison set, not on an absolute scale.
           </p>
           <div className={styles.projectCriteriaGrid}>
             {criteria.map((item, index) => (

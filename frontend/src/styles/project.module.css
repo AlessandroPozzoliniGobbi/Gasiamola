@@ -622,3 +622,77 @@
   .reportDownloadButton { transition: none; }
   .reportDownloadButton:hover { transform: none; }
 }
+
+/* 2026 final report: concise, report-sourced chapter modules. */
+.projectMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.projectMetrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 17px 20px;
+  border: 1px solid #c9dec9;
+  border-radius: 15px;
+  background: #edf5eb;
+}
+.projectMetrics strong {
+  font-size: clamp(24px, 2.7vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -.04em;
+  color: #1c6842;
+  overflow-wrap: anywhere;
+}
+.projectMetrics span { font-size: 12px; color: #45644d; line-height: 1.45; }
+.projectSourceGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.projectSourceCard {
+  min-width: 0;
+  padding: 21px;
+  border: 1px solid #d0e1cf;
+  border-radius: 17px;
+  background: #f7fbf4;
+}
+.projectSourceCard > span {
+  color: #61866b;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1.3;
+  letter-spacing: .12em;
+}
+.projectSourceCard h3 { margin: 10px 0 8px; color: #1c5339; font-size: 19px; line-height: 1.2; }
+.projectSourceCard > strong { display: block; color: #2c7148; font-size: 13px; }
+.projectSourceCard p { margin: 11px 0 0; color: #45624e; font-size: 13px; line-height: 1.65; }
+.projectBigNumber { margin-top: 9px; color: #1b6a42; font-size: clamp(25px, 3vw, 37px); font-weight: 850; letter-spacing: -.05em; }
+.projectCompactGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.projectCompactItem {
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid #d1dfd0;
+  border-radius: 15px;
+  background: rgba(251, 253, 248, .88);
+}
+.projectCompactItem h3 { margin: 3px 0 6px; color: #20563a; font-size: 17px; line-height: 1.35; }
+.projectCompactItem p { margin: 0; color: #44614d; font-size: 13px; line-height: 1.65; }
+.projectCompactItem > .projectKicker { margin-bottom: 10px; }
+.projectFigureGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; margin-top: 17px; }
+.projectFigure { margin: 0; min-width: 0; overflow: hidden; border: 1px solid #cddfcf; border-radius: 16px; background: #fff; }
+.projectFigureImage { padding: 8px; background: #fff; }
+.projectFigureImage img { display: block; width: 100%; height: auto; object-fit: contain; }
+.projectFigure figcaption { display: flex; flex-direction: column; gap: 4px; padding: 11px 16px 16px; }
+.projectFigure figcaption strong { color: #205338; font-size: 14px; }
+.projectFigure figcaption span { color: #546d5a; font-size: 12px; line-height: 1.5; }
+.projectCtaRow { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; }
+.projectTextLink { color: #276044; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 930px) {
+  .projectSourceGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .projectMetrics, .projectSourceGrid, .projectCompactGrid, .projectFigureGrid { grid-template-columns: 1fr; }
+  .projectMetrics > div { padding: 15px 17px; }
+  .projectSourceCard, .projectCompactItem { padding: 17px; }
+  .projectFigure figcaption { padding: 10px 12px 13px; }
+}

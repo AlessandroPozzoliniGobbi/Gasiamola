@@ -9,13 +9,15 @@ import styles from "../../styles/reports.module.css";
 import { downloadPdfReport } from "../../lib/reportPrint";
 import { downloadExcelReport } from "../../lib/reportExcel";
 import HistoricalWindowPlot from "./HistoricalWindowPlot";
+import BeamOptimizerPanel from "../analysis/BeamOptimizerPanel";
 import { translateFutureNotice } from "../../lib/futureNotices";
 
-type Tab = "overview" | "compare" | "insights" | "economics" | "future" | "details";
+type Tab = "overview" | "compare" | "insights" | "economics" | "future" | "beam" | "details";
 const TABS: { id: Tab; title: string }[] = [
   { id: "overview", title: "Overview" }, { id: "compare", title: "Compare" },
   { id: "insights", title: "Insights" }, { id: "economics", title: "Economics" },
   { id: "future", title: "Future Projections" },
+  { id: "beam", title: "9-Year Optimizer" },
   { id: "details", title: "Details" },
 ];
 // Keep Overview focused: other measures remain available in Compare and Insights.
@@ -218,12 +220,15 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
   // Legacy reports predate the optional advanced-analysis input; preserve their Economics tab.
   const showEconomics = !("advancedEconomics" in report.inputs) || report.inputs.advancedEconomics === true;
   const showFuture = report.inputs.includeFuture === true || Boolean(report.results.future);
+  const beamPoint = report.field.representativePoint ?? report.engine.requestedPoint ?? null;
+  const showBeam = !demo && Boolean(beamPoint) && report.engine.sourceMode !== "pilot_reference";
   const visibleTabs = TABS.filter((item) => {
     if (item.id === "economics") return showEconomics;
     if (item.id === "future") return showFuture;
+    if (item.id === "beam") return showBeam;
     return true;
   });
-  const tab: Tab = (selectedTab === "economics" && !showEconomics) || (selectedTab === "future" && !showFuture)
+  const tab: Tab = (selectedTab === "economics" && !showEconomics) || (selectedTab === "future" && !showFuture) || (selectedTab === "beam" && !showBeam)
     ? "overview" : selectedTab;
   const futureNum = showEconomics ? "05" : "04";
   const detailsNum = (3 + (showEconomics ? 1 : 0) + (showFuture ? 1 : 0) + 1).toString().padStart(2, "0");
@@ -267,7 +272,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
   });
   const tabTheme = {
     overview: styles.themeOverview, compare: styles.themeCompare, insights: styles.themeInsights,
-    economics: styles.themeEconomics, future: styles.themeFuture, details: styles.themeDetails,
+    economics: styles.themeEconomics, future: styles.themeFuture, beam: styles.themeFuture, details: styles.themeDetails,
   }[tab];
   const date = new Date(report.createdAt);
   const dateLabel = Number.isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
@@ -320,6 +325,22 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             onClick={() => changeTab(nextTab.id)} aria-label={`Next section: ${nextTab.title}`}
             title={`Next: ${nextTab.title}`}><span aria-hidden="true">→</span></button>}
         </div>
+
+        {tab === "beam" && beamPoint && (
+          <div className={styles.content}>
+            <div className={styles.sectionIntro}>
+              <span className={styles.smallCaps}>OPTIONAL FOLLOW-UP ANALYSIS</span>
+              <h2>Explore a longer crop-rotation strategy</h2>
+              <p>Start from the field and settings saved in this report. This separate experimental optimization does not change the completed analysis.</p>
+            </div>
+            <BeamOptimizerPanel
+              key={report.id}
+              fieldName={report.field.name}
+              point={beamPoint}
+              draft={report.inputs}
+            />
+          </div>
+        )}
 
         {tab === "overview" && <div className={`${styles.content} ${styles.overviewContent}`}>
           <section className={styles.recommendation} aria-labelledby="report-recommendation">

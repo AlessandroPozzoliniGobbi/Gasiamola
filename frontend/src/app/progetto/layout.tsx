@@ -25,9 +25,9 @@ export default function ProjectLayout({ children }: { children: ReactNode }) {
               type="application/pdf"
               aria-label="Download the FIELDWISE technical report PDF"
             >
-              <span aria-hidden="true">↓</span> Download report <span className={styles.reportDownloadFormat}>PDF</span>
+              <span aria-hidden="true">↓</span> Download full report <span className={styles.reportDownloadFormat}>PDF</span>
             </a>
-            <span className={styles.reportDownloadNote}>Technical report · Draft · 16 pages</span>
+            <span className={styles.reportDownloadNote}>Technical report · Final · 25 pages</span>
           </div>
         </header>
 

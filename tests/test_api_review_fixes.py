@@ -32,11 +32,14 @@ def analyze(**changes):
 
 
 # --- n. 1 / 7: recommendation, roles, position --------------------------------------------
-def test_current_already_first_is_not_replaced_by_a_lower_alternative():
+def test_noncompliant_current_is_never_recommended_even_if_it_scores_first():
     out = analyze(rotation="mais > mais > mais", priorities={**ZERO, "profitto": 10})
     rec = out["results"]["recommendation"]
-    assert rec["status"] == "current_is_best"
-    assert rec["currentPosition"] == 1 and rec["recommendedAlternativeIndex"] is None
+    # Previous test expected a high-scoring but illegal current rotation to be
+    # recommended. The current rules are strict: compliance wins over score.
+    assert rec["status"] == "current_not_compliant"
+    assert rec["currentPosition"] == 1 and rec["recommendedAlternativeIndex"] == 0
+    assert "compliant" in rec["message"]
     current = out["results"]["current"]
     assert current["position"] == 1 and current["role"] == "attuale"
     for alt in out["results"]["alternatives"]:

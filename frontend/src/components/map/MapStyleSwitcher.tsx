@@ -7,12 +7,14 @@ type MapStyleSwitcherProps = {
   basemap: Basemap;
   onToggle: () => void;
   disabled?: boolean;
+  unavailableReason?: string | null;
 };
 
 export default function MapStyleSwitcher({
   basemap,
   onToggle,
   disabled = false,
+  unavailableReason,
 }: MapStyleSwitcherProps) {
   // Modalità a cui passeremo
   const nextMode =
@@ -25,22 +27,8 @@ export default function MapStyleSwitcher({
       ? "Satellite"
       : "Street map";
 
-  // Miniatura satellitare: MapTiler
-  const mapTilerKey =
-    process.env.NEXT_PUBLIC_MAPTILER_KEY ?? "";
-
-  const satellitePreview =
-    `https://api.maptiler.com/tiles/satellite-v2/12/2164/1470.jpg?key=${encodeURIComponent(mapTilerKey)}`;
-
-  // Miniatura cartografica: OpenStreetMap
-  const streetPreview =
-    "https://tile.openstreetmap.org/12/2164/1470.png";
-
-  // Visualizza l'anteprima della modalità successiva
-  const previewImage =
-    nextMode === "satellite"
-      ? satellitePreview
-      : streetPreview;
+  // A decorative preview avoids requesting MapTiler tiles before access is verified.
+  const previewClass = nextMode === "satellite" ? styles.basemapPreviewSatellite : styles.basemapPreviewStreet;
 
   return (
     <button
@@ -48,14 +36,11 @@ export default function MapStyleSwitcher({
       className={styles.basemapToggle}
       onClick={onToggle}
       disabled={disabled}
-      title={`Switch to ${label.toLowerCase()}`}
+      title={unavailableReason ?? `Switch to ${label.toLowerCase()}`}
       aria-label={`Switch to ${label.toLowerCase()}`}
     >
       <span
-        className={styles.basemapToggleImage}
-        style={{
-          backgroundImage: `url("${previewImage}")`,
-        }}
+        className={`${styles.basemapToggleImage} ${previewClass}`}
         aria-hidden="true"
       />
 

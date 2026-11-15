@@ -103,7 +103,7 @@
   outline-offset: 3px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
   .navbarInner {
     flex-direction: column;
     gap: 9px;
@@ -114,8 +114,8 @@
   .brandIcon { width: 39px; height: 39px; border-radius: 12px; }
   .brandIcon img { width: 34px; height: 34px; }
   .navArea { justify-content: center; width: 100%; }
-  .links { gap: 2px; width: min(100%, 420px); justify-content: space-around; border-radius: 14px; padding: 4px; }
-  .navLink { height: 37px; min-width: 0; flex: 1 1 auto; padding: 0 9px; font-size: 12px; }
+  .links { gap: 3px; width: min(100%, 640px); justify-content: center; flex-wrap: wrap; border-radius: 14px; padding: 4px; }
+  .navLink { height: 37px; min-width: 0; flex: 1 1 82px; padding: 0 9px; font-size: 12px; white-space: nowrap; }
   .settingsLink { height: 37px; flex: 0 0 38px; width: 38px; }
   .settingsLink svg { width: 20px; height: 20px; }
   .navDivider { height: 22px; margin: 0 2px; }
@@ -125,9 +125,9 @@
   .brandIcon, .navLink, .settingsLink { transition: none; }
 }
 
-/* Four main links plus Settings: keep mobile navigation compact. */
+/* Six main links plus Settings: wrap instead of hiding menu items. */
 @media (max-width: 400px) {
-  .navLink { padding: 0 5px; font-size: 11px; }
+  .navLink { flex-basis: 78px; padding: 0 5px; font-size: 11px; }
   .settingsLink { flex-basis: 34px; width: 34px; }
   .links { gap: 0; }
 }

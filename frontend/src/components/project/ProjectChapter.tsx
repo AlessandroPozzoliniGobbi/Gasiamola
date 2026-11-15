@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { projectSectionBySlug, projectSections } from "../../lib/projectSections";
+import { projectSectionBySlug, projectSections, PROJECT_TOTAL_CHAPTERS } from "../../lib/projectSections";
 import styles from "../../styles/project.module.css";
 
 type Props = { slug: string; children?: ReactNode };
 
-/** Shared frame. Each chapter has its own page.tsx, ready to receive custom content. */
+/** Shared project chapter frame, fed by the report-based content pages. */
 export default function ProjectChapter({ slug, children }: Props) {
   const section = projectSectionBySlug(slug);
   if (!section) return null;
@@ -17,26 +17,12 @@ export default function ProjectChapter({ slug, children }: Props) {
   return (
     <article className={styles.contentCard}>
       <div className={styles.contentHeading}>
-        <span className={styles.sectionLabel}>CHAPTER {section.number} / {String(projectSections.length + 1).padStart(2, "0")}</span>
+        <span className={styles.sectionLabel}>CHAPTER {section.number} / {String(PROJECT_TOTAL_CHAPTERS).padStart(2, "0")}</span>
         <h1 className={styles.pageTitle}>{section.title}</h1>
         <p className={styles.lead}>{section.description}</p>
       </div>
 
-      {children ?? (
-        <section className={styles.draftArea} aria-labelledby="chapter-outline-heading">
-          <div className={styles.draftTopline}>
-            <span className={styles.draftDot} aria-hidden="true" />
-            <span>SECTION IN PREPARATION</span>
-          </div>
-          <h2 className={styles.draftTitle} id="chapter-outline-heading">Planned content</h2>
-          <p className={styles.draftText}>
-            This chapter is ready for the project team&apos;s research, explanations, illustrations, and references.
-          </p>
-          <ul className={styles.topicList}>
-            {section.topics.map((topic) => <li key={topic}>{topic}</li>)}
-          </ul>
-        </section>
-      )}
+      {children}
 
       <footer className={styles.chapterFooter}>
         {previous ? (
