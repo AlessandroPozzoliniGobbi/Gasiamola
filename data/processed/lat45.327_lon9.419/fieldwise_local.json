@@ -1,0 +1,39 @@
+{
+  "adapterVersion": 2,
+  "engineVersion": "0.2.0",
+  "engineCodeHash": "bf840350b98996d3a4865d6597a7000f7979e7aef0663eb5e154acad01bb9d84",
+  "point": [
+    9.419,
+    45.327
+  ],
+  "calculatedAt": "2026-11-15T11:25:20.607598+00:00",
+  "parametersHash": "8d7930d6d15771308d7d88c94dc1d70ce877794aefbf673952b278365eb6fe6f",
+  "files": {
+    "power_daily.csv": "06f68f43c5885fd4e181db65619009a44df444f8c0662c9c8d70a5068f402986",
+    "power_site.json": "13b520fbcc052a0835cbac182bd98bb66cf13043c5d0ffbe142df9556a0c7413",
+    "soilgrids_agg.csv": "8d7e5aa796d3f9118f6db023c134e0276dbc741bd8f281fc971fd6ca2ed8c01b",
+    "ensemble_sintesi.csv": "9186d990b8395e4ae7b8fa4a56ae493a4541ff9a9def533ce5915523400b44f7",
+    "ensemble_dettaglio.csv": "e46a5568d0b53d590c08fe8538190f02c4d759469b9f27a22eef439e70786d9a",
+    "ensemble_meta.json": "f3d0245eda0628d5168772e5a6e71053c5dc689a337de5219ab636d821c6fc5d"
+  },
+  "paramsFiles": {
+    "cmip6.yaml": "52bbef07664f206676719795f40f89e4b783a18889c75009e53a0efcaa08489d",
+    "cover_crop.yaml": "bbfd66802a3749594c4cff85d6e2bf96a48768190a7df2246e7fccdcb82601e2",
+    "crops.yaml": "dff8ae15dfc950b75609b607a6cebf2721ae7d549cb0f7d84924d83db2abfd61",
+    "economia.yaml": "35562c081a5770d02b083af2a3eb6337ff56c01631c5e2927bc9cdc333487d2f",
+    "heat.yaml": "54966bab20c172fc275a87766666d62702c497285753ebf7616c41d30ca9bf29",
+    "nitrogen.yaml": "99e342b0b1024578d15c97a01bc120ac79b028c6ea3a3df295616e4d5db292e7",
+    "rotation_rules.yaml": "9e6e57ceaf7f9190211678de903b7e14f1e77ae0bd08270a3480f4a05488e893",
+    "scenarios.yaml": "30fd930ad0b45f84cda0443600d9e1cd8730ccc90b87e2c0ee404a481e8ac6e1",
+    "soil.yaml": "61ea9b37c781d01c786d3680a9313df3d887815a54b3523ac5e9cebbf1c818d8"
+  },
+  "details": {
+    "aquaCropRunoffGroup": "B",
+    "curveNumber": 61,
+    "soilPixelShiftMeters": 0.0,
+    "soilDataMethod": "wcs",
+    "surfaceTexture": "loam",
+    "surfaceAvailableWaterMm": 45.3,
+    "profileAvailableWaterMm": 199.8
+  }
+}

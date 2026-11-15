@@ -1,0 +1,53 @@
+{
+  "file": "soilgrids_wcs.json",
+  "source": "soilgrids",
+  "product": "SoilGrids 250m",
+  "version": "2.0",
+  "url": "https://maps.isric.org/mapserv",
+  "params": {
+    "lat": 45.314,
+    "lon": 9.433,
+    "properties": [
+      "sand",
+      "clay",
+      "silt",
+      "soc",
+      "bdod",
+      "cfvo"
+    ],
+    "depths_cm": [
+      "0-5",
+      "5-15",
+      "15-30",
+      "30-60",
+      "60-100",
+      "100-200"
+    ],
+    "values": [
+      "mean",
+      "Q0.05",
+      "Q0.5",
+      "Q0.95",
+      "uncertainty"
+    ],
+    "via": "wcs",
+    "pixel": {
+      "via": "wcs",
+      "pixel_row": 4,
+      "pixel_col": 8,
+      "pixel_center_lat": 45.314750000000004,
+      "pixel_center_lon": 9.432888888888888,
+      "own_pixel_valid": true,
+      "shift_m": 0.0
+    },
+    "reused_from": {
+      "lat": 45.316,
+      "lon": 9.424,
+      "downloaded_at_utc": "2026-11-15T11:21:34+00:00"
+    }
+  },
+  "downloaded_at_utc": "2026-11-15T11:23:29+00:00",
+  "bytes": 94663,
+  "sha256": "0f3974517edf1f64ab6a03a514e152233c155bd88b7d28e9962c9b74bac0cd3b",
+  "notes": "via=wcs; WCS raster cached at 45.316, 9.424; pixel del punto valido, nessuno spostamento"
+}
