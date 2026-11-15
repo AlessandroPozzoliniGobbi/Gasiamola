@@ -10,8 +10,9 @@ import { estimateFieldHectares } from "../lib/fieldArea";
 import {
   CROP_KEYS, CROP_LABELS, IRRIGATION_KEYS, IRRIGATION_LABELS, PRIORITY_KEYS,
   PRIORITY_LABELS, defaultAnalysisDraft, loadAnalysisDraft, saveAnalysisDraft,
-  rotationBackendLabel,
+  rotationBackendLabel, FUTURE_HORIZONS, FUTURE_SSPS, FUTURE_SSP_LABELS,
   type AnalysisDraft, type CropId, type IrrigationScenario, type PriorityId,
+  type FutureHorizon, type FutureSsp,
 } from "../lib/analysisStorage";
 import AnalysisFieldMap from "../components/map/AnalysisFieldMap";
 import AnalysisProcessing from "../components/reports/AnalysisProcessing";
@@ -105,6 +106,15 @@ export default function Analysis({ fieldId }: Props) {
   };
   const changeAdvancedEconomics = (enabled: boolean) => {
     updateDraft((old) => ({ ...old, advancedEconomics: enabled }));
+  };
+  const changeIncludeFuture = (enabled: boolean) => {
+    updateDraft((old) => ({ ...old, includeFuture: enabled }));
+  };
+  const changeFutureHorizon = (horizon: FutureHorizon) => {
+    updateDraft((old) => ({ ...old, futureHorizon: horizon }));
+  };
+  const changeFutureSsp = (ssp: FutureSsp) => {
+    updateDraft((old) => ({ ...old, futureSsp: ssp }));
   };
   const changePriority = (key: PriorityId, value: number) => {
     updateDraft((old) => ({ ...old, priorities: { ...old.priorities, [key]: value } }));
@@ -282,14 +292,52 @@ export default function Analysis({ fieldId }: Props) {
                     </div>
                   </details>
                 </section>
+                <section className={styles.formCard} aria-label="Future climate simulation settings">
+                  <details className={styles.advancedSection}>
+                    <summary className={styles.advancedSummary}>
+                      <span><span className={styles.cardEyebrow}>06 / CLIMATE PROJECTIONS</span><strong>Future Climate Simulation (CMIP6)</strong></span>
+                      <span className={`${styles.advancedIndicator} ${draft.includeFuture ? styles.advancedIndicatorActive : ""}`} role="img" aria-label={draft.includeFuture ? "Future simulation enabled" : "Future simulation disabled"} />
+                    </summary>
+                    <div className={styles.advancedBody}>
+                      <p className={styles.helper}>Simulate climate change impacts on your rotation using IPCC CMIP6 Delta Change consensus projections for the Po Valley.</p>
+                      <label className={styles.advancedToggle}>
+                        <input type="checkbox" checked={draft.includeFuture === true}
+                          onChange={(event) => changeIncludeFuture(event.target.checked)} />
+                        <span><strong>Include climate projections (CMIP6)</strong><small>Evaluate future yield resilience, water demand, heat stress and adaptive rotation opportunities over 5 to 20 years.</small></span>
+                      </label>
+                      {draft.includeFuture && <>
+                        <div className={styles.priorityRow}>
+                          <label htmlFor="future-horizon"><span>Time horizon</span><strong>{draft.futureHorizon ?? 10} years</strong></label>
+                          <select id="future-horizon" className={styles.futureSelect} value={draft.futureHorizon ?? 10}
+                            onChange={(event) => changeFutureHorizon(Number(event.target.value) as FutureHorizon)}>
+                            {FUTURE_HORIZONS.map((h) => (
+                              <option key={h} value={h}>{h} years {h === 10 ? "(Medium term · Default)" : h === 5 ? "(Short term)" : h === 15 ? "(Medium-long term)" : "(Long term)"}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className={styles.priorityRow}>
+                          <label htmlFor="future-ssp"><span>IPCC Scenario</span><strong>{FUTURE_SSP_LABELS[draft.futureSsp ?? "ssp245"]?.short ?? "SSP2-4.5"}</strong></label>
+                          <select id="future-ssp" className={styles.futureSelect} value={draft.futureSsp ?? "ssp245"}
+                            onChange={(event) => changeFutureSsp(event.target.value as FutureSsp)}>
+                            {FUTURE_SSPS.map((code) => (
+                              <option key={code} value={code}>{FUTURE_SSP_LABELS[code].title}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <p className={styles.advancedCaution}>{FUTURE_SSP_LABELS[draft.futureSsp ?? "ssp245"]?.description}. Projections use the CMIP6 ensemble delta-change method calibrated on historical NASA POWER weather series without runtime network dependencies.</p>
+                      </>}
+                    </div>
+                  </details>
+                </section>
                 <section className={styles.submitCard} aria-labelledby="ready-heading">
                   <div>
-                    <p className={styles.cardEyebrow}>06 / RUN ANALYSIS</p>
+                    <p className={styles.cardEyebrow}>07 / RUN ANALYSIS</p>
                     <h2 id="ready-heading">Your configuration is ready</h2>
                     <p>These settings are saved locally for this field. You can edit them anytime.</p>
                   </div>
                   <div className={styles.summaryChips}>
                     <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>{draft.advancedEconomics ? "Advanced economics" : "Standard analysis"}</span>
+                    {draft.includeFuture && <span>{`Future ${draft.futureHorizon ?? 10}y (${(draft.futureSsp ?? "ssp245").toUpperCase()})`}</span>}
                   </div>
                   <div className={styles.submitActions}>
                     <button className={styles.resetButton} type="button" onClick={() => {

@@ -8,6 +8,30 @@ export type CropStep = {
   coverAfter: boolean;
 };
 
+export type FutureHorizon = 5 | 10 | 15 | 20;
+export type FutureSsp = "ssp126" | "ssp245" | "ssp585";
+
+export const FUTURE_HORIZONS: FutureHorizon[] = [5, 10, 15, 20];
+export const FUTURE_SSPS: FutureSsp[] = ["ssp126", "ssp245", "ssp585"];
+
+export const FUTURE_SSP_LABELS: Record<FutureSsp, { title: string; short: string; description: string }> = {
+  ssp126: {
+    title: "Sostenibile (SSP1-2.6)",
+    short: "SSP1-2.6",
+    description: "Transizione rapida e taglio emissioni, riscaldamento contenuto sotto +2°C",
+  },
+  ssp245: {
+    title: "Tendenziale (SSP2-4.5)",
+    short: "SSP2-4.5",
+    description: "Politiche attuali lungo il trend storico, estati più calde e asciutte",
+  },
+  ssp585: {
+    title: "Estremo (SSP5-8.5)",
+    short: "SSP5-8.5",
+    description: "Alte emissioni da fonti fossili, forte frequenza di siccità e calore estremo",
+  },
+};
+
 export type AnalysisDraft = {
   version: 1;
   rotation: [CropStep, CropStep, CropStep];
@@ -15,6 +39,10 @@ export type AnalysisDraft = {
   priorities: Record<PriorityId, number>;
   /** Opt-in for the current engine's fixed-assumption economic analysis. */
   advancedEconomics?: boolean;
+  /** Opt-in for IPCC CMIP6 future climate projections. */
+  includeFuture?: boolean;
+  futureHorizon?: FutureHorizon;
+  futureSsp?: FutureSsp;
 };
 
 export const CROP_LABELS: Record<CropId, string> = {
@@ -58,12 +86,21 @@ export function defaultAnalysisDraft(): AnalysisDraft {
     irrigation: "tetto_irriguo",
     priorities: { resa: 5, rischio: 5, acqua: 5, concime: 5, suolo: 5, profitto: 5 },
     advancedEconomics: false,
+    includeFuture: false,
+    futureHorizon: 10,
+    futureSsp: "ssp245",
   };
 }
 
 function normalizeAnalysisDraft(draft: AnalysisDraft): AnalysisDraft {
-  return { ...draft, advancedEconomics: draft.advancedEconomics === true,
-    priorities: { ...draft.priorities, profitto: draft.priorities.profitto ?? 5 } };
+  return {
+    ...draft,
+    advancedEconomics: draft.advancedEconomics === true,
+    includeFuture: draft.includeFuture === true,
+    futureHorizon: (draft.futureHorizon && FUTURE_HORIZONS.includes(draft.futureHorizon)) ? draft.futureHorizon : 10,
+    futureSsp: (draft.futureSsp && FUTURE_SSPS.includes(draft.futureSsp)) ? draft.futureSsp : "ssp245",
+    priorities: { ...draft.priorities, profitto: draft.priorities.profitto ?? 5 },
+  };
 }
 
 export function isAnalysisDraft(value: unknown): value is AnalysisDraft {
@@ -77,6 +114,9 @@ export function isAnalysisDraft(value: unknown): value is AnalysisDraft {
     });
   return draft.version === 1 && validSteps &&
     (draft.advancedEconomics === undefined || typeof draft.advancedEconomics === "boolean") &&
+    (draft.includeFuture === undefined || typeof draft.includeFuture === "boolean") &&
+    (draft.futureHorizon === undefined || FUTURE_HORIZONS.includes(draft.futureHorizon as FutureHorizon)) &&
+    (draft.futureSsp === undefined || FUTURE_SSPS.includes(draft.futureSsp as FutureSsp)) &&
     IRRIGATION_KEYS.includes(draft.irrigation as IrrigationScenario) &&
     !!draft.priorities && typeof draft.priorities === "object" &&
     PRIORITY_KEYS.filter((key) => key !== "profitto").every((key) => {

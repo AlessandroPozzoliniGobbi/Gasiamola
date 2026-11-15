@@ -21,9 +21,25 @@ export function canOfferPilotReference(error: unknown): boolean {
 }
 
 function apiError(data: unknown, status: number, fallback: string): EngineApiError {
-  const detail = (data as { detail?: string | { message?: string; code?: string } } | null)?.detail;
+  const detail = (data as { detail?: unknown } | null)?.detail;
   if (typeof detail === "string") return new EngineApiError(detail, null, status);
-  return new EngineApiError(detail?.message ?? fallback, detail?.code ?? null, status);
+  if (Array.isArray(detail) && detail.length > 0) {
+    const messages = detail.map((err: unknown) => {
+      if (typeof err === "object" && err !== null) {
+        const item = err as { msg?: string; message?: string; loc?: string[] };
+        const msg = item.msg || item.message || JSON.stringify(item);
+        const loc = Array.isArray(item.loc) ? item.loc.slice(1).join(".") : "";
+        return loc ? `${loc}: ${msg}` : msg;
+      }
+      return String(err);
+    }).join("; ");
+    return new EngineApiError(messages || fallback, "VALIDATION_ERROR", status);
+  }
+  if (typeof detail === "object" && detail !== null) {
+    const obj = detail as { message?: string; code?: string };
+    return new EngineApiError(obj.message ?? fallback, obj.code ?? null, status);
+  }
+  return new EngineApiError(fallback, null, status);
 }
 
 type EngineResult = {
@@ -52,6 +68,9 @@ export async function analyzeField(field: FieldSnapshot, draft: AnalysisDraft,
         // economic model is not modified by this display-level selection.
         priorities: { ...draft.priorities, profitto: draft.advancedEconomics ? draft.priorities.profitto : 0 },
         use_pilot_reference: options.usePilotReference === true,
+        include_future: draft.includeFuture === true,
+        future_horizon: draft.futureHorizon ?? 10,
+        future_ssp: draft.futureSsp ?? "ssp245",
       }),
       signal: controller.signal,
     });

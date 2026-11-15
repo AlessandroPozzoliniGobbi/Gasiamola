@@ -10,10 +10,11 @@ import { downloadPdfReport } from "../../lib/reportPrint";
 import { downloadExcelReport } from "../../lib/reportExcel";
 import HistoricalWindowPlot from "./HistoricalWindowPlot";
 
-type Tab = "overview" | "compare" | "insights" | "economics" | "details";
+type Tab = "overview" | "compare" | "insights" | "economics" | "future" | "details";
 const TABS: { id: Tab; title: string }[] = [
   { id: "overview", title: "Overview" }, { id: "compare", title: "Compare" },
   { id: "insights", title: "Insights" }, { id: "economics", title: "Economics" },
+  { id: "future", title: "Future Projections" },
   { id: "details", title: "Details" },
 ];
 const SHOW_METRICS: (keyof RotationMetrics)[] = [
@@ -148,8 +149,16 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
   };
   // Legacy reports predate the optional advanced-analysis input; preserve their Economics tab.
   const showEconomics = !("advancedEconomics" in report.inputs) || report.inputs.advancedEconomics === true;
-  const visibleTabs = TABS.filter((item) => showEconomics || item.id !== "economics");
-  const tab: Tab = selectedTab === "economics" && !showEconomics ? "overview" : selectedTab;
+  const showFuture = report.inputs.includeFuture === true || Boolean(report.results.future);
+  const visibleTabs = TABS.filter((item) => {
+    if (item.id === "economics") return showEconomics;
+    if (item.id === "future") return showFuture;
+    return true;
+  });
+  const tab: Tab = (selectedTab === "economics" && !showEconomics) || (selectedTab === "future" && !showFuture)
+    ? "overview" : selectedTab;
+  const futureNum = showEconomics ? "05" : "04";
+  const detailsNum = (3 + (showEconomics ? 1 : 0) + (showFuture ? 1 : 0) + 1).toString().padStart(2, "0");
   const tabIndex = visibleTabs.findIndex((item) => item.id === tab);
   const previousTab = visibleTabs[tabIndex - 1];
   const nextTab = visibleTabs[tabIndex + 1];
@@ -307,9 +316,106 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
           </>}
         </div>}
 
+        {tab === "future" && showFuture && <div className={styles.content}>
+          {!report.results.future ? (
+            <section className={styles.comingSoon}>
+              <span className={styles.economicsIcon} aria-hidden="true">🌱</span>
+              <span className={styles.smallCaps}>{futureNum} / CLIMATE PROJECTIONS (CMIP6)</span>
+              <h2>Climate simulation is not available for this report.</h2>
+              <p>Run the analysis again with climate projections enabled to view CMIP6 future scenarios.</p>
+              <span className={styles.softPill}>Not included</span>
+            </section>
+          ) : (() => {
+            const f = report.results.future;
+            return (
+              <>
+                <div className={styles.sectionIntro}>
+                  <span className={styles.smallCaps}>{futureNum} / FUTURE CLIMATE PROJECTIONS (CMIP6)</span>
+                  <h2>{f.ssp_label} · Horizon +{f.horizon_years} years</h2>
+                  <p>{f.ssp_description}</p>
+                </div>
+
+                <div className={styles.outcomeGrid}>
+                  <article className={styles.outcomeCard}>
+                    <span className={styles.smallCaps}>Yield impact (Current rotation)</span>
+                    <h3>{labelRotation(f.current_rotation)}</h3>
+                    <span className={`${styles.economicDifference} ${f.delta_resa_rel_pct >= 0 ? styles.economicPositive : styles.economicNegative}`}>
+                      {f.delta_resa_rel_pct >= 0 ? "+" : ""}{f.delta_resa_rel_pct.toFixed(1)} pp
+                    </span>
+                    <span className={styles.economicComparison}>
+                      Historical: {f.baseline_resa_rel_pct.toFixed(1)}% ({f.baseline_resa_t_ha.toFixed(1)} t/ha) → Future: {f.future_resa_rel_pct.toFixed(1)}% ({f.future_resa_t_ha.toFixed(1)} t/ha)
+                    </span>
+                  </article>
+
+                  <article className={styles.outcomeCard}>
+                    <span className={styles.smallCaps}>Economic impact (Current rotation)</span>
+                    <h3>Net margin variation</h3>
+                    <span className={`${styles.economicDifference} ${f.delta_margine_eur_ha >= 0 ? styles.economicPositive : styles.economicNegative}`}>
+                      {f.delta_margine_eur_ha >= 0 ? "+" : ""}{f.delta_margine_eur_ha.toFixed(1)} €/ha/year
+                    </span>
+                    <span className={styles.economicComparison}>
+                      Margin: {f.baseline_margine_eur_ha.toFixed(0)} € → {f.future_margine_eur_ha.toFixed(0)} €/ha · Cost: {f.future_costo_eur_ha.toFixed(0)} €/ha ({f.delta_costo_eur_ha >= 0 ? "+" : ""}{f.delta_costo_eur_ha.toFixed(1)} €)
+                    </span>
+                  </article>
+
+                  <article className={styles.outcomeCard}>
+                    <span className={styles.smallCaps}>Climate &amp; Heat stress</span>
+                    <h3>Extreme heat &amp; Evapotranspiration</h3>
+                    <span className={`${styles.economicDifference} ${f.future_hot_days_ann > 10 ? styles.economicNegative : styles.economicBaseline}`}>
+                      {f.future_hot_days_ann.toFixed(1)} days/year
+                    </span>
+                    <span className={styles.economicComparison}>
+                      Days with Tmax &gt; 35°C · Annual ET0: {f.future_et0_ann_mm.toFixed(0)} mm (baseline: {f.baseline_et0_ann_mm.toFixed(0)} mm)
+                    </span>
+                  </article>
+                </div>
+
+                <div className={styles.sectionIntro} style={{ marginTop: 32 }}>
+                  <span className={styles.smallCaps}>CLIMATE ADAPTATION OPPORTUNITY</span>
+                  <h2>Best performing rotation in the future.</h2>
+                  <p>Multicriteria ranking under {f.ssp_label} conditions identifies adaptive crop rotations with higher thermal and drought resilience.</p>
+                </div>
+
+                <article className={`${styles.outcomeCard} ${styles.outcomeHighlight}`} style={{ marginTop: 12 }}>
+                  <span className={styles.smallCaps}>Recommended Adaptation Strategy</span>
+                  <h3>{labelRotation(f.best_rotation)}</h3>
+                  <p className={styles.footnote}>Rank 1 in the future multicriteria evaluation · Pareto optimal</p>
+                  <div className={styles.outcomeFigures}>
+                    <span>Additional gain vs current rotation: <strong className={styles.economicPositive}>+{f.delta_guadagno_eur_ha.toFixed(1)} €/ha/year</strong></span>
+                    <span>Yield boost: <strong className={f.delta_resa_best_pct >= 0 ? styles.economicPositive : ""}>{f.delta_resa_best_pct >= 0 ? "+" : ""}{f.delta_resa_best_pct.toFixed(1)} pp</strong></span>
+                    <span>Future yield: <strong>{f.best_resa_rel_pct.toFixed(1)}% ({f.best_resa_t_ha.toFixed(1)} t/ha)</strong></span>
+                    <span>Irrigation requirement: <strong>{f.best_irrigazione_mm.toFixed(0)} mm/year</strong></span>
+                    <span>Nitrogen fertilizer: <strong>{f.best_concime_kg_n_ha.toFixed(0)} kg N/ha</strong></span>
+                  </div>
+                  {f.best_rischi && f.best_rischi.length > 0 && (
+                    <div className={styles.bulletBox} style={{ marginTop: 18 }}>
+                      <h3>Regulatory &amp; Agronomic notices for adaptation</h3>
+                      <ul>
+                        {f.best_rischi.map((r, i) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </article>
+
+                <div className={styles.panel} style={{ marginTop: 24 }}>
+                  <h3>CMIP6 Delta Change Scientific Methodology</h3>
+                  <p>
+                    Projections apply monthly climate anomalies calibrated on the CMIP6 climate model ensemble for the Po Valley to the validated NASA POWER daily series at {f.lat.toFixed(3)}° N, {f.lon.toFixed(3)}° E.
+                  </p>
+                  <p>
+                    Evapotranspiration (ET0) is recalculated using the FAO Penman-Monteith equation post-thermal scaling. Agronomic simulations assess crop phenology acceleration, heat stress days, and soil moisture depletion under the chosen radiative forcing scenario.
+                  </p>
+                </div>
+              </>
+            );
+          })()}
+        </div>}
+
         {tab === "details" && <div className={`${styles.content} ${styles.detailsCompact}`}>
           <div className={styles.sectionIntro}>
-            <span className={styles.smallCaps}>{showEconomics ? "05" : "04"} / ANALYSIS DETAILS</span>
+            <span className={styles.smallCaps}>{detailsNum} / ANALYSIS DETAILS</span>
             <h2>Traceable by design.</h2>
             <p>The essentials at a glance. Export PDF for the full technical record, interpretation and charts.</p>
           </div>

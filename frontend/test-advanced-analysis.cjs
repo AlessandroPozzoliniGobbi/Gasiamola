@@ -13,25 +13,39 @@ vm.runInNewContext(outputText, sandbox, { filename });
 const a = sandbox.exports;
 const key = 'fieldwise:analysis-drafts:v1';
 
-test('standard analyses default to economics off', () => {
+test('standard analyses default to economics and future off', () => {
   assert.equal(a.defaultAnalysisDraft().advancedEconomics, false);
+  assert.equal(a.defaultAnalysisDraft().includeFuture, false);
+  assert.equal(a.defaultAnalysisDraft().futureHorizon, 10);
+  assert.equal(a.defaultAnalysisDraft().futureSsp, "ssp245");
 });
 
 test('legacy drafts load without losing their crop rotation or priorities', () => {
   saved.clear();
   const old = a.defaultAnalysisDraft();
   delete old.advancedEconomics;
+  delete old.includeFuture;
   old.priorities.profitto = 7;
   saved.set(key, JSON.stringify({'field-old': old}));
   const restored = a.loadAnalysisDraft('field-old');
   assert.equal(restored.advancedEconomics, false);
+  assert.equal(restored.includeFuture, false);
+  assert.equal(restored.futureHorizon, 10);
+  assert.equal(restored.futureSsp, "ssp245");
   assert.equal(restored.priorities.profitto, 7);
 });
 
 test('advanced opt-in is stored per field and does not transfer to a new ID', () => {
   saved.clear();
-  const enabled = { ...a.defaultAnalysisDraft(), advancedEconomics: true };
+  const enabled = { ...a.defaultAnalysisDraft(), advancedEconomics: true, includeFuture: true, futureHorizon: 20, futureSsp: "ssp585" };
   a.saveAnalysisDraft('old-field-id', enabled);
-  assert.equal(a.loadAnalysisDraft('old-field-id').advancedEconomics, true);
-  assert.equal(a.loadAnalysisDraft('fresh-field-id').advancedEconomics, false);
+  const loadedOld = a.loadAnalysisDraft('old-field-id');
+  assert.equal(loadedOld.advancedEconomics, true);
+  assert.equal(loadedOld.includeFuture, true);
+  assert.equal(loadedOld.futureHorizon, 20);
+  assert.equal(loadedOld.futureSsp, "ssp585");
+
+  const loadedFresh = a.loadAnalysisDraft('fresh-field-id');
+  assert.equal(loadedFresh.advancedEconomics, false);
+  assert.equal(loadedFresh.includeFuture, false);
 });

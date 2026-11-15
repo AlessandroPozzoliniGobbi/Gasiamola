@@ -1,0 +1,163 @@
+_meta:
+  descrizione: "Deltas mensili CMIP6 per il metodo Delta Change applicato alla serie storica giornaliera NASA POWER. Genera serie climatiche future senza accesso alla rete."
+  compilato_il: "2026-11-14"
+
+orizzonti:
+  anni:
+    valore: [5, 10, 15, 20]
+    unita: "anni"
+    assunzione: true
+    motivazione: "Orizzonti standard per pianificazione agricola aziendale."
+    verificato: false
+    nota: ""
+
+scenari:
+  ssp126:
+    etichetta:
+      valore: "Sostenibile (SSP1-2.6)"
+      unita: "-"
+      assunzione: true
+      motivazione: "Etichetta parlante per l'interfaccia utente."
+      verificato: false
+      nota: ""
+    descrizione:
+      valore: "Transizione ecologica rapida e taglio delle emissioni, riscaldamento contenuto sotto +2°C."
+      unita: "-"
+      assunzione: true
+      motivazione: "Descrizione breve per il selettore UI."
+      verificato: false
+      nota: ""
+  ssp245:
+    etichetta:
+      valore: "Tendenziale (SSP2-4.5)"
+      unita: "-"
+      assunzione: true
+      motivazione: "Etichetta parlante."
+      verificato: false
+      nota: ""
+    descrizione:
+      valore: "Politiche attuali lungo il trend storico recente, estati progressivamente più calde e asciutte."
+      unita: "-"
+      assunzione: true
+      motivazione: "Descrizione breve."
+      verificato: false
+      nota: ""
+  ssp585:
+    etichetta:
+      valore: "Estremo (SSP5-8.5)"
+      unita: "-"
+      assunzione: true
+      motivazione: "Etichetta parlante."
+      verificato: false
+      nota: ""
+    descrizione:
+      valore: "Alte emissioni da fonti fossili, massima frequenza di ondate di calore e siccità severa."
+      unita: "-"
+      assunzione: true
+      motivazione: "Descrizione breve."
+      verificato: false
+      nota: ""
+
+# Delta Change mensili per 20 anni dall'anno base 2025.
+# Fonte: valori rappresentativi CMIP6 per pianura padana (lat ~45N), consenso multi-modello.
+# Struttura: delta_t_c[mese_1_12], alpha_rain[mese_1_12], alpha_srad[mese_1_12], delta_rh[mese_1_12]
+# per i 3 SSP, lineari nel tempo, da 0 a delta_20anni a +20 anni dall'anno_base.
+# Il Delta viene scalato linearmente: delta_t_mese(h, m) = delta_t_20_mese[m] * h/20
+
+anno_base:
+  valore: 2025
+  unita: "anno"
+  assunzione: true
+  motivazione: "Anno di riferimento della baseline storica (ultimo anno completo affidabile POWER)."
+  verificato: false
+  nota: ""
+
+delta_ssp126:
+  delta_t_c:
+    valore: [0.5, 0.5, 0.6, 0.7, 0.8, 1.0, 1.1, 1.0, 0.9, 0.7, 0.6, 0.5]
+    unita: "°C a +20 anni"
+    assunzione: true
+    motivazione: "Delta temperatura mensile a +20a per SSP1-2.6, pianura padana, consenso CMIP6 (Zappa et al. 2022, Lionello & Scarascia 2018)."
+    verificato: false
+    nota: "Valori rappresentativi. Applicazione additiva su tmax/tmin/tmean."
+  alpha_rain:
+    valore: [0.98, 0.97, 0.98, 0.97, 0.96, 0.92, 0.88, 0.90, 0.95, 0.98, 0.99, 0.99]
+    unita: "- a +20 anni (moltiplicatore)"
+    assunzione: true
+    motivazione: "Alpha precipitazione mensile a +20a per SSP1-2.6, pianura padana. Riduzione estiva moderata."
+    verificato: false
+    nota: "Moltiplicatore: rain_futura = alpha * rain_storica."
+  alpha_srad:
+    valore: [1.0, 1.0, 1.0, 1.01, 1.01, 1.02, 1.02, 1.01, 1.01, 1.0, 1.0, 1.0]
+    unita: "- a +20 anni"
+    assunzione: true
+    motivazione: "Alpha radiazione solare a +20a SSP1-2.6. Variazione modesta."
+    verificato: false
+    nota: ""
+  delta_rh:
+    valore: [-0.5, -0.5, -0.5, -0.6, -0.8, -1.5, -2.0, -1.8, -1.0, -0.6, -0.5, -0.4]
+    unita: "% a +20 anni (additivo su RH)"
+    assunzione: true
+    motivazione: "Delta umidità relativa mensile a +20a SSP1-2.6."
+    verificato: false
+    nota: ""
+
+delta_ssp245:
+  delta_t_c:
+    valore: [0.8, 0.9, 1.0, 1.2, 1.4, 1.8, 2.0, 1.9, 1.5, 1.2, 1.0, 0.8]
+    unita: "°C a +20 anni"
+    assunzione: true
+    motivazione: "Delta temperatura mensile a +20a per SSP2-4.5, pianura padana."
+    verificato: false
+    nota: ""
+  alpha_rain:
+    valore: [0.97, 0.96, 0.96, 0.95, 0.93, 0.85, 0.78, 0.80, 0.90, 0.95, 0.97, 0.98]
+    unita: "- a +20 anni"
+    assunzione: true
+    motivazione: "Alpha precipitazione mensile a +20a SSP2-4.5. Riduzione estiva marcata."
+    verificato: false
+    nota: ""
+  alpha_srad:
+    valore: [1.0, 1.0, 1.01, 1.01, 1.02, 1.03, 1.03, 1.02, 1.01, 1.0, 1.0, 1.0]
+    unita: "- a +20 anni"
+    assunzione: true
+    motivazione: "Alpha radiazione solare a +20a SSP2-4.5."
+    verificato: false
+    nota: ""
+  delta_rh:
+    valore: [-0.8, -0.9, -1.0, -1.2, -1.5, -2.5, -3.5, -3.2, -2.0, -1.2, -0.9, -0.7]
+    unita: "% a +20 anni"
+    assunzione: true
+    motivazione: "Delta umidità relativa mensile a +20a SSP2-4.5."
+    verificato: false
+    nota: ""
+
+delta_ssp585:
+  delta_t_c:
+    valore: [1.2, 1.3, 1.5, 1.8, 2.2, 2.8, 3.2, 3.0, 2.5, 1.9, 1.5, 1.2]
+    unita: "°C a +20 anni"
+    assunzione: true
+    motivazione: "Delta temperatura mensile a +20a per SSP5-8.5, pianura padana. Massimo estivo."
+    verificato: false
+    nota: ""
+  alpha_rain:
+    valore: [0.95, 0.94, 0.93, 0.92, 0.88, 0.75, 0.65, 0.68, 0.82, 0.90, 0.94, 0.96]
+    unita: "- a +20 anni"
+    assunzione: true
+    motivazione: "Alpha precipitazione mensile a +20a SSP5-8.5. Siccità estiva severa."
+    verificato: false
+    nota: ""
+  alpha_srad:
+    valore: [1.0, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 1.04, 1.02, 1.01, 1.0, 1.0]
+    unita: "- a +20 anni"
+    assunzione: true
+    motivazione: "Alpha radiazione solare a +20a SSP5-8.5."
+    verificato: false
+    nota: ""
+  delta_rh:
+    valore: [-1.2, -1.3, -1.5, -1.8, -2.5, -4.0, -6.0, -5.5, -3.5, -2.0, -1.4, -1.0]
+    unita: "% a +20 anni"
+    assunzione: true
+    motivazione: "Delta umidità relativa mensile a +20a SSP5-8.5."
+    verificato: false
+    nota: ""

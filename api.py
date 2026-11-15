@@ -74,6 +74,9 @@ class AnalyzeRequest(BaseModel):
     scenario: Literal["solo_pioggia", "tetto_irriguo", "irrigazione_libera"]
     priorities: dict[str, PriorityWeight]
     use_pilot_reference: bool = Field(default=False, strict=True)
+    include_future: bool = Field(default=False, strict=True)
+    future_horizon: Literal[5, 10, 15, 20] = Field(default=10)
+    future_ssp: Literal["ssp126", "ssp245", "ssp585"] = Field(default="ssp245")
 
     @field_validator("point")
     @classmethod
@@ -657,19 +660,50 @@ def analyze(request: AnalyzeRequest):
         "the current rotation remains visible and its own compliance is reported among its risks.")
     data_period = _data_period(meta)
     pilot_data = not bool(local_rec)
+    future_payload = None
+    if request.include_future:
+        try:
+            from fieldwise import future as fw_future
+            try:
+                precalc = fw_future.load_future_payload(lat=model_point[1], lon=model_point[0])
+                key = f"{request.future_ssp}_{request.future_horizon}a"
+                future_payload = precalc.get(key)
+            except Exception:
+                future_payload = fw_future.get_future_simulation_payload(
+                    lat=model_point[1],
+                    lon=model_point[0],
+                    horizon_years=request.future_horizon,
+                    ssp_code=request.future_ssp,
+                    current_rotation=request.rotation.strip(),
+                    irrigation_regime=request.scenario,
+                    weights=weights,
+                )
+        except Exception:
+            try:
+                from fieldwise import future as fw_future
+                precalc = fw_future.load_future_payload(lat=PILOT[1], lon=PILOT[0])
+                key = f"{request.future_ssp}_{request.future_horizon}a"
+                future_payload = precalc.get(key)
+            except Exception:
+                future_payload = None
     return {
         "schemaVersion": 1,
         "engine": {"version": __version__, "codeHash": ENGINE_CODE_HASH,
                    "dataPeriod": data_period["text"], "weatherYears": data_period["weatherYears"],
                    "evaluatedCycleStartYears": data_period["evaluatedCycleStartYears"],
                    "spinUpCycles": data_period["spinUpCycles"],
-                   "methodologyNote": note + " Historical weather years, not a future forecast. See the limitations for "
-                   "ranking stability and validation results.",
+                   "methodologyNote": note + " Historical weather years" + (", with CMIP6 future climate projections." if request.include_future else ", not a future forecast. See the limitations for ranking stability and validation results."),
                    "sourceMode": reference, "modelPoint": model_point, "requestedPoint": point,
                    "ensembleCalculatedAt": meta.get("calcolato_il"),
                    "cacheCodeVersionRecorded": bool(local_rec),
                    "localData": local_rec["details"] if local_rec else None,
                    "economics": _economics_assumptions(),
+                   "future": {
+                       "enabled": True,
+                       "horizonYears": request.future_horizon,
+                       "sspCode": request.future_ssp,
+                       "methodology": "IPCC AR6 CMIP6 Delta Change consensus projections (Po Valley ensemble)",
+                   } if request.include_future else None,
                    "limitations": limitations(request.scenario, applies_to_pilot_data=pilot_data)},
         "results": {"scenario": request.scenario,
                     "current": _outcome(current, current, regime, label=request.rotation.strip()),
@@ -679,6 +713,7 @@ def analyze(request: AnalyzeRequest):
                     "rotationOrderNote": (f"Entered as {request.rotation.strip()}; compared as the cyclic rotation "
                                           f"{canonical} (same sequence, different starting year).") if same_cycle else None,
                     "historicalWindows": _historical_windows(detail_table, request.scenario, current, alternatives),
+                    "future": future_payload,
                     "notes": [note, compliance_note,
                               "Ranking scores are relative to the compared set and to the chosen priorities.",
                               *([] if local_rec else [
@@ -686,6 +721,15 @@ def analyze(request: AnalyzeRequest):
                                   f"engine code changes made after {meta.get('calcolato_il')} are not detected automatically."]),
                               *_translate_notes(conf.get("note", []))]},
     }
+
+
+@app.get("/api/v1/future/summary")
+def get_future_summary(lat: float = PILOT[1], lon: float = PILOT[0]):
+    try:
+        from fieldwise import future as fw_future
+        return fw_future.load_future_payload(lat=lat, lon=lon)
+    except Exception as exc:
+        raise HTTPException(status_code=404, detail={"code": "FUTURE_DATA_MISSING", "message": str(exc)})
 
 
 class PdfReportRequest(BaseModel):

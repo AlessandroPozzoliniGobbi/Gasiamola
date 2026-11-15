@@ -13,6 +13,10 @@ export function includesEconomics(report: CompletedReport): boolean {
   return !("advancedEconomics" in report.inputs) || report.inputs.advancedEconomics === true;
 }
 
+export function includesFuture(report: CompletedReport): boolean {
+  return report.inputs.includeFuture === true || Boolean(report.results.future);
+}
+
 const finite = (n: number | null | undefined): n is number => typeof n === "number" && Number.isFinite(n);
 const mdCell = (s: unknown) => String(s ?? "Not available").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 const fmtPoint = (point?: [number, number] | null) => point ? `${point[1].toFixed(5)} N, ${point[0].toFixed(5)} E` : "Not provided";
@@ -116,6 +120,29 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
         const eur = (v: number | null | undefined) => finite(v ?? null) ? (v as number).toFixed(0) : "Not available";
         return `| ${mdCell(i === 0 ? "Current" : `Alternative ${i}`)} | ${finite(r.metrics.grossMarginEurHa) ? r.metrics.grossMarginEurHa.toFixed(1) : "Not available"} | ${i === 0 ? "0 (baseline)" : delta("grossMarginEurHa", r.metrics.grossMarginEurHa, outcomes[0].metrics.grossMarginEurHa)} | ${eur(c?.revenueEurHa)} | ${eur(c?.fertilizerCostEurHa)} | ${eur(c?.irrigationCostEurHa)} | ${eur(c?.otherCropCostsEurHa)} |`;
       }).join("\n")] : []),
+    ...(includesFuture(report) && report.results.future ? [(() => {
+      const f = report.results.future;
+      return `## ${next()}. Future climate projections (CMIP6 Delta Change)\n\n` +
+        `**Scenario:** ${f.ssp_label} (${f.ssp_code.toUpperCase()}) · **Horizon:** +${f.horizon_years} years\n\n` +
+        `${f.ssp_description}\n\n` +
+        `### Current rotation under climate change\n\n` +
+        `| Indicator | Historical baseline | Future projected | Delta |\n| --- | --- | --- | --- |\n` +
+        `| Relative yield (%) | ${f.baseline_resa_rel_pct.toFixed(1)}% | ${f.future_resa_rel_pct.toFixed(1)}% | ${f.delta_resa_rel_pct >= 0 ? "+" : ""}${f.delta_resa_rel_pct.toFixed(1)} pp |\n` +
+        `| Average yield (t/ha) | ${f.baseline_resa_t_ha.toFixed(2)} t/ha | ${f.future_resa_t_ha.toFixed(2)} t/ha | ${(f.future_resa_t_ha - f.baseline_resa_t_ha).toFixed(2)} t/ha |\n` +
+        `| Net margin (EUR/ha/year) | ${f.baseline_margine_eur_ha.toFixed(0)} EUR/ha | ${f.future_margine_eur_ha.toFixed(0)} EUR/ha | ${f.delta_margine_eur_ha >= 0 ? "+" : ""}${f.delta_margine_eur_ha.toFixed(0)} EUR/ha |\n` +
+        `| Variable costs (EUR/ha/year) | ${f.baseline_costo_eur_ha.toFixed(0)} EUR/ha | ${f.future_costo_eur_ha.toFixed(0)} EUR/ha | ${f.delta_costo_eur_ha >= 0 ? "+" : ""}${f.delta_costo_eur_ha.toFixed(0)} EUR/ha |\n` +
+        `| Irrigation demand (mm/year) | ${f.baseline_irrigazione_mm.toFixed(0)} mm | ${f.future_irrigazione_mm.toFixed(0)} mm | ${(f.future_irrigazione_mm - f.baseline_irrigazione_mm).toFixed(0)} mm |\n` +
+        `| Extreme heat days (Tmax > 35°C) | Historical baseline | ${f.future_hot_days_ann.toFixed(1)} days/year | Heat stress increase |\n` +
+        `| Reference ET0 (mm/year) | ${f.baseline_et0_ann_mm.toFixed(0)} mm | ${f.future_et0_ann_mm.toFixed(0)} mm | +${(f.future_et0_ann_mm - f.baseline_et0_ann_mm).toFixed(0)} mm |\n\n` +
+        `### Climate adaptation opportunity\n\n` +
+        `**Recommended adaptation strategy:** ${labelRotation(f.best_rotation)}\n\n` +
+        `- Additional margin vs current rotation: +${f.delta_guadagno_eur_ha.toFixed(1)} EUR/ha/year\n` +
+        `- Yield boost vs current rotation: ${f.delta_resa_best_pct >= 0 ? "+" : ""}${f.delta_resa_best_pct.toFixed(1)} pp (projected: ${f.best_resa_rel_pct.toFixed(1)}%, ${f.best_resa_t_ha.toFixed(1)} t/ha)\n` +
+        `- Future irrigation demand: ${f.best_irrigazione_mm.toFixed(0)} mm/year\n` +
+        `- Nitrogen fertilizer demand: ${f.best_concime_kg_n_ha.toFixed(0)} kg N/ha\n` +
+        `- Regulatory compliance: ${f.best_conformita}\n` +
+        (f.best_rischi && f.best_rischi.length ? `\n**Adaptation notices and risks:**\n\n` + f.best_rischi.map((r) => `- ${r}`).join("\n") : "");
+    })()] : []),
     `## ${next()}. Soil and geographic data\n\n` +
     (soil ? `| Parameter | Model input |\n| --- | --- |\n` +
       `| Soil processing method | ${mdCell(soil.soilDataMethod)} |\n` +

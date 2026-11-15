@@ -60,6 +60,66 @@ export type EconomicsInfo = {
   otherCropCostsEurHa: Record<string, number>;
 };
 
+export type FutureProjectionResult = {
+  lat: number;
+  lon: number;
+  horizon_years: number;
+  ssp_code: "ssp126" | "ssp245" | "ssp585";
+  ssp_label: string;
+  ssp_description: string;
+  current_rotation: string;
+  irrigation_regime: string;
+  calcolato_il: string;
+  baseline_resa_rel_pct: number;
+  baseline_resa_t_ha: number;
+  baseline_margine_eur_ha: number;
+  baseline_costo_eur_ha: number;
+  baseline_costo_irrigazione_eur_ha: number;
+  baseline_costo_concime_eur_ha: number;
+  baseline_irrigazione_mm: number;
+  baseline_concime_kg_n_ha: number;
+  baseline_humus_t_ha: number;
+  baseline_n_lisciviato_kg_n_ha: number;
+  baseline_et0_ann_mm: number;
+  baseline_tmean_ann_c: number;
+  baseline_gdd_base10_ann: number;
+  future_resa_rel_pct: number;
+  future_resa_rel_p10_pct: number;
+  future_resa_t_ha: number;
+  future_margine_eur_ha: number;
+  future_margine_p10_eur_ha: number;
+  future_costo_eur_ha: number;
+  future_costo_irrigazione_eur_ha: number;
+  future_costo_concime_eur_ha: number;
+  future_irrigazione_mm: number;
+  future_concime_kg_n_ha: number;
+  future_humus_t_ha: number;
+  future_n_lisciviato_kg_n_ha: number;
+  future_et0_ann_mm: number;
+  future_tmean_ann_c: number;
+  future_gdd_base10_ann: number;
+  future_hot_days_ann: number;
+  delta_resa_rel_pct: number;
+  delta_costo_eur_ha: number;
+  delta_margine_eur_ha: number;
+  best_rotation: string;
+  best_resa_rel_pct: number;
+  best_resa_t_ha: number;
+  best_margine_eur_ha: number;
+  best_costo_eur_ha: number;
+  best_costo_irrigazione_eur_ha: number;
+  best_costo_concime_eur_ha: number;
+  best_irrigazione_mm: number;
+  best_concime_kg_n_ha: number;
+  delta_guadagno_eur_ha: number;
+  delta_resa_best_pct: number;
+  delta_costo_best_eur_ha: number;
+  best_posizione: number;
+  best_non_dominata: boolean;
+  best_conformita: string;
+  best_rischi: string[];
+};
+
 export type Limitations = {
   referencePoint: [number, number];
   appliesToThisAnalysisData: boolean;
@@ -130,6 +190,12 @@ export type CompletedReport = {
     codeHash?: string;
     cacheCodeVersionRecorded?: boolean;
     economics?: EconomicsInfo;
+    future?: {
+      enabled: boolean;
+      horizonYears?: number | null;
+      sspCode?: string | null;
+      methodology?: string;
+    } | null;
     limitations?: Limitations;
     localData?: {
       aquaCropRunoffGroup: string;
@@ -149,6 +215,7 @@ export type CompletedReport = {
     recommendation?: Recommendation;
     rotationOrderNote?: string | null;
     historicalWindows?: HistoricalWindows | null;
+    future?: FutureProjectionResult | null;
     notes: string[];
   };
 };
