@@ -1,10 +1,13 @@
 """Client SoilGrids 250 m v2.0 (ISRIC): proprieta' del suolo di un punto.
 
-Sorgente principale: REST ``https://rest.isric.org/soilgrids/v2.0/properties/query``
-(servizio instabile: timeout lunghi, almeno 5 tentativi con attesa crescente).
-Ripiego: WCS ``https://maps.isric.org/mapserv?map=/map/<proprieta'>.map`` (GetCoverage 2.0.1,
+Sorgente predefinita: WCS ``https://maps.isric.org/mapserv?map=/map/<proprieta'>.map`` (GetCoverage 2.0.1,
 un coverage per proprieta'/profondita'/statistica, riquadro di circa 0,02 gradi attorno al punto,
 uscita GeoTIFF in EPSG:4326 con ricampionamento al vicino: i valori sono quelli nativi a 250 m).
+REST ``https://rest.isric.org/soilgrids/v2.0/properties/query`` e' disponibile
+soltanto con FIELDWISE_SOILGRIDS_PRIMARY=rest (con fallback WCS); la modalita'
+`auto` tenta prima WCS poi REST. Un raster WCS completo gia' scaricato puo'
+essere ricampionato su un altro punto interno alla stessa finestra, evitando
+nuove chiamate di rete ma senza riusare i valori del punto originario.
 La via usata e' scritta nel .meta.json (campo ``notes``) e nel JSON grezzo (campo ``via``).
 
 Proprieta': sand, clay, silt, soc, bdod, cfvo. Profondita': 0-5, 5-15, 15-30, 30-60, 60-100,
@@ -51,6 +54,8 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
+import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -61,6 +66,8 @@ import pandas as pd
 import requests
 
 from . import cache
+
+log = logging.getLogger(__name__)
 
 SOURCE = "soilgrids"
 PRODUCT = "SoilGrids 250m"
@@ -85,6 +92,11 @@ SOC_PCT = {"d_factor": 100, "mapped": "dg/kg", "unit": "%"}  # derivata da soc
 VAN_BEMMELEN = 1.724
 HORIZONS = ((0, 30), (30, 100), (100, 200))
 
+# ISRIC's beta REST service has been paused. WCS is the default; REST
+# remains opt-in for later recovery/testing via FIELDWISE_SOILGRIDS_PRIMARY=rest.
+# A full WCS profile needs 6 properties x 6 depths x 5 statistics = 180
+# GetCoverage calls, so we also reuse valid nearby WCS windows (not values
+# interpolated or copied from a different point).
 # robustezza di rete
 REST_TIMEOUT = (20, 90)          # (connessione, lettura) in secondi
 REST_ATTEMPTS = 5
@@ -405,8 +417,56 @@ def _process(lat: float, lon: float, raw_path: Path) -> tuple[pd.DataFrame, pd.D
 
 # --------------------------------------------------------------------------- API pubblica
 
+def _cached_nearby_wcs(lat: float, lon: float) -> dict | None:
+    """Reuse an existing georeferenced WCS raster window covering this point.
+
+    The new location is sampled separately from the original rasters via
+    _parse_wcs: never treat the source point's already-sampled soil values as
+    measurements of the new point. The source must have a valid cache meta.
+    """
+    root = cache.raw_dir(SOURCE, key="__unused__", create=False).parent
+    if not root.exists():
+        return None
+    for path in root.glob("lat*_lon*/soilgrids_wcs.json"):
+        if not cache.is_cached(path):
+            continue
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            if raw.get("via") != "wcs" or not raw.get("coverages"):
+                continue
+            origin = raw.get("requested", {})
+            # Fast filter before decoding a large 180-coverage JSON file.
+            if (abs(float(origin["lat"]) - lat) > 2 * WCS_HALF_BOX_DEG or
+                    abs(float(origin["lon"]) - lon) > 2 * WCS_HALF_BOX_DEG):
+                continue
+            ref = raw["coverages"][0]
+            values = ref["values"]
+            height, width = len(values), len(values[0])
+            left, top = float(ref["origin_lon"]), float(ref["origin_lat"])
+            dx, dy = float(ref["dx"]), float(ref["dy"])
+            if dx <= 0 or dy <= 0 or not (left <= lon < left + width * dx and
+                                          top - height * dy < lat <= top):
+                continue
+            # Check validity and pixel selection at the NEW location. This also
+            # enforces the unchanged 500 m nodata shift limit.
+            _parse_wcs(raw, lat, lon)
+            source_meta = cache.read_meta(path)
+            return {
+                **raw,
+                "requested": {"lat": lat, "lon": lon},
+                "reused_from": {
+                    "lat": origin["lat"], "lon": origin["lon"],
+                    "downloaded_at_utc": source_meta.get("downloaded_at_utc"),
+                },
+            }
+        except (ValueError, TypeError, KeyError, IndexError, OSError, SoilGridsError):
+            # One corrupt/incompatible cached window must not block others.
+            continue
+    return None
+
+
 def fetch(lat: float, lon: float, force: bool = False) -> Path:
-    """Scarica SoilGrids per il punto (REST, poi WCS) e scrive grezzo, meta ed elaborati.
+    """Recupera SoilGrids (cache, WCS di default, REST opt-in) e salva gli elaborati.
 
     Restituisce il percorso del JSON grezzo. Con force=False e cache valida non tocca la rete.
     """
@@ -418,19 +478,37 @@ def fetch(lat: float, lon: float, force: bool = False) -> Path:
                 if not (cache.processed_dir(lat, lon) / "soilgrids_agg.csv").exists():
                     _process(lat, lon, p)
                 return p
-    cache.ensure_online("SoilGrids")
-
-    errors: list[str] = []
-    raw: dict | None = None
-    try:
-        raw = _fetch_rest(lat, lon)
-    except SoilGridsError as exc:
-        errors.append(str(exc))
+    start = time.perf_counter()
+    raw = None if force else _cached_nearby_wcs(lat, lon)
     if raw is None:
-        raw = _fetch_wcs(lat, lon)
+        cache.ensure_online("SoilGrids")
+        mode = os.environ.get("FIELDWISE_SOILGRIDS_PRIMARY", "wcs").strip().lower()
+        if mode not in {"wcs", "rest", "auto"}:
+            raise ValueError("FIELDWISE_SOILGRIDS_PRIMARY must be wcs, rest or auto")
+        errors: list[str] = []
+        if mode == "rest":
+            # Legacy route, opt-in while ISRIC REST is paused.
+            try:
+                raw = _fetch_rest(lat, lon)
+            except SoilGridsError as exc:
+                errors.append(str(exc))
+            if raw is None:
+                raw = _fetch_wcs(lat, lon)
+        else:
+            # No failed REST retries on the normal path.
+            try:
+                raw = _fetch_wcs(lat, lon)
+            except SoilGridsError as exc:
+                if mode != "auto":
+                    raise
+                errors.append(str(exc))
+                raw = _fetch_rest(lat, lon)
+        if errors:
+            raw["upstream_error"] = errors[0]
     via = raw["via"]
-    if errors:
-        raw["rest_error"] = errors[0]
+    log.info("SoilGrids %s for %s in %.1f s%s", via, cache.point_key(lat, lon),
+             time.perf_counter() - start,
+             " (reused cached WCS coverage)" if raw.get("reused_from") else "")
 
     for other in ("rest", "wcs"):  # niente grezzi doppi
         if other != via:
@@ -441,8 +519,10 @@ def fetch(lat: float, lon: float, force: bool = False) -> Path:
 
     _, _, info = _process(lat, lon, path)
     notes = f"via={via}"
-    if via == "wcs":
-        notes += f" (REST non disponibile: {raw.get('rest_error')})"
+    if raw.get("reused_from"):
+        notes += f"; WCS raster cached at {raw['reused_from']['lat']}, {raw['reused_from']['lon']}"
+    if raw.get("upstream_error"):
+        notes += f"; previous source failed: {raw['upstream_error']}"
     if info.get("shift_m", 0.0) > 0:
         notes += f"; pixel spostato di {info['shift_m']:.0f} m (pixel del punto senza dato)"
     else:
@@ -452,7 +532,8 @@ def fetch(lat: float, lon: float, force: bool = False) -> Path:
         url=REST_URL if via == "rest" else WCS_URL,
         params={"lat": lat, "lon": lon, "properties": list(PROPERTIES),
                 "depths_cm": [f"{t}-{b}" for t, b in DEPTHS], "values": list(STATS),
-                "via": via, "pixel": info},
+                "via": via, "pixel": info,
+                "reused_from": raw.get("reused_from")},
         notes=notes)
     return path
 

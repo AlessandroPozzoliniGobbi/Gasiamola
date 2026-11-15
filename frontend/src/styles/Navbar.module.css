@@ -131,3 +131,31 @@
   .settingsLink { flex-basis: 34px; width: 34px; }
   .links { gap: 0; }
 }
+
+/* Phase 5: high-contrast forest navigation; preserve exact markup and routing. */
+.navbar {
+  background: rgba(22, 54, 39, .985);
+  border-bottom: 1px solid #315944;
+  box-shadow: 0 5px 22px rgba(13, 39, 26, .20);
+}
+.brand { color: #f7fbf5; }
+.brandIcon { background: #f1f7ed; border-color: #c4dac4; }
+.brand:hover .brandIcon { background: #ffffff; }
+.links {
+  background: rgba(255,255,255,.075);
+  border-color: rgba(222,239,220,.18);
+}
+.navLink,.settingsLink { color: #e0ede2; }
+.navLink:hover,.settingsLink:hover {
+  color: #ffffff;
+  background: rgba(255,255,255,.14);
+}
+.navLink.active,.settingsLink.active {
+  color: #18452f;
+  background: #f8fbf3;
+  box-shadow: 0 2px 8px rgba(6,31,16,.20);
+}
+.navDivider { background: rgba(218,238,218,.27); }
+.brand:focus-visible,.navLink:focus-visible,.settingsLink:focus-visible {
+  outline-color: #e8d49b;
+}

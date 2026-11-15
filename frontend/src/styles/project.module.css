@@ -416,3 +416,60 @@
   .projectShell .pageTitle,
   .projectShell:has(.overviewCard) .pageTitle { font-size: clamp(30px, 5.2vw, 45px); }
 }
+
+/* Project chapter navigation and scientific explanations: legibility first. */
+.eyebrow { font-size: 13px; }
+.chapterLink { font-size: clamp(13px, 1vw, 15px); }
+.headerDescription { color: #42604b; font-size: 16px; }
+.overviewLink { font-size: 14px; }
+:global(html[data-fw-contrast="high"]) .projectShell { --project-muted: #2d4b36; }
+:global(html[data-fw-contrast="high"]) .chapterLink { color: #244832; }
+:global(html[data-fw-contrast="high"]) .contentCard { border-color: #8eb295; }
+:global(html[data-fw-text-size="large"]) .projectShell :is(.chapterLink,.headerDescription,.overviewLink) { font-size: 17px; }
+
+
+/* Project adopts the same reading surfaces and text contrast as Reports. */
+.projectShell { --project-muted: #385b45; }
+.projectShell .contentCard { border-color: #abc7b0; background: rgba(255,254,250,.975); }
+.projectShell .overviewHighlight { border-color: #bbd4bc; background: #f4f8f0; }
+.projectShell .overviewHighlight p, .projectShell .draftText { color: #355542; font-size: 15px; }
+.projectShell .overviewHighlightLink { display: block; color: inherit; text-decoration: none; transition: border-color .16s ease, background .16s ease; }
+.projectShell .overviewHighlightLink:hover { background: #e9f3e7; border-color: #87b694; }
+.projectShell .chapterLinks { overflow-x: auto; scrollbar-width: thin; scrollbar-color: #a2c4ac transparent; }
+.projectShell .chapterLink { flex: 1 0 auto; min-width: 118px; white-space: nowrap; }
+.roadmapSection { display: grid; gap: 23px; margin-top: 27px; }
+.roadmapIntroduction { max-width: 920px; }
+.roadmapEyebrow { display: inline-flex; padding: 7px 11px; border: 1px solid #d7b987; border-radius: 8px; color: #775526; background: #fff7e8; font-size: 12px; font-weight: 800; letter-spacing: .075em; }
+.roadmapIntroduction h2 { margin: 15px 0 9px; font-size: clamp(23px, 2.5vw, 32px); line-height: 1.2; letter-spacing: -.035em; }
+.roadmapIntroduction p { margin: 0; color: #365442; font-size: 16px; line-height: 1.7; }
+.roadmapGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.roadmapCard { padding: 23px; border: 1px solid #bdd2c0; border-radius: 18px; background: #fbfdf9; box-shadow: 0 7px 20px rgba(28,72,44,.045); }
+.roadmapNumber { display: inline-grid; place-items: center; width: 43px; height: 36px; border-radius: 11px; color: #216647; background: #e6f2e6; font-size: 15px; font-weight: 800; }
+.roadmapCard h3 { margin: 14px 0 8px; color: #193d2b; font-size: 20px; line-height: 1.3; }
+.roadmapCard p { margin: 0; color: #3c5948; font-size: 15px; line-height: 1.65; }
+.roadmapCaution { border-left: 4px solid #bc9153; border-radius: 12px; padding: 16px 20px; background: #fff8ea; }
+.roadmapCaution strong { color: #64491f; font-size: 16px; }
+.roadmapCaution p { margin: 6px 0 0; color: #5a4a34; font-size: 15px; line-height: 1.6; }
+@media (max-width: 920px) {
+  .projectShell .chapterLinks { flex-direction: row; gap: 4px; }
+  .projectShell .chapterLink { min-height: 44px; justify-content: center; text-align: center; padding: 10px 12px; }
+  .projectShell .chapterNav { position: static; }
+}
+@media (max-width: 660px) { .roadmapGrid { grid-template-columns: 1fr; } .roadmapCard { padding: 19px; } }
+
+/* Phase 5: nine compact chapter destinations, including Overview and Scalability. */
+.projectShell .chapterNav { border-color: #b5d0b8; background: rgba(236,244,233,.96); }
+.projectShell .chapterLinks { display: flex; flex-direction: row; align-items: stretch; gap: 3px; overflow-x: auto; }
+.projectShell .chapterLink {
+  flex: 1 0 auto;
+  min-width: max-content;
+  padding: 11px clamp(9px, 1vw, 15px);
+  min-height: 46px;
+  font-size: clamp(12px, .87vw, 14px);
+  color: #2d5440;
+}
+.projectShell .chapterActive { background: #fffdf8; color: #174b32; }
+@media (max-width: 920px) {
+  .projectShell .chapterLinks { flex-direction: row; }
+  .projectShell .chapterLink { justify-content: center; padding-inline: 13px; font-size: 13px; }
+}

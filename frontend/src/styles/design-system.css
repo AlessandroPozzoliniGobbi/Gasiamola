@@ -1,0 +1,45 @@
+/* FIELDWISE design system — Phase 1.
+   Shared tokens and opt-in UI primitives. Functional views keep their own layout. */
+:root {
+  /* Forest, sage, warm paper and soil. */
+  --fw-ink: #193d2b;
+  --fw-text: #294d38;
+  --fw-muted: #56705c;
+  --fw-primary: #256f4d;
+  --fw-primary-hover: #185336;
+  --fw-primary-soft: #e9f4e7;
+  --fw-sage: #91bf91;
+  --fw-canvas: #f7faf5;
+  --fw-surface: #fffefa;
+  --fw-surface-muted: #f3f7f0;
+  --fw-surface-white: #ffffff;
+  --fw-border: #d1e1d2;
+  --fw-border-strong: #b4d0b6;
+  --fw-focus: #2b8054;
+  --fw-soil: #906d4e;
+  --fw-soil-soft: #f1e9da;
+
+  /* One scale for the entire interface. */
+  --fw-radius-xs: 8px;
+  --fw-radius-sm: 12px;
+  --fw-radius-md: 16px;
+  --fw-radius-lg: 20px;
+  --fw-radius-xl: 28px;
+  --fw-radius-pill: 999px;
+
+  --fw-space-1: 4px;
+  --fw-space-2: 8px;
+  --fw-space-3: 12px;
+  --fw-space-4: 16px;
+  --fw-space-5: 20px;
+  --fw-space-6: 24px;
+  --fw-space-8: 32px;
+  --fw-space-10: 40px;
+
+  --fw-shadow-sm: 0 3px 12px rgba(28, 71, 41, .07);
+  --fw-shadow-md: 0 12px 32px rgba(28, 71, 41, .10);
+  --fw-shadow-lg: 0 20px 56px rgba(28, 71, 41, .12);
+  --fw-ease: cubic-bezier(.2, .7, .2, 1);
+  --fw-duration: 180ms;
+  --fw-font: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}

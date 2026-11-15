@@ -1,11 +1,12 @@
-/* Fondamenta globali. Non tocchiamo gli stili interni della mappa. */
+/* Compatibilita' con le variabili usate dalle pagine esistenti.
+   Il vocabolario condiviso vive in design-system.css. */
 :root {
-  --ui-green: #256f4d;
-  --ui-green-dark: #193d2b;
-  --ui-green-hover: #185336;
-  --ui-muted: #56705c;
-  --ui-border: #c5dac7;
-  --ui-surface: #f3f7f0;
+  --ui-green: var(--fw-primary);
+  --ui-green-dark: var(--fw-ink);
+  --ui-green-hover: var(--fw-primary-hover);
+  --ui-muted: var(--fw-muted);
+  --ui-border: var(--fw-border);
+  --ui-surface: var(--fw-surface-muted);
 }
 
 .landing, .landing *, .inner-page, .inner-page * { box-sizing: border-box; }
@@ -14,8 +15,8 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
 
 /* HOME */
 .landing {
-  --home-ink: #193d2b;
-  --home-muted: #56705c;
+  --home-ink: var(--fw-ink);
+  --home-muted: var(--fw-muted);
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -103,10 +104,10 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   gap: 13px;
   min-height: 54px;
   padding: 14px 29px;
-  border: 1px solid #256f4d;
+  border: 1px solid var(--fw-primary);
   border-radius: 15px;
   color: #fff;
-  background: #256f4d;
+  background: var(--fw-primary);
   box-shadow: 0 7px 16px rgba(26, 84, 51, .15);
   font: inherit;
   font-size: 15px;
@@ -117,11 +118,11 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
 .landing .start-button { min-width: 150px; }
 .landing .start-button:hover,
 .landing .landing-project-link:hover {
-  background: #185336;
+  background: var(--fw-primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 10px 22px rgba(26, 84, 51, .20);
 }
-.landing a:focus-visible { outline: 3px solid #256f4d; outline-offset: 5px; }
+.landing a:focus-visible { outline: 3px solid var(--fw-primary); outline-offset: 5px; }
 
 /* Tre tappe: card compatte che riprendono la sidebar della mappa. */
 .landing .landing-step {
@@ -154,7 +155,7 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   width: 69px;
   height: 59px;
   margin-top: 2px;
-  color: #256f4d;
+  color: var(--fw-primary);
   border: 1px solid #cce1cd;
   border-radius: 16px;
   background: #e9f4e7;
@@ -199,7 +200,7 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   min-height: calc(100svh - 78px);
   padding: clamp(40px, 8vh, 90px) 24px 100px;
   overflow: hidden;
-  color: #193d2b;
+  color: var(--fw-ink);
   background:
     radial-gradient(circle at 85% 10%, rgba(198, 227, 187, .45), transparent 31%),
     radial-gradient(circle at 10% 90%, rgba(223, 240, 217, .52), transparent 32%),
@@ -227,7 +228,7 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   left: 0;
   right: 0;
   height: 7px;
-  background: linear-gradient(90deg, #256f4d, #91bf91, #e3f1df);
+  background: linear-gradient(90deg, var(--fw-primary), #91bf91, #e3f1df);
 }
 .inner-page h1 {
   margin: 0 0 22px;
@@ -253,13 +254,13 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
 .inner-page ol {
   max-width: 66ch;
   margin: 16px 0;
-  color: #56705c;
+  color: var(--fw-muted);
   font-size: clamp(18px, 1.65vw, 21px);
   line-height: 1.75;
 }
 .inner-page li + li { margin-top: 8px; }
-.inner-page a { color: #256f4d; text-underline-offset: 4px; }
-.inner-page a:hover { color: #185336; }
+.inner-page a { color: var(--fw-primary); text-underline-offset: 4px; }
+.inner-page a:hover { color: var(--fw-primary-hover); }
 .inner-page .page-panel {
   margin-top: 24px;
   padding: 24px;
@@ -281,7 +282,7 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   padding: 10px 17px;
   border: 1px solid #c7dcc8;
   border-radius: 12px;
-  color: #256f4d;
+  color: var(--fw-primary);
   background: #f3f7f0;
   font-size: 14px;
   font-weight: 700;
@@ -297,26 +298,26 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   justify-content: center;
   min-height: 44px;
   padding: 10px 20px;
-  border: 1px solid #256f4d;
+  border: 1px solid var(--fw-primary);
   border-radius: 12px;
   color: #fff;
-  background: #256f4d;
+  background: var(--fw-primary);
   cursor: pointer;
 }
-.inner-page .page-button:hover { background: #185336; }
+.inner-page .page-button:hover { background: var(--fw-primary-hover); }
 .inner-page .page-field {
   width: 100%;
   min-height: 44px;
   padding: 12px 14px;
   border: 1px solid #c7dcc8;
   border-radius: 12px;
-  color: #193d2b;
+  color: var(--fw-ink);
   background: #fff;
 }
 .inner-page textarea.page-field { min-height: 140px; resize: vertical; }
-.inner-page input[type="checkbox"], .inner-page input[type="radio"] { accent-color: #256f4d; }
+.inner-page input[type="checkbox"], .inner-page input[type="radio"] { accent-color: var(--fw-primary); }
 .inner-page :where(a,button,input,select,textarea):focus-visible {
-  outline: 3px solid #256f4d;
+  outline: 3px solid var(--fw-primary);
   outline-offset: 4px;
 }
 .inner-page .page-button:disabled,
@@ -405,7 +406,7 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
 }
 .contacts-heading h1 {
   margin: 0;
-  color: #193d2b;
+  color: var(--fw-ink);
   font-size: clamp(43px, 5.5vw, 72px);
   letter-spacing: -.065em;
   line-height: 1.08;
@@ -530,21 +531,8 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
   .contact-card:hover { transform: none; }
 }
 
-/* On desktop the Analysis view fills the available body area. The document itself
-   never scrolls; the settings column inside Analysis has its own scrollbar.
-   Other routes and smaller screens keep their normal scrolling behavior. */
-@media (min-width: 1021px) {
-  body:has(> main[data-fieldwise-analysis]) {
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-  }
-  body:has(> main[data-fieldwise-analysis]) > header {
-    flex: 0 0 auto;
-  }
-}
+/* Field analysis now scrolls with the document, so the full configuration
+   is reachable without trapping the user in a nested scroll container. */
 
 
 /* V11 — TEAM IN THE SAME ILLUSTRATED WORLD AS HOME AND PROJECT. */
@@ -727,4 +715,104 @@ body { margin: 0; min-width: 0; min-height: 100vh; background: #fff; }
 @media (max-width: 700px) and (min-height: 710px) {
   /* At mobile widths the two-row Navbar is taller than the desktop header. */
   .contacts-page { height: calc(100dvh - 110px); }
+}
+
+/* User-selectable accessibility preferences. The navbar retains its existing styling. */
+html[data-fw-contrast="high"] {
+  --fw-ink: #122e20;
+  --fw-text: #1d3a27;
+  --fw-muted: #365340;
+  --fw-primary: #155d3b;
+  --fw-primary-hover: #10452d;
+  --fw-border: #93b39a;
+  --fw-border-strong: #638d70;
+}
+html[data-fw-contrast="high"] .landing-step-content,
+html[data-fw-contrast="high"] .inner-page-content,
+html[data-fw-contrast="high"] .contact-card { border-color: #88ad8d; }
+html[data-fw-contrast="high"] .contacts-heading p,
+html[data-fw-contrast="high"] .contact-role { color: #294a34; }
+html[data-fw-text-size="large"] .landing-description,
+html[data-fw-text-size="large"] .inner-page p,
+html[data-fw-text-size="large"] .inner-page li { font-size: clamp(19px, 1.8vw, 23px); }
+html[data-fw-text-size="large"] .contacts-heading p,
+html[data-fw-text-size="large"] .contact-role { font-size: 19px; }
+html[data-fw-motion="reduced"] { scroll-behavior: auto !important; }
+html[data-fw-motion="reduced"] *,
+html[data-fw-motion="reduced"] *::before,
+html[data-fw-motion="reduced"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}
+
+
+/* Map-only viewport correction: the site's unchanged navbar remains in view.
+   The map occupies the remaining height and its overlays keep their positions. */
+@media (min-width: 769px) {
+  body:has(> main[data-fieldwise-map]) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+  body:has(> main[data-fieldwise-map]) > header {
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 1100;
+  }
+  body:has(> main[data-fieldwise-map]) > main[data-fieldwise-map] {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* One consistent visual scale across team and the informative pages. */
+.contacts-page .contact-role-title { color: #276b48; font-size: 12px; margin-bottom: 7px; }
+.contacts-page .contact-role-name { margin: 0 0 8px; color: #193d2b; font-size: 17px; line-height: 1.35; font-weight: 760; }
+.contacts-page .contact-role { min-height: 42px; color: #345542; font-size: 15px; line-height: 1.55; }
+.contacts-page .contact-card { border-color: #aac8b2; background: #fffefb; }
+.contacts-page .contacts-heading p { color: #365843; }
+.landing .landing-step-content {
+  background: rgba(255,254,250,.95);
+  border: 1px solid #b5d0b9;
+  box-shadow: 0 14px 45px rgba(28,69,43,.10);
+}
+.landing .landing-description { color: #365743; }
+.landing .landing-label { color: #215b3d; }
+
+/* Phase 5: let visitors start after reading the complete Home journey. */
+.landing .landing-final-actions {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 13px;
+  margin-top: 30px;
+}
+.landing .landing-final-actions .start-button,
+.landing .landing-final-actions .landing-project-link {
+  grid-column: auto;
+  margin-top: 0;
+  min-height: 54px;
+  font-size: 15px;
+}
+.landing .landing-final-actions .start-button { min-width: 170px; }
+.landing .landing-final-actions .landing-project-link {
+  background: rgba(255,254,250,.96);
+  color: #205c3e;
+  border-color: #96b89b;
+  box-shadow: 0 5px 15px rgba(21,65,38,.07);
+}
+.landing .landing-final-actions .landing-project-link:hover {
+  background: #e6f1e5;
+  border-color: #4c8a60;
+  color: #153e2b;
+}
+@media (max-width: 700px) {
+  .landing .landing-final-actions { width: 100%; margin-top: 26px; gap: 10px; }
+  .landing .landing-final-actions > a { flex: 1 1 170px; }
 }

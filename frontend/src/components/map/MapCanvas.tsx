@@ -6,6 +6,7 @@ import { TerraDraw, TerraDrawPolygonMode, TerraDrawSelectMode } from "terra-draw
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_CONFIG } from "../../lib/mapConfig";
+import { readUiPreferences } from "../../lib/uiPreferences";
 import {
   getAreaMaskGeoJSON, getAreaOutlineGeoJSON, getOperationalBounds,
   isPointAllowed, isPolygonAllowed,
@@ -67,7 +68,7 @@ export default function MapCanvas({
           id: "satellite-layer",
           type: "raster",
           source: "satellite-source",
-          layout: { visibility: "none" },
+          layout: { visibility: readUiPreferences().defaultBasemap === "satellite" ? "visible" : "none" },
         });
       }
 

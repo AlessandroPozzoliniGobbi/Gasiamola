@@ -10,7 +10,7 @@ export default function ProjectPage() {
     <article className={`${styles.contentCard} ${styles.overviewCard}`}>
       <div className={styles.overviewBody}>
         <div className={styles.overviewIntro}>
-          <span className={styles.sectionLabel}>PROJECT OVERVIEW / THE BIG PICTURE</span>
+          <span className={styles.sectionLabel}>CHAPTER 01 / 09 · PROJECT OVERVIEW</span>
           <h1 className={styles.pageTitle}>A clearer view of every field.</h1>
           <p className={styles.lead}>
             FIELDWISE is a decision-support project developed for the NASA Space Apps Challenge 2026.
@@ -37,8 +37,8 @@ export default function ProjectPage() {
 
       <footer className={styles.overviewFooter}>
         <div className={styles.overviewInfo}>
-          <span className={styles.overviewNumber}>07</span>
-          <span>Dedicated chapters. Pick any topic above to explore it in depth.</span>
+          <span className={styles.overviewNumber}>09</span>
+          <span>Dedicated sections, including Scalability. Explore them using the chapter navigation.</span>
         </div>
         <Link className={styles.primaryLink} href="/progetto/analytical-framework">
           Explore the framework <span aria-hidden="true">→</span>

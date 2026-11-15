@@ -120,3 +120,22 @@ export async function deleteCompletedReport(id: string): Promise<void> {
     db.close();
   }
 }
+
+/** Full reports for optional local reuse in a farm-wide analysis.
+ *  This reads only the existing, bounded IndexedDB history (at most ten reports).
+ *  It never reads demonstrations or changes a report snapshot. */
+export async function listRecentCompletedReports(): Promise<CompletedReport[]> {
+  const db = await openDB();
+  try {
+    const request = db.transaction(STORE, "readonly").objectStore(STORE).getAll();
+    const values = await new Promise<unknown[]>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error("Could not read saved analyses."));
+    });
+    return values.filter(isCompletedReport)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, MAX_SAVED_REPORTS);
+  } finally {
+    db.close();
+  }
+}

@@ -1,12 +1,11 @@
-// Sostituisci qui i segnaposto con i nomi e i contributi reali del team.
-// Per le foto personali, in futuro basta sostituire l'SVG dentro contact-avatar.
+// Short, editable credits. Keep the publicly visible roles accurate and concise.
 const teamMembers = [
-  { number: "01", name: "Cortese Marco", role: "[Role / contribution to the project]" },
-  { number: "02", name: "D'Agostino Mattia", role: "[Role / contribution to the project]" },
-  { number: "03", name: "De Martini Matteo", role: "[Role / contribution to the project]" },
-  { number: "04", name: "Pozzolini Gobbi Alessandro", role: "Frontend developer" },
-  { number: "05", name: "Tesch Vittorio", role: "[Role / contribution to the project]" },
-  { number: "06", name: "Valente Lorenzo", role: "Nitrogen Expert" },
+  { number: "01", name: "Cortese Marco", title: "Simulation Engine Developer", contribution: "Model development and data research." },
+  { number: "02", name: "D'Agostino Mattia", title: "Data & Scalability Researcher", contribution: "Data research and future scalability." },
+  { number: "03", name: "De Martini Matteo", title: "Simulation Engine Developer", contribution: "Model development and data research." },
+  { number: "04", name: "Pozzolini Gobbi Alessandro", title: "Frontend Developer", contribution: "Website development and interface design." },
+  { number: "05", name: "Tesch Vittorio", title: "Report Designer", contribution: "End-to-end design of analytical reports." },
+  { number: "06", name: "Valente Lorenzo", title: "Model & Data Researcher", contribution: "Engine research and data analysis." },
 ];
 
 export default function Contatti() {
@@ -38,7 +37,8 @@ export default function Contatti() {
                 <h2>{member.name}</h2>
                 <div className="contact-card-divider" aria-hidden="true" />
                 <span className="contact-role-title">CONTRIBUTIONS</span>
-                <p className="contact-role">{member.role}</p>
+                <h3 className="contact-role-name">{member.title}</h3>
+                <p className="contact-role">{member.contribution}</p>
               </div>
             </article>
           ))}

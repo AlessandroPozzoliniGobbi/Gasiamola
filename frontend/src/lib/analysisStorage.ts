@@ -16,19 +16,19 @@ export const FUTURE_SSPS: FutureSsp[] = ["ssp126", "ssp245", "ssp585"];
 
 export const FUTURE_SSP_LABELS: Record<FutureSsp, { title: string; short: string; description: string }> = {
   ssp126: {
-    title: "Sostenibile (SSP1-2.6)",
+    title: "Low emissions (SSP1-2.6)",
     short: "SSP1-2.6",
-    description: "Transizione rapida e taglio emissioni, riscaldamento contenuto sotto +2°C",
+    description: "Rapid emissions reductions and limited warming under a low-emissions pathway",
   },
   ssp245: {
-    title: "Tendenziale (SSP2-4.5)",
+    title: "Intermediate emissions (SSP2-4.5)",
     short: "SSP2-4.5",
-    description: "Politiche attuali lungo il trend storico, estati più calde e asciutte",
+    description: "An intermediate emissions pathway, with warmer and potentially drier summers",
   },
   ssp585: {
-    title: "Estremo (SSP5-8.5)",
+    title: "Very high emissions (SSP5-8.5)",
     short: "SSP5-8.5",
-    description: "Alte emissioni da fonti fossili, forte frequenza di siccità e calore estremo",
+    description: "Very high emissions, with stronger heat and drought risks",
   },
 };
 

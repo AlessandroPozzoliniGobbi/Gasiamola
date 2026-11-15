@@ -1,0 +1,45 @@
+{
+  "calcolato_il": "2026-11-15T01:45:52+00:00",
+  "lat": 45.192,
+  "lon": 10.303,
+  "n_simulazioni": 11016,
+  "n_scartate": 3888,
+  "tempo_s": 11.052,
+  "n_classi": 76,
+  "scenari": [
+    "solo_pioggia",
+    "tetto_irriguo",
+    "irrigazione_libera"
+  ],
+  "n_avviamento": 1,
+  "rotazione_attuale": null,
+  "opzioni_simulate": {},
+  "hash_parametri": "16634b5447ffc40cf3d25c65fc6fac7246a19b62e82fb97df71b7d5791aa7901",
+  "hash_file_parametri": {
+    "cmip6.yaml": "52bbef07664f206676719795f40f89e4b783a18889c75009e53a0efcaa08489d",
+    "cover_crop.yaml": "bbfd66802a3749594c4cff85d6e2bf96a48768190a7df2246e7fccdcb82601e2",
+    "crops.yaml": "dff8ae15dfc950b75609b607a6cebf2721ae7d549cb0f7d84924d83db2abfd61",
+    "economia.yaml": "35562c081a5770d02b083af2a3eb6337ff56c01631c5e2927bc9cdc333487d2f",
+    "heat.yaml": "54966bab20c172fc275a87766666d62702c497285753ebf7616c41d30ca9bf29",
+    "nitrogen.yaml": "99e342b0b1024578d15c97a01bc120ac79b028c6ea3a3df295616e4d5db292e7",
+    "rotation_rules.yaml": "9e6e57ceaf7f9190211678de903b7e14f1e77ae0bd08270a3480f4a05488e893",
+    "scenarios.yaml": "30fd930ad0b45f84cda0443600d9e1cd8730ccc90b87e2c0ee404a481e8ac6e1",
+    "soil.yaml": "61ea9b37c781d01c786d3680a9313df3d887815a54b3523ac5e9cebbf1c818d8"
+  },
+  "annate_partenza": [
+    2000,
+    2022
+  ],
+  "note": [],
+  "colonne_note": {
+    "resa_rel_p10": "percentile per classe, calcolato su tutte le simulazioni dei membri della classe: classi equivalenti con un diverso numero di membri possono differire"
+  },
+  "annate_partenza_con_risultati": [
+    2000,
+    2016
+  ],
+  "anni_valutati": [
+    2003,
+    2019
+  ]
+}

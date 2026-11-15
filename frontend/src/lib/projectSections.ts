@@ -2,6 +2,7 @@
 export type ProjectSection = {
   slug: string;
   title: string;
+  navLabel: string;
   number: string;
   description: string;
   topics: readonly string[];
@@ -11,49 +12,64 @@ export const projectSections: readonly ProjectSection[] = [
   {
     slug: "analytical-framework",
     title: "Analytical Framework",
-    number: "01",
+    navLabel: "Framework",
+    number: "02",
     description: "How we turn an agricultural question into a structured comparison of possible decisions.",
     topics: ["Research questions", "Decision criteria and indicators", "Comparing crop rotations"],
   },
   {
     slug: "data-and-processing",
     title: "Data & Processing",
-    number: "02",
+    navLabel: "Data",
+    number: "03",
     description: "Our data sources, preparation workflow, quality checks, and approach to reproducibility.",
     topics: ["Data sources", "Cleaning and preparation", "Quality control and traceability"],
   },
   {
     slug: "methodology-and-engine",
     title: "Methodology & Engine",
-    number: "03",
+    navLabel: "Engine",
+    number: "04",
     description: "The scientific methodology behind the model and the way the simulation engine is organized.",
     topics: ["Water, nitrogen, and soil organic matter", "Simulation scenarios", "Engine architecture and assumptions"],
   },
   {
     slug: "results",
     title: "Results",
-    number: "04",
+    navLabel: "Results",
+    number: "05",
     description: "A home for simulation outputs, visual comparisons, and evidence supporting the recommendations.",
     topics: ["Key findings", "Comparative charts and tables", "Interpreting the recommendations"],
   },
   {
     slug: "stakeholder-analysis",
     title: "Stakeholder Analysis",
-    number: "05",
+    navLabel: "Stakeholders",
+    number: "06",
     description: "Who could use FIELDWISE, what they need from it, and where the tool could create value.",
     topics: ["Stakeholder groups", "Needs and expectations", "Potential use cases and impact"],
   },
   {
+    slug: "scalability-and-future-development",
+    title: "Scalability & Future Development",
+    navLabel: "Scalability",
+    number: "07",
+    description: "How FIELDWISE could grow from a regional pilot to a more widely usable decision-support tool.",
+    topics: ["Geographic expansion", "Data and computation at scale", "Validation and adoption"],
+  },
+  {
     slug: "limitations",
     title: "Limitations",
-    number: "06",
+    navLabel: "Limits",
+    number: "08",
     description: "Where our model is uncertain, what it does not represent, and how we plan to improve it.",
     topics: ["Spatial and data limitations", "Model uncertainty", "Future improvements"],
   },
   {
     slug: "sources",
     title: "Sources",
-    number: "07",
+    navLabel: "Sources",
+    number: "09",
     description: "Scientific publications, official datasets, and technical references used in the project.",
     topics: ["NASA and Earth observation datasets", "Scientific literature", "Official standards and documentation"],
   },

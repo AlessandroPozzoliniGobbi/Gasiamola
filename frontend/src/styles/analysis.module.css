@@ -107,58 +107,6 @@
 .ndviSection .ndviSlider { display: block; margin: 0; height: 13px; }
 .ndviHint { margin: 5px 0 0; color: #627d69; line-height: 1.35; font-size: 10px; }
 
-@media (min-width: 1021px) {
-  .page {
-    height: calc(100dvh - var(--analysis-nav-height, 79px));
-    min-height: 0;
-    overflow: hidden;
-    padding: 14px clamp(16px, 3vw, 46px) 14px;
-  }
-  .container { height: 100%; min-height: 0; display: flex; flex-direction: column; }
-  .pageTop { flex: 0 0 auto; margin-bottom: 10px; }
-  .hero { flex: 0 0 auto; margin-bottom: 16px; }
-  .hero h1 { font-size: clamp(27px, 2.4vw, 36px); margin-bottom: 5px; }
-  .hero p { font-size: 12px; line-height: 1.45; }
-  .mainGrid {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
-    align-items: stretch;
-  }
-  .leftColumn { min-height: 0; height: 100%; position: static; overflow-y: auto; }
-  .rightColumn {
-    height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: 0 8px 14px 0;
-    scrollbar-gutter: stable;
-  }
-  .mapCard { height: 100%; min-height: 0; padding: 15px; overflow-x: hidden; overflow-y: auto; }
-  .mapCard > .cardHeading { margin-bottom: 10px; flex: 0 0 auto; }
-  .mapShell { flex: 1 1 auto; height: auto; min-height: 130px; }
-  .fieldFacts { flex: 0 0 auto; gap: 8px 12px; padding-top: 11px; }
-  .fieldFacts div { gap: 3px; }
-  .fieldFacts strong { font-size: 12px; }
-  .fieldFacts span { font-size: 10px; }
-  .ndviSection { flex: 0 0 auto; margin-top: 9px; padding-top: 10px; }
-  .ndviSection .ndviGradient { margin-top: 8px; height: 9px; }
-  .ndviSection .ndviLabel { margin-top: 7px; }
-  .ndviHint { font-size: 10px; }
-}
-
-@media (min-width: 1021px) and (max-height: 710px) {
-  .page { padding-top: 8px; padding-bottom: 8px; }
-  .hero { margin-bottom: 9px; }
-  .hero p { font-size: 11px; line-height: 1.25; }
-  .mapCard { padding: 11px; }
-  .mapCard > .cardHeading { margin-bottom: 6px; }
-  .fieldFacts { gap: 5px 9px; padding-top: 7px; }
-  .mapHelper { margin-top: 4px; }
-  .ndviSection { margin-top: 6px; padding-top: 6px; }
-}
-
 @media (max-width: 1020px) {
   .leftColumn { position: static; display: flex; }
   .mapShell { height: 310px; flex: 0 0 auto; }
@@ -169,22 +117,8 @@
 }
 
 
-/* V4: a compact fixed field panel and a FIELDWISE-styled settings scroll. */
+/* FIELDWISE field panel and settings form styling. */
 .heroTagline strong { color: #256f4d; font-weight: 800; }
-
-/* Right-hand scrollbar: subtle sage track and brand-green thumb. */
-.rightColumn {
-  scrollbar-width: thin;
-  scrollbar-color: #8db59a #edf4ee;
-}
-.rightColumn::-webkit-scrollbar { width: 9px; }
-.rightColumn::-webkit-scrollbar-track { background: #edf4ee; border-radius: 999px; }
-.rightColumn::-webkit-scrollbar-thumb {
-  background: #8db59a;
-  border: 2px solid #edf4ee;
-  border-radius: 999px;
-}
-.rightColumn::-webkit-scrollbar-thumb:hover { background: #357b53; }
 
 /* Priority sliders: dynamic green fill and a tactile knob. */
 .priorityRow input[type="range"] {
@@ -241,14 +175,13 @@
 }
 
 @media (min-width: 1021px) {
-  /* Make the left column fit without its own scrollbar at ordinary desktop heights. */
+  /* Compact proportions for the desktop field preview. */
   .page { padding-top: 10px; padding-bottom: 10px; }
   .pageTop { margin-bottom: 7px; }
   .hero { margin-bottom: 11px; }
   .hero h1 { margin-bottom: 3px; }
   .heroTagline { font-size: 12px; line-height: 1.3; }
-  .leftColumn { overflow: hidden; }
-  .mapCard { overflow: hidden; padding: 12px 14px; }
+  .mapCard { padding: 12px 14px; }
   .mapCard > .cardHeading { margin-bottom: 7px; }
   .mapCard .cardEyebrow { margin-bottom: 4px; }
   .mapCard .cardHeading h2 { font-size: 18px; }
@@ -264,13 +197,6 @@
   .ndviSection .ndviSlider { height: 12px; }
   .ndviHint { margin-top: 3px; line-height: 1.25; }
 }
-/* For unusually short desktop windows, preserve content rather than clipping it. */
-@media (min-width: 1021px) and (max-height: 570px) {
-  .leftColumn { overflow-y: auto; }
-  .mapCard { height: auto; overflow: visible; }
-  .mapShell { flex: 0 0 120px; }
-}
-
 
 /* V4: small map-style selector ABOVE the map, not over the field image. */
 .mapPreview {
@@ -334,58 +260,7 @@
   .mapPreview .mapShell { flex: 0 0 120px; height: 120px; }
 }
 
-/* V5: the document is viewport-locked on desktop, NOT vertically scrollable.
-   The right-hand form remains independently scrollable. */
-@media (min-width: 1021px) {
-  .page {
-    flex: 1 1 0;
-    height: auto;
-    min-height: 0;
-    overflow: hidden;
-    padding: 8px clamp(16px, 3vw, 46px);
-  }
-  .container { height: 100%; min-height: 0; }
-  .pageTop { margin-bottom: 5px; }
-  .hero { margin-bottom: 10px; align-items: center; }
-  .hero h1 { margin-bottom: 0; font-size: clamp(27px, 2.4vw, 36px); }
-  .mainGrid { flex: 1 1 0; height: auto; min-height: 0; overflow: hidden; }
-  .leftColumn { height: 100%; min-height: 0; overflow: hidden; }
-  .mapCard { height: 100%; min-height: 0; overflow: hidden; padding: 10px 13px; }
-  .mapCard > .cardHeading { margin-bottom: 5px; }
-  .mapPreview { flex: 1 1 auto; min-height: 0; }
-  .mapPreview .mapShell { flex: 1 1 auto; min-height: 110px; height: auto; }
-  .fieldFacts {
-    grid-template-columns: max-content minmax(85px, .75fr) minmax(155px, 1.5fr);
-    align-items: baseline;
-    gap: 8px 15px;
-    padding-top: 8px;
-  }
-  .fieldFacts div { flex-direction: row; gap: 5px; align-items: baseline; }
-  .fieldFacts span { font-size: 10px; white-space: nowrap; }
-  .fieldFacts strong { font-size: 11px; white-space: nowrap; }
-  .ndviSection { margin-top: 7px; padding-top: 7px; }
-  .ndviHeader h3 { font-size: 14px; }
-  .ndviSection .ndviGradient { margin-top: 7px; height: 8px; }
-  .ndviSection .ndviTicks { margin-top: 3px; }
-  .ndviThreshold { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
-  .ndviThreshold .ndviLabel { flex: 0 0 auto; margin: 0; font-size: 10px; }
-  .ndviThreshold .ndviSlider { flex: 1 1 auto; width: auto; min-width: 0; height: 12px; }
-  .ndviHint { margin: 2px 0 0; font-size: 9px; }
-}
-.ndviSubheading { font-size: .78em; color: #5f8069; font-weight: 600; }
-@media (max-width: 1020px) {
-  .ndviThreshold { margin-top: 7px; }
-  .ndviThreshold .ndviLabel { margin: 0 0 3px; }
-}
-@media (min-width: 1021px) and (max-height: 580px) {
-  /* Preserve access to map controls when the browser window is unusually short. */
-  .leftColumn { overflow-y: auto; }
-  .mapCard { min-height: 410px; height: auto; }
-  .mapPreview .mapShell { flex: 0 0 180px; }
-}
-
-/* V10 — the Analysis workspace sits within the same illustrated fields as Home.
-   The backdrop never changes the read-only map or independent right-panel scroll. */
+/* Illustrated FIELDWISE backdrop, independent of the document scroll. */
 .page {
   background-color: #e5f0dc;
   background-image:
@@ -477,4 +352,261 @@
 .futureSelect:focus {
   border-color: #276f4b;
   box-shadow: 0 0 0 3px rgba(39,111,75,.15);
+}
+
+/* Analysis forms: stronger contrast and readable labels, without touching controls. */
+.sectionLabel,.cardEyebrow,.rotationSummary > span { font-size: 12px; color: #356347; letter-spacing: .08em; }
+.helper,.checkboxLabel,.optionContent > span,.technicalDetails,.mapHelper,.ndviHint,
+.fieldFacts span,.ndviTicks,.ndviLabel,.mapNotice,.mapLoading,.mapError,
+.submitCard > div:first-child > p:last-child { font-size: 13px; line-height: 1.5; color: #405b47; }
+.select,.inputLabel,.optionContent strong,.priorityRow label,.priorityRow label strong,
+.rotationSummary strong,.runButton,.resetButton,.summaryChips span,.fieldFacts strong {
+  font-size: 14px;
+}
+.mapBadge,.draftBadge,.subtleTag,.mapHelper,.ndviLabel { font-size: 13px; }
+.mapCard,.ndviCard,.formCard,.submitCard { border-color: #bdd6c4; }
+.hero p { font-size: 15px; color: #405d47; }
+:global(html[data-fw-contrast="high"]) .page :is(.helper,.checkboxLabel,.optionContent > span,.technicalDetails,.fieldFacts span,.ndviTicks,.mapHelper,.ndviHint,.hero p) { color: #25422e; }
+:global(html[data-fw-contrast="high"]) .page :is(.mapCard,.formCard,.ndviCard,.submitCard,.cropCard) { border-color: #83aa8b; }
+:global(html[data-fw-text-size="large"]) .page :is(.helper,.checkboxLabel,.optionContent > span,.technicalDetails,.mapHelper,.ndviHint,.fieldFacts span,.ndviTicks,.ndviLabel,.mapNotice,.mapError,.mapLoading,.hero p) { font-size: 16px; }
+:global(html[data-fw-text-size="large"]) .page :is(.select,.inputLabel,.optionContent strong,.priorityRow label,.priorityRow label strong,.rotationSummary strong,.runButton,.resetButton,.summaryChips span) { font-size: 16px; }
+
+/* Multi-field UX pass: bring the input screen in line with the readable report,
+   without changing crop controls, calculation settings or advanced workflows. */
+.page { font-family: var(--fw-font, Arial, Helvetica, sans-serif); color:#193d2b; }
+.page .formCard,
+.page .mapCard,
+.page .submitCard { background:rgba(255,254,250,.97); border-color:#aac9b1; box-shadow:0 7px 22px rgba(22,67,37,.075); }
+.page .cropCard,
+.page .optionCard { background:#fff; border-color:#c8d9cb; }
+.page .optionActive { background:#e9f4e9; border-color:#79ad88; }
+.page .helper,
+.page .optionContent > span,
+.page .checkboxLabel,
+.page .advancedToggle small,
+.page .technicalDetails { color:#3b5845; font-size:14px; line-height:1.65; }
+.page .inputLabel,
+.page .optionContent strong,
+.page .advancedToggle strong { color:#1e4932; font-size:15px; }
+.page .select,
+.page .futureSelect { background:#fff; color:#173d2a; border-color:#afcbb8; min-height:43px; }
+.page :is(.select,.futureSelect):focus-visible { outline:3px solid #378d5a; outline-offset:2px; }
+.page .advancedSection { background:#f9fbf7; border:1px solid #c5d9c9; }
+.page .advancedBody { border-top-color:#d0e0d2; }
+.page .advancedToggle { background:#f0f7ee; border-color:#bed4c0; }
+.page .draftBadge { color:#215b3a; border-color:#bdd9c2; }
+
+/* Optional features: the checkbox is always visible. Once enabled, the
+   corresponding input controls appear immediately without a second disclosure. */
+.page .optionalFeatureCard {
+  padding: 0;
+  border: 1px solid #aecab5;
+  border-radius: 18px;
+  background: #fffefa;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(25, 65, 39, .055);
+}
+.page .optionalFeatureHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 14px;
+}
+.page .optionalSummaryMain {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+.page .optionalSummaryMain .cardEyebrow { margin: 0; font-size: 11px; }
+.page .optionalSummaryMain h2 {
+  margin: 0;
+  color: #193f2c;
+  font-size: clamp(19px, 1.6vw, 23px);
+  line-height: 1.25;
+  letter-spacing: -.02em;
+}
+.page .optionalSubtitle {
+  margin: 0;
+  color: #476650;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.page .optionalFeatureToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 9px;
+  min-height: 44px;
+  padding: 9px 13px;
+  border: 1px solid #a6c5af;
+  border-radius: 12px;
+  background: #f2f7f0;
+  color: #245238;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.page .optionalFeatureToggle:has(input:checked) {
+  background: #e1f0e5;
+  border-color: #74ad86;
+  color: #175d3a;
+}
+.page .optionalFeatureToggle:hover { background: #e8f3e8; }
+.page .optionalFeatureToggle:focus-within { outline: 3px solid #347e51; outline-offset: 3px; }
+.page .optionalFeatureToggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: 0 0 20px;
+  accent-color: #28744d;
+  cursor: pointer;
+}
+.page .optionalHint {
+  margin: 0;
+  padding: 0 20px 20px;
+  color: #496454;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.page .optionalFeatureBody {
+  padding: 18px 20px 20px;
+  border-top: 1px solid #d6e3d7;
+  background: #fcfefa;
+}
+.page .optionalControlDescription {
+  margin: 0 0 16px;
+  color: #3e5b48;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.page .optionalFeatureBody .priorityRow { margin-top: 0; }
+.page .optionalConfigGrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.page .optionalInputGroup { min-width: 0; }
+.page .optionalInputGroup label { display: block; color: #294d36; font-size: 14px; font-weight: 750; }
+.page .optionalInputGroup .futureSelect { min-height: 43px; margin-top: 7px; font-size: 14px; }
+.page .optionalScenarioNote { color: #445c4a; border-left: 3px solid #8bb49b; padding: 5px 0 5px 12px; margin: 18px 0 4px; font-size: 13px; line-height: 1.65; }
+.page .optionalTechnicalDetails { margin-top: 13px; color: #3d5846; font-size: 13px; }
+.page .optionalTechnicalDetails summary { cursor: pointer; color: #266747; font-weight: 700; }
+.page .optionalTechnicalDetails p { margin-bottom: 0; line-height: 1.6; }
+.page .savedReportNotice {
+  margin: 17px 0; border: 1px solid #b8d6c3; border-radius: 13px;
+  background: #eef7f0; padding: 15px; display: flex;
+  gap: 12px; align-items: center; justify-content: space-between;
+}
+.page .savedReportNotice strong { color: #1c5938; font-size: 15px; }
+.page .savedReportNotice p { margin: 5px 0 0; font-size: 13px; line-height: 1.5; color: #466350; }
+.page .savedReportLink {
+  flex: 0 0 auto; text-align: center; text-decoration: none;
+  border-radius: 10px; background: #276a49; color: #fff;
+  padding: 11px 13px; font-size: 13px; font-weight: 750;
+}
+.page .savedReportLink:hover { background: #194f35; }
+.page .savedReportLink:focus-visible { outline: 3px solid #347e51; outline-offset: 3px; }
+@media (max-width: 620px) {
+  .page .optionalFeatureHeader { padding: 15px; gap: 10px; flex-wrap: wrap; }
+  .page .optionalFeatureToggle { margin-left: auto; }
+  .page .optionalHint { padding: 0 15px 15px; }
+  .page .optionalFeatureBody { padding: 15px; }
+  .page .optionalConfigGrid { grid-template-columns: minmax(0,1fr); }
+  .page .savedReportNotice { flex-direction: column; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page .optionalFeatureToggle { transition: none; }
+}
+
+/* Return path when configuring a field from the multiple-field workflow. */
+.page .backLinks { display:flex; flex-wrap:wrap; gap:9px 20px; align-items:center; }
+.page .multipleBackLink {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-height:42px; padding:9px 15px; border-radius:12px;
+  background:#e5f2e7; border:1px solid #9cc4aa;
+  color:#174d34; font-size:14px; font-weight:800; line-height:1.3;
+  text-decoration:none;
+}
+.page .multipleBackLink:hover { background:#d9ebdd; }
+/* Keep the return action only in the top navigation. */
+.page .multipleBackLink:focus-visible {
+  outline:3px solid #28794d; outline-offset:3px;
+}
+@media (max-width:700px) {
+  .page .pageTop { align-items:flex-start; }
+  .page .backLinks { align-items:flex-start; flex-direction:column; gap:9px; }
+}
+
+
+/* FIX 10 — the whole analysis page scrolls normally. No independent pane,
+   clipped height, quick-feature toggles, or hidden parameter controls. */
+.page {
+  display: block;
+  flex: 0 0 auto;
+  height: auto;
+  min-height: calc(100dvh - 80px);
+  overflow: visible;
+  padding-top: clamp(18px, 2.6vw, 34px);
+  padding-bottom: 72px;
+}
+.page .container,
+.page .mainGrid,
+.page .rightColumn {
+  display: block;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+.page .mainGrid {
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+  gap: clamp(18px, 2.3vw, 31px);
+  align-items: start;
+}
+.page .rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  padding: 0;
+  overscroll-behavior: auto;
+  scrollbar-gutter: auto;
+}
+.page .leftColumn {
+  position: sticky;
+  top: 88px;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+.page .mapCard {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+.page .mapPreview .mapShell {
+  flex: none;
+  height: clamp(230px, 24vw, 340px);
+  min-height: 0;
+}
+.page .rightColumn > section { scroll-margin-top: 92px; }
+
+/* Economics & Future: keep actual inputs visible and selectable at all times.
+   Include in each section may also be used to turn the feature off again. */
+.page .optionalFeatureCard { overflow: visible; }
+.page .optionalFeatureBody { display: block; visibility: visible; }
+.page .optionalFieldset { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
+.page .optionalInputGroup .futureSelect,
+.page .optionalFieldset .priorityRow input { opacity: 1; }
+.page .optionalHintInline { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: #375a44; }
+
+@media (max-width: 1020px) {
+  .page .mainGrid { grid-template-columns: minmax(0, 1fr); }
+  .page .leftColumn { position: static; height: auto; overflow: visible; }
+  .page .mapPreview .mapShell { height: 290px; }
+}
+@media (max-width: 620px) {
+  .page .mapPreview .mapShell { height: 250px; }
+  .page .optionalConfigGrid { grid-template-columns: minmax(0,1fr); }
 }

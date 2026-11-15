@@ -62,9 +62,12 @@ export default function Home() {
             {" "}Discover the challenge we chose, the problem we aim to solve,
             and how our solution works on the Project page.
           </p>
-          <Link href="/progetto" className="landing-project-link">
-            Learn more <span aria-hidden="true">→</span>
-          </Link>
+          <div className="landing-final-actions">
+            <Link href="/mappa" className="start-button">Start analyzing <span aria-hidden="true">→</span></Link>
+            <Link href="/progetto" className="landing-project-link">
+              Learn more <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </div>
       </section>
     </main>

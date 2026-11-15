@@ -1,8 +1,9 @@
+import { translateFutureCompliance } from "./futureNotices";
 /** Dependency-free XLSX/OOXML export of the completed FIELDWISE browser report.
  *  Every numerical value behind the report comparison chart is exported as a number.
  *  Raw simulation time series absent from the saved report cannot be recreated here.
  */
-import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS } from "./analysisStorage";
+import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS, FUTURE_SSP_LABELS } from "./analysisStorage";
 import { REPORT_METRICS, alternativeTitle, getRecommendation, historicalPointYear, labelRotation, marginDefinition,
   recommendationHeadline, sourceModeText, visibleStatements, type CompletedReport } from "./reportTypes";
 import { includesEconomics, includesFuture } from "./reportMarkdown";
@@ -76,7 +77,7 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
     ["Economic assessment requested",econ?"Yes":"No"],
     ["Climate projections requested",future?"Yes":"No"],
     ...(future && report.results.future ? [
-      ["Future scenario", `${report.results.future.ssp_label} (+${report.results.future.horizon_years} years)`],
+      ["Future scenario", `${FUTURE_SSP_LABELS[report.results.future.ssp_code].title} (+${report.results.future.horizon_years} years)`],
       ["Future adaptation recommendation", labelRotation(report.results.future.best_rotation)],
     ] : []),
     ["Note","Values are historical simulation indicators, not predictions. See provenance sheet."],
@@ -127,7 +128,7 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
       widths: [38, 28, 20, 65],
       rows: [
         ["Parameter / Projection", "Value", "Unit", "Interpretation"],
-        ["IPCC Scenario", report.results.future.ssp_label, report.results.future.ssp_code.toUpperCase(), report.results.future.ssp_description],
+        ["IPCC Scenario", FUTURE_SSP_LABELS[report.results.future.ssp_code].title, report.results.future.ssp_code.toUpperCase(), FUTURE_SSP_LABELS[report.results.future.ssp_code].description],
         ["Time horizon", report.results.future.horizon_years, "years", "CMIP6 linear scaled delta-change"],
         ["Current crop rotation", labelRotation(report.results.future.current_rotation), "", "Baseline rotation under evaluation"],
         ["Historical baseline relative yield", report.results.future.baseline_resa_rel_pct, "%", "Historical median yield index"],
@@ -149,7 +150,7 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
         ["Adaptation average yield", report.results.future.best_resa_t_ha, "t/ha", "Average yield of best rotation"],
         ["Adaptation irrigation demand", report.results.future.best_irrigazione_mm, "mm/year", "Annual water requirement"],
         ["Adaptation nitrogen fertilizer", report.results.future.best_concime_kg_n_ha, "kg N/ha", "Annual fertilizer application"],
-        ["Regulatory compliance", report.results.future.best_conformita, "", "Regional integrated production rules"],
+        ["Regulatory compliance", translateFutureCompliance(report.results.future.best_conformita), "", "Regional integrated production rules"],
       ] as Cell[][],
     }] : []),
     {name:"Provenance",rows:notes,widths:[43,110]},

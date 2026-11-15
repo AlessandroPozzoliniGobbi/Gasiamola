@@ -453,3 +453,135 @@
 .floatingMaximized .fieldPanel > .fieldPanelActions { margin-top: 9px; }
 .floatingMaximized .fieldPanelActions .actionButton { min-height: 42px; }
 .floatingMaximized .floatingHeader { flex: 0 0 auto; }
+
+/* Map UI: increase small hints while preserving the original sidebar layout. */
+.description,.sidebarIntro .description,.storageIndicator,.sidebarIntro .storageIndicator { font-size: 13px; line-height: 1.5; }
+:global(html[data-fw-contrast="high"]) .sidebar { border-color: #83ad8b; background: rgba(255,254,250,.99); }
+:global(html[data-fw-contrast="high"]) .sidebar :is(.description,.storageIndicator) { color: #294b35; }
+:global(html[data-fw-text-size="large"]) .sidebar :is(.description,.storageIndicator) { font-size: 15px; }
+
+/* Phase 5: renewed map controls, preserving the two-column structure and interactions. */
+.sidebar {
+  width: 378px;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(248, 251, 246, .98);
+  border-color: #aec7b1;
+  box-shadow: 0 18px 48px rgba(18,51,32,.18), 0 2px 10px rgba(18,51,32,.06);
+}
+.sidebarIntro { gap: 8px; padding: 5px 4px 2px; }
+.title { font-size: 22px; letter-spacing: -.035em; }
+.sidebarIntro .description { color: #3b604b; font-size: 13px; line-height: 1.55; }
+.sidebarIntro .storageIndicator {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.mapAccordion {
+  border-color: #b6cdb9;
+  border-radius: 18px;
+  background: #fffefa;
+  box-shadow: 0 3px 12px rgba(25,62,39,.04);
+}
+.mapAccordionSummary {
+  min-height: 46px;
+  padding: 13px 15px;
+  font-size: 14px;
+  color: #193d2b;
+  background: #f7faf5;
+}
+.mapAccordion[open] .mapAccordionSummary {
+  background: #edf4eb;
+  border-bottom: 1px solid #d2e1d1;
+}
+.mapAccordionSummary:hover { background: #e4f0e4; }
+.mapAccordionBody { padding: 14px; }
+.toolsColumns { gap: 12px; }
+.toolsColumn { gap: 8px; }
+.toolsColumn + .toolsColumn { border-left-color: #d4e2d5; padding-left: 12px; }
+.toolsColumnTitle { color: #385c46; font-size: 12px; letter-spacing: .06em; }
+.compactZoomRow { gap: 6px; }
+.compactZoomButton,.compactAction {
+  border-color: #b8d0bd;
+  border-radius: 12px;
+  color: #224e37;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16,59,33,.035);
+}
+.compactZoomButton { height: 41px; font-size: 18px; }
+.compactAction { gap: 7px; min-height: 42px; padding: 9px 7px; font-size: 12.5px; font-weight: 700; }
+.compactAction svg { flex-shrink: 0; }
+.compactZoomButton:hover:not(:disabled),.compactAction:hover:not(:disabled) {
+  background: #e9f3e9;
+  border-color: #76a885;
+}
+.compactActive,.compactActive:hover:not(:disabled) {
+  background: #1c6545;
+  border-color: #1c6545;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(20,84,51,.19);
+}
+.toolHint { margin: 13px 0 0; color: #385b45; font-size: 12.5px; line-height: 1.52; }
+.storageHelp { font-size: 12.5px; line-height: 1.56; color: #395b48; }
+.storageActions .compactAction { min-height: 43px; }
+.fieldsDropdownTrigger,.openFieldsButton {
+  min-height: 47px;
+  border-color: #b6cdb9;
+  border-radius: 16px;
+  background: #fffefa;
+  color: #214c34;
+  font-size: 14px;
+}
+.fieldCountBadge { background: #e2efe2; color: #205c3e; }
+.floatingFields { border-color: #aac8b1; border-radius: 19px; background: #fffefa; }
+.floatingHeader { min-height: 47px; padding: 10px 12px; background: #edf4eb; }
+.floatingHeading { color: #193d2b; font-size: 13px; }
+.floatingIconButton { width: 30px; height: 30px; border-radius: 10px; }
+.fieldRow { padding: 8px; border-radius: 13px; border-color: #c4d9c7; }
+.fieldSelectButton { font-size: 13.5px; }
+.fieldNumber { flex-basis: 30px; height: 30px; font-size: 12.5px; }
+.fieldIconButton { flex-basis: 30px; height: 30px; border-radius: 10px; }
+.fieldPanelActions .analyzeAllButton,
+.fieldPanelActions .analyzeAllButton:hover:not(:disabled) {
+  border-color: #216848;
+  background: #216848;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 750;
+}
+.fieldPanelActions .analyzeAllButton:hover:not(:disabled) { background: #184c35; }
+@media (max-width: 900px) and (min-width: 769px) { .sidebar { width: 337px; padding: 13px; } }
+@media (max-width: 768px) { .sidebar { width: calc(100% - 20px); max-width: 380px; padding: 12px; border-radius: 20px; } }
+@media (max-width: 390px) {
+  .toolsColumns { gap: 8px; }
+  .toolsColumn + .toolsColumn { padding-left: 8px; }
+  .compactAction { font-size: 11.5px; padding-inline: 4px; gap: 5px; }
+  .compactAction svg { width: 14px; height: 14px; }
+}
+
+/* Fixed field dropdown: stays within the sidebar, no dragging or resizing. */
+.floatingDocked {
+  position: relative;
+  width: 100%;
+  height: clamp(190px, 34dvh, 360px);
+  max-height: min(44dvh, 420px);
+  resize: none;
+}
+.floatingDocked .floatingHeader {
+  cursor: default;
+  touch-action: auto;
+  user-select: text;
+  background: #f2f6f1;
+}
+.floatingDocked .floatingHeader:active { cursor: default; }
+.floatingDocked .floatingBody { overflow-y: auto; overscroll-behavior: contain; }
+.floatingDocked .fieldPanel { padding-top: 3px; border-top: 0; }
+.floatingDocked .fieldList { flex-shrink: 0; }
+@media (max-width: 768px) {
+  .floatingDocked { height: min(265px, 34dvh); max-height: 34dvh; resize: none; }
+}

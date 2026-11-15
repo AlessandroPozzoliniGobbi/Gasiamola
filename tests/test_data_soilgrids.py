@@ -87,6 +87,7 @@ def tmpcache(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "RAW_DIR", tmp_path / "raw")
     monkeypatch.setattr(config, "PROCESSED_DIR", tmp_path / "processed")
     monkeypatch.setattr(config, "offline", lambda: False)
+    monkeypatch.setenv("FIELDWISE_SOILGRIDS_PRIMARY", "rest")
     monkeypatch.setattr(sg, "_sleep", lambda s: None)
     return tmp_path
 
@@ -305,3 +306,43 @@ def test_load_works_offline_after_fetch(rest_ok, monkeypatch):
     monkeypatch.setattr(config, "offline", lambda: True)
     assert len(sg.load(LAT, LON)) == 42
     assert len(sg.load_aggregated(LAT, LON)) == 24
+
+
+# ----------------------------------------------------------------------------- faster default / reusing WCS rasters
+
+def test_default_wcs_avoids_paused_rest(tmpcache, monkeypatch):
+    monkeypatch.delenv("FIELDWISE_SOILGRIDS_PRIMARY", raising=False)
+    counter = {"rest": 0, "wcs": 0}
+    monkeypatch.setattr(sg, "_http_get", fake_wcs_http(set(), counter=counter))
+    result = sg.fetch(LAT, LON)
+    assert result.name == "soilgrids_wcs.json"
+    assert counter == {"rest": 0, "wcs": len(sg.PROPERTIES) * len(sg.DEPTHS) * len(sg.STATS)}
+
+
+def test_nearby_wcs_raster_reuses_without_network(tmpcache, monkeypatch):
+    monkeypatch.delenv("FIELDWISE_SOILGRIDS_PRIMARY", raising=False)
+    counter = {"rest": 0, "wcs": 0}
+    monkeypatch.setattr(sg, "_http_get", fake_wcs_http(set(), counter=counter))
+    first = sg.fetch(LAT, LON)
+    second = sg.fetch(LAT, LON + .001)
+    assert first != second
+    assert counter["rest"] == 0
+    assert counter["wcs"] == len(sg.PROPERTIES) * len(sg.DEPTHS) * len(sg.STATS)
+    metadata = cache.read_meta(second)
+    assert "reused_from" in metadata["params"]
+    # Same 250 m WCS pixel in the fixture: actual geographic sampling, not
+    # reusing a previously aggregated result for another coordinate.
+    a = sg.load_aggregated(LAT, LON)
+    b = sg.load_aggregated(LAT, LON + .001)
+    assert a.equals(b)
+    # Cached WCS windows may also be reused when the backend runs offline.
+    monkeypatch.setattr(config, "offline", lambda: True)
+    monkeypatch.setattr(sg, "_http_get", lambda *a, **kw: pytest.fail("network not expected"))
+    sg.fetch(LAT, LON + .002)
+
+
+def test_nonoverlapping_wcs_window_is_not_reused(tmpcache, monkeypatch):
+    monkeypatch.delenv("FIELDWISE_SOILGRIDS_PRIMARY", raising=False)
+    monkeypatch.setattr(sg, "_http_get", fake_wcs_http(set()))
+    sg.fetch(LAT, LON)
+    assert sg._cached_nearby_wcs(LAT + .1, LON + .1) is None

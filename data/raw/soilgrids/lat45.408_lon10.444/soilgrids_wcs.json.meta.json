@@ -1,0 +1,48 @@
+{
+  "file": "soilgrids_wcs.json",
+  "source": "soilgrids",
+  "product": "SoilGrids 250m",
+  "version": "2.0",
+  "url": "https://maps.isric.org/mapserv",
+  "params": {
+    "lat": 45.408,
+    "lon": 10.444,
+    "properties": [
+      "sand",
+      "clay",
+      "silt",
+      "soc",
+      "bdod",
+      "cfvo"
+    ],
+    "depths_cm": [
+      "0-5",
+      "5-15",
+      "15-30",
+      "30-60",
+      "60-100",
+      "100-200"
+    ],
+    "values": [
+      "mean",
+      "Q0.05",
+      "Q0.5",
+      "Q0.95",
+      "uncertainty"
+    ],
+    "via": "wcs",
+    "pixel": {
+      "via": "wcs",
+      "pixel_row": 3,
+      "pixel_col": 4,
+      "pixel_center_lat": 45.40925,
+      "pixel_center_lon": 10.443999999999999,
+      "own_pixel_valid": true,
+      "shift_m": 0.0
+    }
+  },
+  "downloaded_at_utc": "2026-11-15T02:08:16+00:00",
+  "bytes": 94189,
+  "sha256": "edfa26a0a879429db0374e812e89f634701a89ecccb3840d5f86c676f342b2b3",
+  "notes": "via=wcs (REST non disponibile: REST sand: 5 tentativi falliti (503 Server Error: Service Temporarily Unavailable for url: https://rest.isric.org/soilgrids/v2.0/properties/query?lon=10.444000&lat=45.408000&property=sand&depth=0-5cm&depth=5-15cm&depth=15-30cm&depth=30-60cm&depth=60-100cm&depth=100-200cm&value=mean&value=Q0.05&value=Q0.5&value=Q0.95&value=uncertainty)); pixel del punto valido, nessuno spostamento"
+}

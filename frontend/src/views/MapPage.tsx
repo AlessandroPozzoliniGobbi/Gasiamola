@@ -13,6 +13,7 @@ import FieldStoragePanel from "../components/map/FieldStoragePanel";
 import FieldLabels from "../components/map/FieldLabels";
 import MapStyleSwitcher from "../components/map/MapStyleSwitcher";
 import { MAP_CONFIG } from "../lib/mapConfig";
+import { readUiPreferences } from "../lib/uiPreferences";
 import { getOperationalBounds, isPolygonAllowed } from "../lib/allowedArea";
 import { isSimpleFieldPolygon } from "../lib/polygonValidation";
 import { getFieldBounds, getSmartMinZoom } from "../lib/fieldGeometry";
@@ -52,6 +53,13 @@ export default function MapPage() {
   const [fields, setFields] = useState<FieldItem[]>([]);
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [basemap, setBasemap] = useState<Basemap>("cartographic");
+  // Keep the switcher label aligned with the user's preferred initial basemap.
+  useEffect(() => {
+    const next = readUiPreferences().defaultBasemap;
+    if (next === "satellite" && MAP_CONFIG.satelliteTileJson) {
+      queueMicrotask(() => setBasemap("satellite"));
+    }
+  }, []);
   const [hydrated, setHydrated] = useState(false);
   const [storageStatus, setStorageStatus] = useState<StorageStatus>("loading");
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -75,15 +83,18 @@ export default function MapPage() {
     const mapArea = mapAreaRef.current;
     if (!frame || !mapArea) return;
 
+    const navbar = document.querySelector<HTMLElement>("body > header");
     const updateLayout = () => {
-      const top = Math.max(0, frame.getBoundingClientRect().top);
+      // Header height is stable even if we arrived from a scrolled page.
+      const top = navbar?.getBoundingClientRect().height ?? Math.max(0, frame.getBoundingClientRect().top);
       frame.style.setProperty("--map-top-offset", `${top}px`);
       mapRef.current?.resize();
     };
 
     updateLayout();
-    const resizeObserver = new ResizeObserver(() => mapRef.current?.resize());
+    const resizeObserver = new ResizeObserver(updateLayout);
     resizeObserver.observe(mapArea);
+    if (navbar) resizeObserver.observe(navbar);
     window.addEventListener("resize", updateLayout);
     return () => {
       resizeObserver.disconnect();
@@ -110,6 +121,13 @@ export default function MapPage() {
   // La pagina /mappa e' una vista applicativa senza scroll desktop.
   // Ripristina l'overflow originale quando si lascia questa pagina.
   useEffect(() => {
+    // Route transitions from long pages may preserve a previous scroll position.
+    // Reset before locking page scrolling so the shared navbar stays visible.
+    const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo(0, 0);
+    document.documentElement.style.scrollBehavior = previousScrollBehavior;
+
     const media = window.matchMedia('(min-width: 769px)');
     const oldBodyOverflow = document.body.style.overflow;
     const oldHtmlOverflow = document.documentElement.style.overflow;
@@ -709,7 +727,7 @@ export default function MapPage() {
   };
 
   return (
-    <main ref={frameRef} className={styles.mapFrame}>
+    <main ref={frameRef} data-fieldwise-map="true" className={styles.mapFrame}>
       <aside className={styles.sidebar} aria-label="Map tools">
         <div className={styles.sidebarIntro}>
           <h1 className={styles.title}>Cremona field map</h1>

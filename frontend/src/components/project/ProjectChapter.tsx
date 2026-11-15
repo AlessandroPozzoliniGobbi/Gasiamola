@@ -17,7 +17,7 @@ export default function ProjectChapter({ slug, children }: Props) {
   return (
     <article className={styles.contentCard}>
       <div className={styles.contentHeading}>
-        <span className={styles.sectionLabel}>CHAPTER {section.number} / 07</span>
+        <span className={styles.sectionLabel}>CHAPTER {section.number} / {String(projectSections.length + 1).padStart(2, "0")}</span>
         <h1 className={styles.pageTitle}>{section.title}</h1>
         <p className={styles.lead}>{section.description}</p>
       </div>

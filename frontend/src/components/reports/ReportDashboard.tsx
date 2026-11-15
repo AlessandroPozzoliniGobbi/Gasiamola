@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS } from "../../lib/analysisStorage";
-import { REPORT_METRICS, alternativeTitle, formatMetric, getRecommendation, labelRotation, marginDefinition,
+import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS, FUTURE_SSP_LABELS } from "../../lib/analysisStorage";
+import { REPORT_METRICS, formatMetric, getRecommendation, labelRotation, marginDefinition,
   sourceModeText, visibleStatements, type CompletedReport, type RotationMetrics, type RotationResult } from "../../lib/reportTypes";
 import styles from "../../styles/reports.module.css";
 import { downloadPdfReport } from "../../lib/reportPrint";
 import { downloadExcelReport } from "../../lib/reportExcel";
 import HistoricalWindowPlot from "./HistoricalWindowPlot";
+import { translateFutureNotice } from "../../lib/futureNotices";
 
 type Tab = "overview" | "compare" | "insights" | "economics" | "future" | "details";
 const TABS: { id: Tab; title: string }[] = [
@@ -17,8 +18,9 @@ const TABS: { id: Tab; title: string }[] = [
   { id: "future", title: "Future Projections" },
   { id: "details", title: "Details" },
 ];
+// Keep Overview focused: other measures remain available in Compare and Insights.
 const SHOW_METRICS: (keyof RotationMetrics)[] = [
-  "relativeYieldMedian", "irrigationMm", "nitrogenLeachingKgN", "humusChangeTonsHa",
+  "relativeYieldMedian", "irrigationMm", "nitrogenLeachingKgN",
 ];
 
 function Value({ value, name }: { value: number | null; name: keyof RotationMetrics }) {
@@ -32,7 +34,7 @@ function MetricCards({ outcome }: { outcome: RotationResult }) {
         <div className={styles.metricCard} key={key}>
           <span className={styles.smallCaps}>{REPORT_METRICS.find((m) => m.key === key)?.shortLabel}</span>
           <strong className={styles.metricValue}><Value value={outcome.metrics[key]} name={key} /></strong>
-          <span className={styles.mutedTiny}>Model indicator</span>
+          <span className={styles.mutedTiny}>Model estimate</span>
         </div>
       ))}
     </div>
@@ -61,7 +63,9 @@ function ComparisonPlot({ report, showEconomics }: { report: CompletedReport; sh
   const selected = available.find((m) => m.key === metric) ?? available[0];
   const entries = [
     { label: "Current", result: report.results.current },
-    ...report.results.alternatives.slice(0, 2).map((result, index) => ({ label: `Alternative ${index + 1}`, result })),
+    ...report.results.alternatives.slice(0, 2).map((result, index) => ({
+      label: result === getRecommendation(report).recommended ? "Recommended" : `Alternative ${index + 1}`, result,
+    })),
   ];
   const values = entries.map((e) => e.result.metrics[selected.key]).filter((n): n is number => n !== null && Number.isFinite(n));
   const min = Math.min(0, ...values);
@@ -128,8 +132,10 @@ function MarginDifference({ value, baseline, isCurrent }: {
   </>;
 }
 
-function BulletSection({ title, items, fallback }: { title: string; items: string[]; fallback: string }) {
-  return <div className={styles.bulletBox}>
+function BulletSection({ title, items, fallback, tone }: {
+  title: string; items: string[]; fallback: string; tone?: "evidence" | "risk";
+}) {
+  return <div className={`${styles.bulletBox} ${tone === "risk" ? styles.riskBox : tone === "evidence" ? styles.evidenceBox : ""}`}>
     <h3>{title}</h3>
     {items.length ? <ul>{items.map((item, index) => <li key={`${index}-${item}`}>{item}</li>)}</ul>
       : <p className={styles.muted}>{fallback}</p>}
@@ -174,17 +180,35 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
     item[kind], kind === "evidence" ? item.evidenceTopics : item.riskTopics, showEconomics);
   const visibleNotes = (notes: string[]) => visibleStatements(notes, undefined, showEconomics);
   const outcomes = [current, ...report.results.alternatives.slice(0, 2)];
-  const outcomeTitle = (index: number) => index === 0 ? "Current rotation" : alternativeTitle(report, index - 1);
+  const outcomeTitle = (index: number) => index === 0 ? "Current" :
+    outcomes[index] === recommendation.recommended ? "Recommended" : `Alternative ${index}`;
   const limitations = report.engine.limitations;
-  const headline = recommendation.recommended ? labelRotation(recommendation.recommended.label)
-    : recommendation.status === "priorities_do_not_discriminate" ? "No rotation stands out for these priorities"
-    : recommendation.status === "no_alternative" ? "No alternative available"
-    : `Keep your current rotation: ${labelRotation(current.label)}`;
+  const recommendationTitle = recommendation.recommended ? "Recommended rotation" :
+    recommendation.status === "priorities_do_not_discriminate" ? "No clear winner" :
+    recommendation.status === "no_alternative" ? "No alternative available" : "Keep your current rotation";
+  const recommendationSummary = recommendation.recommended
+    ? "This option scores higher under your selected priorities. Check its risks before making a decision."
+    : recommendation.status === "priorities_do_not_discriminate"
+      ? "These priorities do not distinguish between the compared rotations. Review the comparison before deciding."
+      : recommendation.status === "no_alternative"
+        ? "There is no alternative to recommend in this analysis."
+        : "No available alternative scores higher under your selected priorities.";
+  const focusEvidence = statements(focus, "evidence");
+  // Surface legal and regulatory warnings in the short Overview, without removing
+  // or reordering any original engine statements from the full Insights page.
+  const focusRisks = [...statements(focus, "risks")].sort((a, b) => {
+    const priority = (value: string) => /not compliant|non-compliant|legal nitrogen limit|regulatory|exceeds the legal|derogation|not validated/i.test(value) ? 1 : 0;
+    return priority(b) - priority(a);
+  });
+  const tabTheme = {
+    overview: styles.themeOverview, compare: styles.themeCompare, insights: styles.themeInsights,
+    economics: styles.themeEconomics, future: styles.themeFuture, details: styles.themeDetails,
+  }[tab];
   const date = new Date(report.createdAt);
   const dateLabel = Number.isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
   return (
-    <main className={`${styles.page} ${tab === "overview" ? styles.overviewPage : ""}`}>
+    <main className={`${styles.page} ${tabTheme} ${tab === "overview" ? styles.overviewPage : ""}`}>
       <div className={styles.container}>
         <div className={styles.topbar}>
           <Link className={styles.backLink} href="/reports">← All reports</Link>
@@ -232,60 +256,91 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             title={`Next: ${nextTab.title}`}><span aria-hidden="true">→</span></button>}
         </div>
 
-        {tab === "overview" && <div className={styles.content}>
-          <section className={styles.recommendation}>
+        {tab === "overview" && <div className={`${styles.content} ${styles.overviewContent}`}>
+          <section className={styles.recommendation} aria-labelledby="report-recommendation">
             <div>
-              <span className={styles.smallCaps}>01 / ROTATION RECOMMENDATION</span>
-              <h2>{headline}</h2>
-              <p>{recommendation.message}{recommendation.priorityWarning ? ` ${recommendation.priorityWarning}` : ""}</p>
-              <div className={styles.inlineTags}><span>{IRRIGATION_LABELS[report.inputs.irrigation]}</span><span>Historical climate ensemble</span></div>
+              <span className={styles.smallCaps}>01 / YOUR RESULT</span>
+              <h2 id="report-recommendation">{recommendationTitle}</h2>
+              <p className={styles.rotationSequence}>{labelRotation(focus.label)}</p>
+              <p className={styles.recommendationSummary}>{recommendationSummary}</p>
+              <div className={styles.inlineTags}>
+                <span>{IRRIGATION_LABELS[report.inputs.irrigation]}</span>
+                <span>Historical climate simulations</span>
+              </div>
             </div>
-            <div className={styles.recommendationIcon} aria-hidden="true">✳</div>
           </section>
-          <h2 className={styles.sectionTitle}>At a glance <span>{recommendation.recommended ? "Recommended alternative" : "Current rotation"}</span></h2>
+          {recommendation.priorityWarning && <p className={styles.priorityNotice} role="note">{recommendation.priorityWarning}</p>}
+          <h2 className={styles.sectionTitle}>Key indicators <span>{recommendation.recommended ? "Recommended option" : "Current rotation"}</span></h2>
           <MetricCards outcome={focus} />
-          <div className={styles.splitPanels}>
-            <BulletSection title={recommendation.recommended ? "Why this rotation?" : "Evidence"}
-              items={statements(focus, "evidence")}
-              fallback={recommendation.recommended ? "No evidence above the engine's thresholds." : "The current rotation is the baseline: the engine compares the alternatives with it."} />
-            <BulletSection title="What to consider" items={statements(focus, "risks")} fallback="The engine reported no risk for this rotation; model uncertainty still applies (see Limits)." />
+          <div className={`${styles.splitPanels} ${styles.overviewHighlights}`}>
+            <BulletSection title="Main advantages" items={focusEvidence.slice(0, 2)} tone="evidence"
+              fallback="No significant advantage was reported for this option." />
+            <BulletSection title="Risks to review" items={focusRisks.slice(0, 2)} tone="risk"
+              fallback="No specific risk exceeded the model thresholds. See Details for limitations." />
           </div>
-          {limitations && <div className={styles.panel}><h3>Limits of this analysis</h3>
-            <ul className={styles.noteList}>{limitations.statements.map((n, i) => <li key={i}>{n}</li>)}</ul></div>}
+          <div className={styles.overviewActions}>
+            <button type="button" className={styles.primaryButton} onClick={() => changeTab("compare")}>Compare rotations →</button>
+            <button type="button" className={styles.secondaryButton} onClick={() => changeTab("insights")}>Explore all insights</button>
+            <button type="button" className={styles.textButton} onClick={() => changeTab("details")}>Assumptions &amp; limitations →</button>
+          </div>
         </div>}
 
         {tab === "compare" && <div className={styles.content}>
           <div className={styles.sectionIntro}><span className={styles.smallCaps}>02 / ROTATION COMPARISON</span><h2>Different paths, clearer trade-offs.</h2>
-            <p>Your current strategy and the alternatives chosen by the engine: the first is the best-scoring non-dominated rotation, the second the best in the worst year among the others. {recommendation.message}</p></div>
+            <p>Compare your current rotation with the model&apos;s alternatives. The highlighted option is recommended only when it scores higher.</p></div>
           <div className={styles.outcomeGrid}>
             {outcomes.map((item, index) => <OutcomeCard key={`${item.label}-${index}`} result={item}
               title={outcomeTitle(index)} highlight={index > 0 && item === recommendation.recommended} />)}
           </div>
-          {report.results.rotationOrderNote && <p className={styles.footnote}>{report.results.rotationOrderNote}</p>}
           <ComparisonPlot report={report} showEconomics={showEconomics} />
+          <details className={styles.explainer}>
+            <summary>How were the alternatives selected?</summary>
+            <p>Alternative 1 is selected from the highest-scoring options; Alternative 2 is the best for worst-year yield among the remaining choices. A recommendation is made only if it outscores your current rotation.</p>
+            <p>{recommendation.message}</p>
+            {report.results.rotationOrderNote && <p>{report.results.rotationOrderNote}</p>}
+          </details>
           <p className={styles.footnote}>Ranking scores are relative to the compared rotation set. They are not probabilities, sustainability percentages or predictions of future yields.</p>
         </div>}
 
-        {tab === "insights" && <div className={styles.content}>
-          <div className={styles.sectionIntro}><span className={styles.smallCaps}>03 / MODEL INSIGHTS</span><h2>Understand the uncertainty.</h2>
-            <p>Results summarize historical climate scenarios, not a weather forecast for next season.</p></div>
-          {report.results.historicalWindows && <HistoricalWindowPlot history={report.results.historicalWindows} showEconomics={showEconomics} />}
+        {tab === "insights" && <div className={`${styles.content} ${styles.insightsContent}`}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.smallCaps}>03 / MODEL INSIGHTS</span>
+            <h2>Key risks, backed by evidence.</h2>
+            <p>Focus on outcomes in difficult historical years, then inspect the supporting observations below. These are simulated conditions, not next season&apos;s forecast.</p>
+          </div>
+          <h3 className={styles.sectionTitle}>Performance in difficult years</h3>
           <div className={styles.insightGrid}>
-            {outcomes.map((item, index) => <article key={`${item.label}-${index}`} className={styles.panel}>
+            {outcomes.map((item, index) => <article key={`${item.label}-${index}`} className={`${styles.panel} ${item === recommendation.recommended ? styles.insightRecommended : ""}`}>
               <span className={styles.smallCaps}>{outcomeTitle(index)}</span>
-              <h3>{labelRotation(item.label)}</h3>
-              <div className={styles.insightFigure}><span>Worst-case relative yield</span><strong><Value name="relativeYieldWorst" value={item.metrics.relativeYieldWorst} /></strong></div>
-              <div className={styles.insightFigure}><span>10th-percentile relative yield</span><strong><Value name="relativeYieldP10" value={item.metrics.relativeYieldP10} /></strong></div>
+              <h3 className={styles.insightRotation}>{labelRotation(item.label)}</h3>
+              <div className={`${styles.insightFigure} ${styles.insightPrimaryFigure}`}>
+                <span>Worst-year yield</span>
+                <strong><Value name="relativeYieldWorst" value={item.metrics.relativeYieldWorst} /></strong>
+              </div>
+              <div className={styles.insightFigure}>
+                <span>10th-percentile yield</span>
+                <strong><Value name="relativeYieldP10" value={item.metrics.relativeYieldP10} /></strong>
+              </div>
             </article>)}
           </div>
-          {outcomes.map((item, index) => <div className={styles.splitPanels} key={`notes-${index}`}>
-            <BulletSection title={`${outcomeTitle(index)}: evidence`} items={statements(item, "evidence")}
-              fallback={index === 0 ? "Baseline: the alternatives are compared with this rotation." : "No difference above the engine's thresholds."} />
-            <BulletSection title={`${outcomeTitle(index)}: risks`} items={statements(item, "risks")}
-              fallback="The engine reported no risk for this rotation; model uncertainty still applies." />
-          </div>)}
-          {visibleNotes(report.results.notes).length > 0 && <div className={styles.panel}><h3>Model notes</h3>
-            <ul className={styles.noteList}>{visibleNotes(report.results.notes).map((n, i) => <li key={i}>{n}</li>)}</ul></div>}
+          {report.results.historicalWindows && <HistoricalWindowPlot history={report.results.historicalWindows} showEconomics={showEconomics} />}
+          <div className={styles.sectionIntro}>
+            <h2>Evidence and trade-offs</h2>
+            <p>All reported findings are retained below. The amber panels highlight risks, while the green panels explain supporting evidence.</p>
+          </div>
+          {outcomes.map((item, index) => <section className={styles.insightSection} key={`notes-${index}`}>
+            <h3>{outcomeTitle(index)} <span>{labelRotation(item.label)}</span></h3>
+            <div className={styles.splitPanels}>
+              <BulletSection title="Evidence" tone="evidence" items={statements(item, "evidence")}
+                fallback={index === 0 ? "Baseline: alternatives are compared with this rotation." : "No difference exceeded the model thresholds."} />
+              <BulletSection title="Risks &amp; trade-offs" tone="risk" items={statements(item, "risks")}
+                fallback="The engine reported no specific risk for this rotation. Model uncertainty still applies." />
+            </div>
+          </section>)}
+          {visibleNotes(report.results.notes).length > 0 && <details className={styles.explainer}>
+            <summary>Additional model notes ({visibleNotes(report.results.notes).length})</summary>
+            <ul className={styles.noteList}>{visibleNotes(report.results.notes).map((n, i) => <li key={i}>{n}</li>)}</ul>
+          </details>}
         </div>}
 
         {tab === "economics" && showEconomics && <div className={styles.content}>
@@ -327,12 +382,13 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             </section>
           ) : (() => {
             const f = report.results.future;
+            const futureScenario = FUTURE_SSP_LABELS[f.ssp_code];
             return (
               <>
                 <div className={styles.sectionIntro}>
                   <span className={styles.smallCaps}>{futureNum} / FUTURE CLIMATE PROJECTIONS (CMIP6)</span>
-                  <h2>{f.ssp_label} · Horizon +{f.horizon_years} years</h2>
-                  <p>{f.ssp_description}</p>
+                  <h2>{futureScenario.title} · Horizon +{f.horizon_years} years</h2>
+                  <p>{futureScenario.description}</p>
                 </div>
 
                 <div className={styles.outcomeGrid}>
@@ -373,7 +429,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
                 <div className={styles.sectionIntro} style={{ marginTop: 32 }}>
                   <span className={styles.smallCaps}>CLIMATE ADAPTATION OPPORTUNITY</span>
                   <h2>Best performing rotation in the future.</h2>
-                  <p>Multicriteria ranking under {f.ssp_label} conditions identifies adaptive crop rotations with higher thermal and drought resilience.</p>
+                  <p>Multicriteria ranking under {futureScenario.title} conditions identifies adaptive crop rotations with higher thermal and drought resilience.</p>
                 </div>
 
                 <article className={`${styles.outcomeCard} ${styles.outcomeHighlight}`} style={{ marginTop: 12 }}>
@@ -392,7 +448,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
                       <h3>Regulatory &amp; Agronomic notices for adaptation</h3>
                       <ul>
                         {f.best_rischi.map((r, i) => (
-                          <li key={i}>{r}</li>
+                          <li key={i}>{translateFutureNotice(r)}</li>
                         ))}
                       </ul>
                     </div>

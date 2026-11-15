@@ -1,0 +1,48 @@
+{
+  "file": "soilgrids_wcs.json",
+  "source": "soilgrids",
+  "product": "SoilGrids 250m",
+  "version": "2.0",
+  "url": "https://maps.isric.org/mapserv",
+  "params": {
+    "lat": 45.411,
+    "lon": 10.444,
+    "properties": [
+      "sand",
+      "clay",
+      "silt",
+      "soc",
+      "bdod",
+      "cfvo"
+    ],
+    "depths_cm": [
+      "0-5",
+      "5-15",
+      "15-30",
+      "30-60",
+      "60-100",
+      "100-200"
+    ],
+    "values": [
+      "mean",
+      "Q0.05",
+      "Q0.5",
+      "Q0.95",
+      "uncertainty"
+    ],
+    "via": "wcs",
+    "pixel": {
+      "via": "wcs",
+      "pixel_row": 3,
+      "pixel_col": 4,
+      "pixel_center_lat": 45.41225,
+      "pixel_center_lon": 10.443999999999999,
+      "own_pixel_valid": true,
+      "shift_m": 0.0
+    }
+  },
+  "downloaded_at_utc": "2026-11-15T02:24:02+00:00",
+  "bytes": 93954,
+  "sha256": "d60efcaf485998bb0800eb5af6261dc18883570693b8bca7f917ad631c7eae1b",
+  "notes": "via=wcs (REST non disponibile: REST clay: 5 tentativi falliti (HTTPSConnectionPool(host='rest.isric.org', port=443): Read timed out. (read timeout=90))); pixel del punto valido, nessuno spostamento"
+}

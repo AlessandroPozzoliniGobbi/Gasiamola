@@ -1,0 +1,19 @@
+{
+  "lat_requested": 45.335,
+  "lon_requested": 10.018,
+  "lon_returned": 10.018,
+  "lat_returned": 45.335,
+  "elevation_m": 208.9,
+  "units": {
+    "tmax": "C",
+    "tmin": "C",
+    "tmean": "C",
+    "rain": "mm/day",
+    "srad": "MJ/m^2/day",
+    "rh": "%",
+    "wind": "m/s"
+  },
+  "fill_value": -999.0,
+  "time_standard": "LST",
+  "community": "AG"
+}

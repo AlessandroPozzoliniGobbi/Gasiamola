@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FieldItem } from "../types/field";
@@ -18,10 +18,12 @@ import AnalysisFieldMap from "../components/map/AnalysisFieldMap";
 import AnalysisProcessing from "../components/reports/AnalysisProcessing";
 import { analyzeField, canOfferPilotReference, prepareLocalField } from "../lib/engineApi";
 import { MAP_CONFIG } from "../lib/mapConfig";
-import { saveCompletedReport } from "../lib/reportStorage";
+import { listRecentCompletedReports, saveCompletedReport } from "../lib/reportStorage";
+import { findReusableFieldReport } from "../lib/reuseFieldReport";
+import type { CompletedReport } from "../lib/reportTypes";
 import styles from "../styles/analysis.module.css";
 
-type Props = { fieldId: string };
+type Props = { fieldId: string; returnToMultipleHref?: string };
 type LoadState =
   | { status: "loading" }
   | { status: "found"; field: FieldItem }
@@ -30,7 +32,7 @@ type LoadState =
 
 type DraftSaveStatus = "saved" | "saving" | "error";
 
-export default function Analysis({ fieldId }: Props) {
+export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
   const router = useRouter();
   const [running, setRunning] = useState(false);
   const [processingStage, setProcessingStage] = useState("Preparing your field analysis...");
@@ -41,6 +43,7 @@ export default function Analysis({ fieldId }: Props) {
   const [draft, setDraft] = useState<AnalysisDraft | null>(null);
   const [saveStatus, setSaveStatus] = useState<DraftSaveStatus>("saved");
   const [draftLoadWarning, setDraftLoadWarning] = useState<string | null>(null);
+  const [savedReports, setSavedReports] = useState<CompletedReport[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -69,6 +72,16 @@ export default function Analysis({ fieldId }: Props) {
     return () => { active = false; };
   }, [fieldId]);
 
+  // A completed local report can be reopened instantly without rerunning the engine.
+  // The user must explicitly choose it; Run analysis always requests fresh results.
+  useEffect(() => {
+    let active = true;
+    void listRecentCompletedReports().then((reports) => {
+      if (active) setSavedReports(reports);
+    }).catch(() => { /* IndexedDB may be unavailable: fresh analysis still works. */ });
+    return () => { active = false; };
+  }, [fieldId]);
+
   // Save an independent draft for each field immediately, so navigating away
   // cannot discard edits made just before leaving the page.
   useEffect(() => {
@@ -83,6 +96,21 @@ export default function Analysis({ fieldId }: Props) {
     }
     return () => { active = false; };
   }, [draft, fieldId, state.status]);
+
+  // A direct click on "Back to multiple-field analysis" also commits the
+  // current draft synchronously, even if the user navigates immediately after
+  // changing a setting. Never navigate silently when local saving fails.
+  const saveBeforeReturning = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (state.status !== "found" || !draft) return;
+    try {
+      saveAnalysisDraft(fieldId, draft);
+      setSaveStatus("saved");
+    } catch (error) {
+      event.preventDefault();
+      console.error("Unable to save field settings before returning:", error);
+      setSaveStatus("error");
+    }
+  };
 
   const updateDraft = (next: (old: AnalysisDraft) => AnalysisDraft) => {
     setDraft((old) => old ? next(old) : old);
@@ -111,18 +139,26 @@ export default function Analysis({ fieldId }: Props) {
     updateDraft((old) => ({ ...old, includeFuture: enabled }));
   };
   const changeFutureHorizon = (horizon: FutureHorizon) => {
-    updateDraft((old) => ({ ...old, futureHorizon: horizon }));
+    updateDraft((old) => ({ ...old, includeFuture: true, futureHorizon: horizon }));
   };
   const changeFutureSsp = (ssp: FutureSsp) => {
-    updateDraft((old) => ({ ...old, futureSsp: ssp }));
+    updateDraft((old) => ({ ...old, includeFuture: true, futureSsp: ssp }));
   };
   const changePriority = (key: PriorityId, value: number) => {
-    updateDraft((old) => ({ ...old, priorities: { ...old.priorities, [key]: value } }));
+    updateDraft((old) => ({
+      ...old,
+      advancedEconomics: key === "profitto" ? true : old.advancedEconomics,
+      priorities: { ...old.priorities, [key]: value },
+    }));
   };
 
   const field = state.status === "found" ? state.field : null;
   const point = field ? getLabelPosition(field) : null;
   const hectares = field ? estimateFieldHectares(field) : null;
+  const reusableReport = field && draft && point ? findReusableFieldReport(savedReports, {
+    id: field.id, name: field.name, number: field.number,
+    areaHectares: hectares, polygonCoordinates: field.coordinates, representativePoint: point,
+  }, draft) : null;
   const weightSum = draft ? PRIORITY_KEYS.filter((key) => key !== "profitto" || draft.advancedEconomics === true)
     .reduce((sum, key) => sum + draft.priorities[key], 0) : 0;
 
@@ -160,7 +196,10 @@ export default function Analysis({ fieldId }: Props) {
     <main data-fieldwise-analysis className={styles.page}>
       <div className={styles.container}>
         <div className={styles.pageTop}>
-          <Link href="/mappa" className={styles.backLink}>← Back to map</Link>
+          <nav className={styles.backLinks} aria-label="Return navigation">
+            {returnToMultipleHref && <Link href={returnToMultipleHref} onClick={saveBeforeReturning} className={styles.multipleBackLink}>← Back to multiple-field analysis</Link>}
+            <Link href="/mappa" className={styles.backLink}>← Back to map</Link>
+          </nav>
           <span className={styles.sectionLabel}>FIELDWISE / FIELD ANALYSIS</span>
         </div>
         {state.status === "loading" ? (
@@ -195,7 +234,7 @@ export default function Analysis({ fieldId }: Props) {
                 </section>
               </aside>
               <div className={styles.rightColumn}>
-                <section className={styles.formCard} aria-labelledby="rotation-heading">
+                <section id="analysis-rotation" className={styles.formCard} aria-labelledby="rotation-heading">
                   <div className={styles.cardHeading}>
                     <div>
                       <p className={styles.cardEyebrow}>02 / AGRICULTURAL HISTORY</p>
@@ -224,7 +263,7 @@ export default function Analysis({ fieldId }: Props) {
                     <strong>{draft.rotation.map((step) => `${CROP_LABELS[step.crop]}${step.coverAfter ? " + rye" : ""}`).join(" → ")}</strong>
                   </div>
                 </section>
-                <section className={styles.formCard} aria-labelledby="water-heading">
+                <section id="analysis-water" className={styles.formCard} aria-labelledby="water-heading">
                   <div className={styles.cardHeading}>
                     <div>
                       <p className={styles.cardEyebrow}>03 / WATER AVAILABILITY</p>
@@ -245,7 +284,7 @@ export default function Analysis({ fieldId }: Props) {
                   </div>
                   <p className={styles.helper}>These are model scenarios, not measured water availability at your farm. The exact limits will come from the backend.</p>
                 </section>
-                <section className={styles.formCard} aria-labelledby="priorities-heading">
+                <section id="analysis-priorities" className={styles.formCard} aria-labelledby="priorities-heading">
                   <div className={styles.cardHeading}>
                     <div>
                       <p className={styles.cardEyebrow}>04 / YOUR GOALS</p>
@@ -266,57 +305,64 @@ export default function Analysis({ fieldId }: Props) {
                   </div>
                   {weightSum === 0 && <p className={styles.alert} role="alert">Choose at least one priority above zero before running an analysis.</p>}
                 </section>
-                <section className={styles.formCard} aria-label="Advanced analysis settings">
-                  <details className={styles.advancedSection}>
-                    <summary className={styles.advancedSummary}>
-                      <span><span className={styles.cardEyebrow}>05 / OPTIONAL FEATURES</span><strong>Advanced Analysis</strong></span>
-                      <span className={`${styles.advancedIndicator} ${draft.advancedEconomics ? styles.advancedIndicatorActive : ""}`} role="img" aria-label={draft.advancedEconomics ? "Advanced analysis enabled" : "Advanced analysis disabled"} />
-                    </summary>
-                    <div className={styles.advancedBody}>
-                      <p className={styles.helper}>Economic analysis is optional. The margin is grain revenue minus nitrogen fertilizer, irrigation and other crop costs (seed, crop protection, field operations, harvest, drying, transport), using the engine&apos;s default prices and costs.</p>
-                      <label className={styles.advancedToggle}>
-                        <input type="checkbox" checked={draft.advancedEconomics === true}
-                          onChange={(event) => changeAdvancedEconomics(event.target.checked)} />
-                        <span><strong>Include economic analysis</strong><small>Show Economics in the report and apply your economic-margin weight to the ranking score. Pareto criteria remain defined by the engine.</small></span>
-                      </label>
-                      {draft.advancedEconomics && <>
-                        <div className={styles.priorityRow}>
-                          <label htmlFor="priority-profitto"><span>{PRIORITY_LABELS.profitto}</span><strong>{draft.priorities.profitto} / 10</strong></label>
-                          <input id="priority-profitto" type="range" min="0" max="10" step="1"
-                            value={draft.priorities.profitto}
-                            style={{ "--priority-fill": `${draft.priorities.profitto * 10}%` } as CSSProperties}
-                            onChange={(event) => changePriority("profitto", Number(event.target.value))} />
-                        </div>
-                        <p className={styles.advancedCaution}>This version does not accept custom crop prices or farming costs from the website. The report uses the engine&apos;s predefined economic assumptions; a personalized financial assessment requires the updated economic input/output contract.</p>
-                      </>}
+                <section id="analysis-economics" className={`${styles.formCard} ${styles.optionalFeatureCard}`} aria-labelledby="advanced-economics-heading">
+                  <div className={styles.optionalFeatureHeader}>
+                    <div className={styles.optionalSummaryMain}>
+                      <span className={styles.cardEyebrow}>05 / OPTIONAL</span>
+                      <h2 id="advanced-economics-heading">Economic analysis</h2>
+                      <p className={styles.optionalSubtitle}>Adjust economic priority · selecting a value enables the analysis</p>
                     </div>
-                  </details>
+                    <label className={styles.optionalFeatureToggle}>
+                      <input type="checkbox" checked={draft.advancedEconomics === true}
+                        onChange={(event) => changeAdvancedEconomics(event.target.checked)} />
+                      <span>Include</span>
+                    </label>
+                  </div>
+                  <div className={styles.optionalFeatureBody}>
+                    {!draft.advancedEconomics && <p className={styles.optionalHintInline}>Move the slider below or select <strong>Include</strong> to add economic margin to the ranking.</p>}
+                    <div className={styles.optionalFieldset}>
+                      <div className={styles.priorityRow}>
+                        <label htmlFor="priority-profitto"><span>{PRIORITY_LABELS.profitto}</span><strong>{draft.priorities.profitto} / 10</strong></label>
+                        <input id="priority-profitto" type="range" min="0" max="10" step="1"
+                          value={draft.priorities.profitto}
+                          style={{ "--priority-fill": `${draft.priorities.profitto * 10}%` } as CSSProperties}
+                          onChange={(event) => changePriority("profitto", Number(event.target.value))} />
+                      </div>
+                    </div>
+                    <details className={styles.optionalTechnicalDetails}>
+                      <summary>Economic assumptions</summary>
+                      <p>Margins use the engine&apos;s default crop prices and costs, including fertilizer, irrigation, seeds and operations. Custom prices and costs are not currently supported.</p>
+                    </details>
+                  </div>
                 </section>
-                <section className={styles.formCard} aria-label="Future climate simulation settings">
-                  <details className={styles.advancedSection}>
-                    <summary className={styles.advancedSummary}>
-                      <span><span className={styles.cardEyebrow}>06 / CLIMATE PROJECTIONS</span><strong>Future Climate Simulation (CMIP6)</strong></span>
-                      <span className={`${styles.advancedIndicator} ${draft.includeFuture ? styles.advancedIndicatorActive : ""}`} role="img" aria-label={draft.includeFuture ? "Future simulation enabled" : "Future simulation disabled"} />
-                    </summary>
-                    <div className={styles.advancedBody}>
-                      <p className={styles.helper}>Simulate climate change impacts on your rotation using IPCC CMIP6 Delta Change consensus projections for the Po Valley.</p>
-                      <label className={styles.advancedToggle}>
-                        <input type="checkbox" checked={draft.includeFuture === true}
-                          onChange={(event) => changeIncludeFuture(event.target.checked)} />
-                        <span><strong>Include climate projections (CMIP6)</strong><small>Evaluate future yield resilience, water demand, heat stress and adaptive rotation opportunities over 5 to 20 years.</small></span>
-                      </label>
-                      {draft.includeFuture && <>
-                        <div className={styles.priorityRow}>
-                          <label htmlFor="future-horizon"><span>Time horizon</span><strong>{draft.futureHorizon ?? 10} years</strong></label>
+                <section id="analysis-climate" className={`${styles.formCard} ${styles.optionalFeatureCard}`} aria-labelledby="future-projections-heading">
+                  <div className={styles.optionalFeatureHeader}>
+                    <div className={styles.optionalSummaryMain}>
+                      <span className={styles.cardEyebrow}>06 / OPTIONAL</span>
+                      <h2 id="future-projections-heading">Future climate projections</h2>
+                      <p className={styles.optionalSubtitle}>Choose a scenario and a time horizon · 5–20 years</p>
+                    </div>
+                    <label className={styles.optionalFeatureToggle}>
+                      <input type="checkbox" checked={draft.includeFuture === true}
+                        onChange={(event) => changeIncludeFuture(event.target.checked)} />
+                      <span>Include</span>
+                    </label>
+                  </div>
+                  <div className={styles.optionalFeatureBody}>
+                    {!draft.includeFuture && <p className={styles.optionalHintInline}>Choose a horizon or emissions scenario below, or select <strong>Include</strong>, to add future climate projections.</p>}
+                    <div className={styles.optionalFieldset}>
+                      <div className={styles.optionalConfigGrid}>
+                        <div className={styles.optionalInputGroup}>
+                          <label htmlFor="future-horizon">Time horizon</label>
                           <select id="future-horizon" className={styles.futureSelect} value={draft.futureHorizon ?? 10}
                             onChange={(event) => changeFutureHorizon(Number(event.target.value) as FutureHorizon)}>
                             {FUTURE_HORIZONS.map((h) => (
-                              <option key={h} value={h}>{h} years {h === 10 ? "(Medium term · Default)" : h === 5 ? "(Short term)" : h === 15 ? "(Medium-long term)" : "(Long term)"}</option>
+                              <option key={h} value={h}>{h} years {h === 10 ? "· Default" : ""}</option>
                             ))}
                           </select>
                         </div>
-                        <div className={styles.priorityRow}>
-                          <label htmlFor="future-ssp"><span>IPCC Scenario</span><strong>{FUTURE_SSP_LABELS[draft.futureSsp ?? "ssp245"]?.short ?? "SSP2-4.5"}</strong></label>
+                        <div className={styles.optionalInputGroup}>
+                          <label htmlFor="future-ssp">Emissions scenario</label>
                           <select id="future-ssp" className={styles.futureSelect} value={draft.futureSsp ?? "ssp245"}
                             onChange={(event) => changeFutureSsp(event.target.value as FutureSsp)}>
                             {FUTURE_SSPS.map((code) => (
@@ -324,12 +370,16 @@ export default function Analysis({ fieldId }: Props) {
                             ))}
                           </select>
                         </div>
-                        <p className={styles.advancedCaution}>{FUTURE_SSP_LABELS[draft.futureSsp ?? "ssp245"]?.description}. Projections use the CMIP6 ensemble delta-change method calibrated on historical NASA POWER weather series without runtime network dependencies.</p>
-                      </>}
+                      </div>
                     </div>
-                  </details>
+                    {draft.includeFuture && <p className={styles.optionalScenarioNote}>{FUTURE_SSP_LABELS[draft.futureSsp ?? "ssp245"]?.description}</p>}
+                    <details className={styles.optionalTechnicalDetails}>
+                      <summary>About the climate model</summary>
+                      <p>Projections use IPCC CMIP6 ensemble delta changes calibrated with historical NASA POWER weather data. These are scenarios, not forecasts for a particular field.</p>
+                    </details>
+                  </div>
                 </section>
-                <section className={styles.submitCard} aria-labelledby="ready-heading">
+                <section id="analysis-run" className={styles.submitCard} aria-labelledby="ready-heading">
                   <div>
                     <p className={styles.cardEyebrow}>07 / RUN ANALYSIS</p>
                     <h2 id="ready-heading">Your configuration is ready</h2>
@@ -339,6 +389,17 @@ export default function Analysis({ fieldId }: Props) {
                     <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>{draft.advancedEconomics ? "Advanced economics" : "Standard analysis"}</span>
                     {draft.includeFuture && <span>{`Future ${draft.futureHorizon ?? 10}y (${(draft.futureSsp ?? "ssp245").toUpperCase()})`}</span>}
                   </div>
+                  {reusableReport && (
+                    <div className={styles.savedReportNotice}>
+                      <div>
+                        <strong>Previous analysis available</strong>
+                        <p>Same field and settings · {new Date(reusableReport.createdAt).toLocaleDateString("en-GB")}. Open instantly, or run again to get results from the current model.</p>
+                      </div>
+                      <Link href={`/reports/${encodeURIComponent(reusableReport.id)}`} className={styles.savedReportLink}>
+                        View saved report →
+                      </Link>
+                    </div>
+                  )}
                   <div className={styles.submitActions}>
                     <button className={styles.resetButton} type="button" onClick={() => {
                       if (window.confirm("Reset this field's analysis settings to the defaults?")) updateDraft(() => defaultAnalysisDraft());
@@ -371,6 +432,7 @@ export default function Analysis({ fieldId }: Props) {
           <div className={styles.missingCard}>
             <h1>Field unavailable</h1>
             <p>{state.status === "error" ? "Your saved fields could not be read in this browser." : "This field was not found among the saved fields in this browser."}</p>
+            {returnToMultipleHref && <Link href={returnToMultipleHref} onClick={saveBeforeReturning} className={styles.multipleBackLink}>← Back to multiple-field analysis</Link>}
             <Link href="/mappa" className={styles.backLink}>Return to the map</Link>
           </div>
         )}

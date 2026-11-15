@@ -540,3 +540,272 @@
 .historyLegend { display:flex; gap:17px; flex-wrap:wrap; margin-top:8px; }
 .historyLegend span { display:flex; align-items:center; gap:7px; font-size:12px; color:#496c55; font-weight:700; }
 .historyLegend i { width:17px; height:4px; display:inline-block; border-radius:3px; }
+
+/* Readability pass: report data and explanations should not rely on 10px labels. */
+.eyebrow,.smallCaps { font-size: 12px; color: #356346; letter-spacing: .075em; }
+.historyHeading span,.historyTitle span,.historyInfo p,.historyInfo small,
+.previewNotice p,.storageNote,.exportArea small,.sectionTitle span,
+.mutedTiny,.footnote,.outcomeFigures span,.plotName span,.insightFigure span,
+.detailList dt,.footer,.processingScreen small {
+  font-size: 13px; line-height: 1.5; color: #445e4a;
+}
+.historyInfo p,.previewNotice p,.recommendation p,.sectionIntro p,
+.bulletBox li,.noteList li,.muted,.comingSoon p,.detailsGrid .panel>p,
+.processingScreen p { font-size: 15px; color: #3e5c46; line-height: 1.65; }
+.primaryButton,.secondaryButton,.openReport,.deleteReport,.metricSelector select,
+.tabButton,.textButton,.outcomeFigures strong,.plotName strong,.plotValue,
+.detailList dd,.historyTitle h3 { font-size: 14px; }
+.inlineTags span,.softPill,.tabSoon { font-size: 12px; color: #265b3b; }
+.metricCard,.outcomeCard,.panel,.bulletBox,.historyRow { border-color: #c6dbc8; }
+.outcomeCard h3 { min-height: 0; }
+:global(html[data-fw-contrast="high"]) .page { color: #142f1f; }
+:global(html[data-fw-contrast="high"]) .tabButton,
+:global(html[data-fw-contrast="high"]) .historyInfo p,
+:global(html[data-fw-contrast="high"]) .muted,
+:global(html[data-fw-contrast="high"]) .footnote,
+:global(html[data-fw-contrast="high"]) .outcomeFigures span,
+:global(html[data-fw-contrast="high"]) .detailList dt,
+:global(html[data-fw-contrast="high"]) .sectionIntro p,
+:global(html[data-fw-contrast="high"]) .plotName span,
+:global(html[data-fw-contrast="high"]) .smallCaps { color: #24452d; }
+:global(html[data-fw-contrast="high"]) .metricCard,
+:global(html[data-fw-contrast="high"]) .outcomeCard,
+:global(html[data-fw-contrast="high"]) .panel { border-color: #8caf95; }
+:global(html[data-fw-text-size="large"]) .page :is(.historyInfo p,.historyTitle span,.historyHeading span,.previewNotice p,.storageNote,.recommendation p,.sectionIntro p,.bulletBox li,.noteList li,.muted,.footnote,.outcomeFigures span,.plotName span,.detailList dt,.detailList dd,.processingScreen p,.processingScreen small) { font-size: 17px; }
+:global(html[data-fw-text-size="large"]) .page :is(.eyebrow,.smallCaps,.tabButton,.metricSelector select,.inlineTags span,.softPill,.primaryButton,.secondaryButton) { font-size: 15px; }
+
+/* FIELDWISE V18 — report readability and information hierarchy.
+   The world illustration remains behind truly opaque reading surfaces;
+   the main Navbar component is deliberately untouched. */
+.page:not(.historyPage) {
+  --report-accent: #205e43;
+  --report-accent-soft: #e4f0e7;
+  --report-stroke: #9cb7a5;
+  color: #152f23;
+}
+.themeOverview { --report-accent: #205e43; --report-accent-soft: #e4f0e7; --report-stroke: #9cb7a5; }
+.themeCompare { --report-accent: #255d68; --report-accent-soft: #e5f1f3; --report-stroke: #9bbdc2; }
+.themeInsights { --report-accent: #73572d; --report-accent-soft: #f6eddb; --report-stroke: #ccb794; }
+.themeEconomics { --report-accent: #79532d; --report-accent-soft: #f8eee0; --report-stroke: #d3bb9d; }
+.themeFuture { --report-accent: #315d7c; --report-accent-soft: #e7f0f8; --report-stroke: #9dbccd; }
+.themeDetails { --report-accent: #425967; --report-accent-soft: #edf1f3; --report-stroke: #b1bdc4; }
+
+.page:not(.historyPage) .container { width: min(100% - 64px, 1140px); padding-bottom: 54px; }
+.page:not(.historyPage) .content { gap: 17px; }
+.page:not(.historyPage) .reportHeader {
+  background: rgba(255,254,251,.98);
+  border: 1px solid #a9bdb0;
+  box-shadow: 0 11px 29px rgba(26,54,38,.12);
+}
+.page:not(.historyPage) .reportHeader p { color: #344e3d; font-size: 15px; line-height: 1.55; }
+.page:not(.historyPage) .tabNavigation {
+  top: 67px; background: rgba(250,252,249,.98);
+  border: 1px solid #b8cbbd;
+  box-shadow: 0 6px 22px rgba(21,53,35,.13);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.page:not(.historyPage) .tabButton { color: #294d39; font-size: 14px; font-weight: 750; }
+.page:not(.historyPage) .tabNavigation .tabActive,
+.page:not(.historyPage).overviewPage .tabNavigation .tabActive {
+  background: var(--report-accent) !important; color: #fff !important;
+  box-shadow: 0 2px 9px rgba(20,40,30,.16);
+}
+.page:not(.historyPage) .tabButton:hover:not(.tabActive) { background: var(--report-accent-soft); }
+.page:not(.historyPage) .sectionIntro {
+  background: var(--report-accent-soft);
+  border: 1px solid var(--report-stroke);
+  border-left: 5px solid var(--report-accent);
+  border-radius: 17px;
+  padding: 16px 21px;
+  box-shadow: 0 5px 18px rgba(30,50,37,.07);
+}
+.page:not(.historyPage) .sectionIntro h2 { font-size: clamp(24px,2.5vw,31px); color: #172f25; }
+.page:not(.historyPage) .sectionIntro p { color: #314c3e; font-size: 16px; line-height: 1.58; }
+.page:not(.historyPage) .smallCaps,
+.page:not(.historyPage) .eyebrow { color: var(--report-accent); font-size: 12px; letter-spacing: .06em; }
+.page:not(.historyPage) .panel,
+.page:not(.historyPage) .bulletBox,
+.page:not(.historyPage) .outcomeCard,
+.page:not(.historyPage) .metricCard {
+  background: rgba(255,254,252,.985);
+  border: 1px solid #a8beb0;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(25,54,33,.10);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  color: #1a3627;
+}
+.page:not(.historyPage) .panel { padding: 21px 24px; }
+.page:not(.historyPage) .bulletBox { padding: 20px 23px; }
+.page:not(.historyPage) .panel h3,
+.page:not(.historyPage) .bulletBox h3 { color: #173525; font-size: 18px; margin-bottom: 12px; }
+.page:not(.historyPage) .bulletBox li,
+.page:not(.historyPage) .noteList li { color: #2d4938; font-size: 16px; line-height: 1.55; }
+.page:not(.historyPage) .footnote,
+.page:not(.historyPage) .muted,
+.page:not(.historyPage) .outcomeFigures span,
+.page:not(.historyPage) .plotName span,
+.page:not(.historyPage) .economicComparison { color: #344f3f; font-size: 14px; line-height: 1.55; }
+.page:not(.historyPage) .panelHeading h3 { font-size: 20px; }
+.page:not(.historyPage) .metricSelector select {
+  background: #fff; border-color: #8ca998;
+  color: #183d2b; font-size: 15px;
+}
+.page:not(.historyPage) .outcomeGrid,
+.page:not(.historyPage) .insightGrid,
+.page:not(.historyPage) .splitPanels { align-items: stretch; gap: 13px; }
+.page:not(.historyPage) .outcomeCard {
+  display: flex; flex-direction: column; min-height: 220px; padding: 20px;
+  border-top: 4px solid var(--report-stroke);
+}
+.page:not(.historyPage) .outcomeCard h3 { color: #183b28; font-size: 17px; min-height: 0; }
+.page:not(.historyPage) .outcomeGrid .outcomeCard:nth-child(2) { border-top-color: #327f57; background: #fafffc; }
+.page:not(.historyPage) .outcomeGrid .outcomeCard:nth-child(3) { border-top-color: #b2844c; background: #fffdf8; }
+.page:not(.historyPage) .outcomeHighlight { border-color: #6c9d7b; border-top-color: #1f704c !important; }
+.page:not(.historyPage) .outcomeFigures { margin-top: auto; padding-top: 15px; }
+.page:not(.historyPage) .outcomeFigures strong { font-size: 15px; color: #153a28; }
+.page:not(.historyPage) .plotTrack { background: #e4ece7; height: 26px; }
+.page:not(.historyPage) .plotBar { background: #267b58; }
+.page:not(.historyPage) .plotBarCurrent { background: #71877b; }
+.page:not(.historyPage) .plotName strong,
+.page:not(.historyPage) .plotValue { font-size: 15px; color: #153726; }
+.page:not(.historyPage) .plotName span { font-size: 14px; }
+.page:not(.historyPage) .recommendation,
+.overviewPage .recommendation {
+  border: 1px solid #91b29a; border-left: 6px solid #26764e;
+  border-radius: 20px; padding: 25px 29px; min-height: 0;
+  background: rgba(255,254,249,.98);
+  box-shadow: 0 12px 30px rgba(26,62,38,.12);
+}
+.page:not(.historyPage).overviewPage .recommendation::before,
+.page:not(.historyPage).overviewPage .recommendation::after { display: none; }
+.page:not(.historyPage) .recommendation > div:first-child { max-width: 100%; }
+.page:not(.historyPage) .recommendation h2 { font-size: clamp(25px,2.7vw,34px); margin: 7px 0 11px; }
+.page:not(.historyPage) .recommendation .rotationSequence {
+  font-size: clamp(19px,2.2vw,26px); font-weight: 800;
+  line-height: 1.45; color: #1f5840; max-width: 850px; overflow-wrap: anywhere;
+}
+.page:not(.historyPage) .recommendation .recommendationSummary {
+  font-size: 16px; line-height: 1.55; color: #294c3b; margin-top: 9px;
+}
+.page:not(.historyPage) .inlineTags span { background: #eff5ef; border-color: #b7ceba; color: #244f37; font-size: 13px; padding: 6px 11px; }
+.priorityNotice { margin: 0; padding: 14px 17px; background: #fff8e9; color: #65431d; border: 1px solid #d2b178; border-radius: 14px; line-height: 1.55; }
+.page:not(.historyPage) .sectionTitle { font-size: 22px; color: #183626; }
+.page:not(.historyPage) .sectionTitle span { color: #456152; font-size: 14px; }
+.page:not(.historyPage) .overviewContent .metricsGrid { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+.page:not(.historyPage) .overviewContent .metricCard {
+  background: #fffdf9; min-height: 125px; padding: 18px 21px;
+  border: 1px solid #b3c3b7; border-top: 4px solid #2d7653;
+  gap: 9px;
+}
+.page:not(.historyPage) .overviewContent .metricCard:nth-child(2) { background: #f9fcff; border-top-color: #376e83; }
+.page:not(.historyPage) .overviewContent .metricCard:nth-child(3) { background: #fffaf3; border-top-color: #ad7644; }
+.page:not(.historyPage) .overviewContent .metricValue { font-size: clamp(26px,2.6vw,33px); color: #123e29; }
+.page:not(.historyPage) .overviewContent .mutedTiny { font-size: 13px; color: #4b6454; }
+.page:not(.historyPage) .overviewHighlights .bulletBox { min-height: 180px; }
+.page:not(.historyPage) .evidenceBox { border-left: 5px solid #337b55; background: #fafffb; }
+.page:not(.historyPage) .riskBox { border-left: 5px solid #b67d3d; background: #fffdf8; }
+.page:not(.historyPage) .riskBox li::marker { color: #a6662c; }
+.overviewActions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 2px 0 10px; }
+.page:not(.historyPage) .overviewActions .primaryButton { font-size: 15px; min-height: 46px; background: #216647; }
+.page:not(.historyPage) .overviewActions .secondaryButton { font-size: 15px; min-height: 46px; background: #fff; border-color: #94ae9b; color: #234e38; }
+.page:not(.historyPage) .overviewActions .textButton { font-size: 15px; margin-left: auto; }
+.explainer { background: rgba(255,254,250,.98); border: 1px solid #aec0b2; border-radius: 15px; padding: 15px 20px; color: #294636; }
+.explainer summary { cursor: pointer; font-size: 16px; font-weight: 750; color: #214c36; }
+.explainer[open] summary { margin-bottom: 10px; }
+.explainer p, .explainer li { font-size: 15px; line-height: 1.6; color: #344d3c; }
+.explainer p:last-child { margin-bottom: 0; }
+.insightSection { display: grid; gap: 12px; }
+.insightSection > h3 { margin: 0; font-size: 19px; color: #1d3729; }
+.insightSection > h3 span { display: block; margin-top: 5px; font-size: 15px; font-weight: 550; color: #466050; }
+.page:not(.historyPage) .insightGrid .panel {
+  display: flex; flex-direction: column; gap: 11px;
+  border-top: 5px solid #8eab95; min-height: 210px;
+}
+.page:not(.historyPage) .insightGrid .panel:nth-child(2) { background: #fafffb; }
+.page:not(.historyPage) .insightGrid .panel:nth-child(3) { background: #fffcf6; }
+.page:not(.historyPage) .insightGrid .insightRecommended { border-top-color: #1e7b54; }
+.page:not(.historyPage) .insightGrid .insightRotation { font-size: 16px; margin: 0 0 7px; line-height: 1.4; }
+.page:not(.historyPage) .insightFigure { gap: 5px; margin-top: auto; }
+.page:not(.historyPage) .insightFigure span { color: #435b4c; font-size: 14px; }
+.page:not(.historyPage) .insightFigure strong { font-size: 23px; color: #163e2c; }
+.page:not(.historyPage) .insightPrimaryFigure strong { font-size: 31px; }
+.page:not(.historyPage) .insightSection .splitPanels .bulletBox { min-height: 100%; }
+.page:not(.historyPage) .detailsCompact .compactCaveat { color: #2e4838; font-size: 14px; line-height: 1.55; }
+.page:not(.historyPage) .detailsCompact .compactList dt { color: #3f5c47; font-size: 13px; }
+.page:not(.historyPage) .detailsCompact .compactList dd { color: #193828; font-size: 14px; }
+.page:not(.historyPage) .footer { color: #365947; font-size: 12px; }
+
+/* High contrast is now the default; this reinforces it for restored older reports. */
+:global(html[data-fw-contrast="high"]) .page:not(.historyPage) .panel,
+:global(html[data-fw-contrast="high"]) .page:not(.historyPage) .metricCard,
+:global(html[data-fw-contrast="high"]) .page:not(.historyPage) .outcomeCard,
+:global(html[data-fw-contrast="high"]) .page:not(.historyPage) .bulletBox {
+  border-color: #789a82;
+}
+:global(html[data-fw-text-size="large"]) .page:not(.historyPage) :is(.bulletBox li,.noteList li,.footnote,.sectionIntro p,.plotName span,.insightFigure span,.economicComparison,.outcomeFigures span,.explainer p,.explainer li,.compactCaveat) { font-size: 17px; }
+:global(html[data-fw-text-size="large"]) .page:not(.historyPage) :is(.tabButton,.metricSelector select,.outcomeFigures strong,.plotName strong,.plotValue,.explainer summary) { font-size: 16px; }
+
+@media (max-width: 1050px) {
+  .page:not(.historyPage) .container { width: min(100% - 36px,1140px); }
+}
+@media (max-width: 760px) {
+  .page:not(.historyPage) .container { width: calc(100% - 28px); padding-bottom: 65px; }
+  .page:not(.historyPage) .tabNavigation { top: 110px; }
+  .page:not(.historyPage) .overviewContent .metricsGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .page:not(.historyPage) .splitPanels,
+  .page:not(.historyPage) .outcomeGrid,
+  .page:not(.historyPage) .insightGrid { grid-template-columns: minmax(0,1fr); }
+  .page:not(.historyPage) .sectionTitle { display: block; }
+  .page:not(.historyPage) .sectionTitle span { display: block; margin-top: 5px; }
+  .page:not(.historyPage) .outcomeCard { min-height: 0; }
+  .page:not(.historyPage) .overviewHighlights .bulletBox { min-height: 0; }
+  .page:not(.historyPage) .overviewActions .textButton { margin-left: 0; }
+  .page:not(.historyPage) .reportHeader { padding: 18px; }
+  .page:not(.historyPage) .plotRow { grid-template-columns: minmax(0,1fr) auto; }
+}
+@media (max-width: 450px) {
+  .page:not(.historyPage) .overviewContent .metricsGrid { grid-template-columns: 1fr; }
+  .page:not(.historyPage) .recommendation { padding: 21px; }
+  .page:not(.historyPage) .sectionIntro { padding: 15px; }
+  .page:not(.historyPage) .overviewActions .primaryButton,
+  .page:not(.historyPage) .overviewActions .secondaryButton { flex: 1 1 100%; }
+}
+/* Pair the key-risk panels with their heading, without adding extra card treatments. */
+.insightsContent .sectionTitle { padding-top: 6px; }
+
+
+/* Saved reports and the reader share paper-like cards, clear borders and the
+   same soft landscape used in the farm comparison. No engine data is restyled. */
+.page { background-color: #eaf2e5; background-image: linear-gradient(180deg,rgba(250,253,247,.87),rgba(246,250,243,.77)),url('/illustrations/fieldwise-atlas.svg'); background-size: cover; background-position: center center, center bottom; background-repeat: no-repeat; }
+.historyPage .historyIntro h1, .historyPage .historyHeading h2 { color: #193d2b; }
+.historyPage .historyIntro p, .historyPage .historyHeading span, .historyPage .storageNote { color: #365743; font-size: 14px; }
+.historyPage .historyRow, .historyPage .emptyState { border: 1px solid #aecbb4; border-radius: 19px; background: #fffefa; box-shadow: 0 10px 30px rgba(26,68,41,.07); }
+.historyPage .historyInfo p { color: #3b5946; font-size: 14px; line-height: 1.55; }
+.historyPage .historyTitle span { color: #4a6654; font-size: 13px; }
+.historyPage .historyTitle h3 { color: #193d2b; font-size: 18px; }
+.historyPage .historyHeading h2 { font-size: 23px; }
+.historyPage .primaryButton, .historyPage .openReport { font-size: 14px; min-height: 43px; }
+.historyPage .deleteReport { font-size: 14px; }
+
+/* Processing: distinct visible activity and truthful backend stages. */
+.processingScreen { gap: 15px; }
+.processingSpinnerWrap { position: relative; width: 88px; height: 88px; display: grid; place-items: center; margin-bottom: 10px; }
+.processingSpinner {
+  position: absolute; inset: 0; width: 88px; height: 88px; margin: 0;
+  border: 6px solid #d6e7da; border-top-color: #195f3e;
+  border-right-color: #428c60; border-radius: 50%;
+  animation: fw-processing-rotation 1.1s linear infinite;
+  will-change: transform;
+}
+.processingSpinnerCenter { color: #235e40; font-size: 17px; font-weight: 850; letter-spacing: -.035em; }
+@keyframes fw-processing-rotation { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.processingStage { font-size: clamp(16px, 1.5vw, 19px) !important; font-weight: 600; color: #254d37 !important; }
+.processingElapsed { display: flex; gap: 9px; align-items: baseline; color: #4e6855; font-size: 14px; }
+.processingElapsed strong { color: #194e34; font-size: 17px; font-variant-numeric: tabular-nums; }
+.processingScreen small { max-width: 480px; line-height: 1.65; color: #4e6855; font-size: 12px; }
+/* Accessibility: when reduced motion is explicitly requested, the static ring
+   and live stage/elapsed time still make processing state unambiguous. */
+@media (prefers-reduced-motion: reduce) {
+  .processingSpinner { animation: none; }
+}
+html[data-fw-motion="reduced"] .processingSpinner { animation: none; }

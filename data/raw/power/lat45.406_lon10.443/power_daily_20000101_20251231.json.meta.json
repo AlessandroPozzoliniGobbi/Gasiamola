@@ -1,0 +1,28 @@
+{
+  "file": "power_daily_20000101_20251231.json",
+  "source": "power",
+  "product": "POWER daily point AG",
+  "version": "POWER Daily API v2.10.3; sources: MERRA2, SRB, SYN1DEG, POWER",
+  "url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+  "params": {
+    "parameters": [
+      "T2M_MAX",
+      "T2M_MIN",
+      "T2M",
+      "PRECTOTCORR",
+      "ALLSKY_SFC_SW_DWN",
+      "RH2M",
+      "WS2M"
+    ],
+    "community": "AG",
+    "latitude": 45.406,
+    "longitude": 10.443,
+    "start": "20000101",
+    "end": "20251231",
+    "format": "JSON"
+  },
+  "downloaded_at_utc": "2026-11-15T02:08:30+00:00",
+  "bytes": 1224362,
+  "sha256": "939149871de42288dc828cbdf91d6127fccd11c9cd9a232e6c37bd78205541d8",
+  "notes": "header.title: NASA/POWER Source Native Resolution Daily Data\nheader.api: {\"version\": \"v2.10.3\", \"name\": \"POWER Daily API\"}\nheader.sources: [\"MERRA2\", \"SRB\", \"SYN1DEG\", \"POWER\"]\nheader.fill_value: -999.0\nheader.time_standard: LST\nheader.start/end: 20000101/20251231\ngeometry: {\"type\": \"Point\", \"coordinates\": [10.443, 45.406, 303.69]}\nparameters: {\"T2M_MAX\": {\"units\": \"C\", \"longname\": \"Temperature at 2 Meters Maximum\"}, \"T2M_MIN\": {\"units\": \"C\", \"longname\": \"Temperature at 2 Meters Minimum\"}, \"T2M\": {\"units\": \"C\", \"longname\": \"Temperature at 2 Meters\"}, \"PRECTOTCORR\": {\"units\": \"mm/day\", \"longname\": \"Precipitation Corrected\"}, \"ALLSKY_SFC_SW_DWN\": {\"units\": \"MJ/m^2/day\", \"longname\": \"All Sky Surface Shortwave Downward Irradiance\"}, \"RH2M\": {\"units\": \"%\", \"longname\": \"Relative Humidity at 2 Meters\"}, \"WS2M\": {\"units\": \"m/s\", \"longname\": \"Wind Speed at 2 Meters\"}}\nmessages: []\nLe sorgenti dichiarate dall'header sono quelle elencate in header.sources (es. MERRA2 per meteo/pioggia, SYN1DEG = CERES SYN1deg per la radiazione, POWER = prodotti derivati/quasi in tempo reale). Il passaggio a prodotti quasi in tempo reale negli ultimi mesi non e' segnalato giorno per giorno: verificare nel controllo qualita'."
+}

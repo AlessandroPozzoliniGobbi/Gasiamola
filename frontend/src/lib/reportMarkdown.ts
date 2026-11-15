@@ -2,7 +2,8 @@
  *  The PDF export renders this same document on the API side.
  *  This exports the FULL completed browser snapshot, not untransmitted raw model series.
  */
-import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS } from "./analysisStorage";
+import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS, FUTURE_SSP_LABELS } from "./analysisStorage";
+import { translateFutureNotice, translateFutureCompliance } from "./futureNotices";
 import {
   REPORT_METRICS, alternativeTitle, formatMetric, getRecommendation, labelRotation, marginDefinition,
   recommendationHeadline, sourceModeText, visibleStatements,
@@ -123,8 +124,8 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
     ...(includesFuture(report) && report.results.future ? [(() => {
       const f = report.results.future;
       return `## ${next()}. Future climate projections (CMIP6 Delta Change)\n\n` +
-        `**Scenario:** ${f.ssp_label} (${f.ssp_code.toUpperCase()}) · **Horizon:** +${f.horizon_years} years\n\n` +
-        `${f.ssp_description}\n\n` +
+        `**Scenario:** ${FUTURE_SSP_LABELS[f.ssp_code].title} · **Horizon:** +${f.horizon_years} years\n\n` +
+        `${FUTURE_SSP_LABELS[f.ssp_code].description}\n\n` +
         `### Current rotation under climate change\n\n` +
         `| Indicator | Historical baseline | Future projected | Delta |\n| --- | --- | --- | --- |\n` +
         `| Relative yield (%) | ${f.baseline_resa_rel_pct.toFixed(1)}% | ${f.future_resa_rel_pct.toFixed(1)}% | ${f.delta_resa_rel_pct >= 0 ? "+" : ""}${f.delta_resa_rel_pct.toFixed(1)} pp |\n` +
@@ -140,8 +141,8 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
         `- Yield boost vs current rotation: ${f.delta_resa_best_pct >= 0 ? "+" : ""}${f.delta_resa_best_pct.toFixed(1)} pp (projected: ${f.best_resa_rel_pct.toFixed(1)}%, ${f.best_resa_t_ha.toFixed(1)} t/ha)\n` +
         `- Future irrigation demand: ${f.best_irrigazione_mm.toFixed(0)} mm/year\n` +
         `- Nitrogen fertilizer demand: ${f.best_concime_kg_n_ha.toFixed(0)} kg N/ha\n` +
-        `- Regulatory compliance: ${f.best_conformita}\n` +
-        (f.best_rischi && f.best_rischi.length ? `\n**Adaptation notices and risks:**\n\n` + f.best_rischi.map((r) => `- ${r}`).join("\n") : "");
+        `- Regulatory compliance: ${translateFutureCompliance(f.best_conformita)}\n` +
+        (f.best_rischi && f.best_rischi.length ? `\n**Adaptation notices and risks:**\n\n` + f.best_rischi.map((r) => `- ${translateFutureNotice(r)}`).join("\n") : "");
     })()] : []),
     `## ${next()}. Soil and geographic data\n\n` +
     (soil ? `| Parameter | Model input |\n| --- | --- |\n` +

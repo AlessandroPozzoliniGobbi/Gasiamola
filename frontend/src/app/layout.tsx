@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import "../styles/design-system.css";
 import "../styles/global.css";
 import Navbar from "../components/Navbar";
+import ApplyUiPreferences from "../components/settings/ApplyUiPreferences";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,6 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
+        <ApplyUiPreferences />
         <Navbar />
         {children}
       </body>

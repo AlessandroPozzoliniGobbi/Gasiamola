@@ -255,7 +255,7 @@ def _work(job_id: str, point: tuple[float, float]):
             raise PreparationError("This point maps to the pilot cache folder; local preparation is not allowed there.")
         _set_job(job_id, stage="Retrieving NASA POWER historical climate data...")
         power.fetch(lat, lon)
-        _set_job(job_id, stage="Retrieving SoilGrids soil profile (REST or WCS fallback)...")
+        _set_job(job_id, stage="Retrieving SoilGrids soil profile (WCS or cached coverage)...")
         soilgrids.fetch(lat, lon)
         _set_job(job_id, stage="Deriving local hydraulic properties...")
         p, details = build_local_parameters(lat, lon)
