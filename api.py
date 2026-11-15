@@ -45,6 +45,12 @@ if tuple(float(x) for x in _AREA["pilotPoint"]) != PILOT:
 
 FiniteCoordinate = Annotated[float, Field(strict=True, allow_inf_nan=False)]
 PriorityWeight = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0, le=10)]
+CropCost = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0, le=100_000)]
+REGULATORY_REGIMES = (
+    "lombardia_impegno_quinquennale", "lombardia_impegno_triennale_SRA01_2026",
+    "emilia_romagna_impegno_quinquennale", "emilia_romagna_adesione_singola_coltura",
+)
+
 
 
 def _json_safe(value):
@@ -66,7 +72,7 @@ async def validation_error(_: Request, exc: RequestValidationError):
 
 
 class AnalyzeRequest(BaseModel):
-    # Unknown fields (e.g. economic overrides) are rejected, not silently ignored.
+    # Reject unknown data instead of silently ignoring regulatory or economic options.
     model_config = ConfigDict(extra="forbid")
     # GeoJSON order, [longitude, latitude]
     point: tuple[FiniteCoordinate, FiniteCoordinate]
@@ -77,6 +83,18 @@ class AnalyzeRequest(BaseModel):
     include_future: bool = Field(default=False, strict=True)
     future_horizon: Literal[5, 10, 15, 20] = Field(default=10)
     future_ssp: Literal["ssp126", "ssp245", "ssp585"] = Field(default="ssp245")
+    regulatory_regime: Literal[
+        "lombardia_impegno_quinquennale", "lombardia_impegno_triennale_SRA01_2026",
+        "emilia_romagna_impegno_quinquennale", "emilia_romagna_adesione_singola_coltura",
+    ] = Field(default="lombardia_impegno_quinquennale")
+    other_crop_costs_eur_ha: dict[str, CropCost] = Field(default_factory=dict)
+
+    @field_validator("other_crop_costs_eur_ha")
+    @classmethod
+    def check_crop_costs(cls, value: dict[str, float]) -> dict[str, float]:
+        if any(k not in {"mais", "soia", "frumento"} for k in value):
+            raise ValueError("Only maize, soybean and winter wheat cost overrides are supported")
+        return value
 
     @field_validator("point")
     @classmethod
@@ -290,12 +308,19 @@ def _outcome(entry, current, regime, label=None):
     }
 
 
-def _recommendation(conf: dict, warning: str | None) -> dict:
+def _recommendation(conf: dict, warning: str | None, current_compliance: str = "conforme") -> dict:
     """Never presents as recommended an alternative that does not score above the current rotation."""
     current, alternatives = conf.get("attuale"), conf.get("alternative", [])
     n = conf.get("n_confrontate")
     first = alternatives[0] if alternatives else None
-    if warning:
+    if current_compliance != "conforme":
+        status = "current_not_compliant"
+        message = ("Your current rotation does not qualify under the selected regional rules "
+                   f"(status: {STATES_EN.get(current_compliance, current_compliance)}). "
+                   + ("Alternative 1 is compliant and is proposed even if its relative score is lower. "
+                      "The current rotation is shown solely as a baseline." if first is not None else
+                      "No compliant alternative was available; the current rotation is shown solely as a baseline."))
+    elif warning:
         status = "priorities_do_not_discriminate"
         message = ("The selected priorities do not distinguish between the rotations in this scenario (all scores "
                    "are equal). No rotation is recommended; the alternatives are shown for comparison only.")
@@ -315,7 +340,7 @@ def _recommendation(conf: dict, warning: str | None) -> dict:
                    + (", tied with Alternative 1" if first["punteggio"] == current["punteggio"] else "")
                    + "). The alternatives are shown for comparison only.")
     return {"status": status, "message": message,
-            "recommendedAlternativeIndex": 0 if status == "alternative_ranks_higher" else None,
+            "recommendedAlternativeIndex": 0 if status in ("alternative_ranks_higher", "current_not_compliant") and first is not None else None,
             "currentPosition": None if current is None else current["posizione"],
             "currentScore": None if current is None else number(current["punteggio"]),
             "comparedRotations": n, "nonDominatedCount": conf.get("n_non_dominate"),
@@ -409,11 +434,12 @@ def _data_period(meta: dict) -> dict:
 CROPS_EN = {"mais": "maize", "soia": "soybean", "frumento": "winter wheat"}
 
 
-def _economics_assumptions() -> dict:
+def _economics_assumptions(overrides: dict | None = None) -> dict:
     p = params.load_params()
     crops = list(p["economia"]["prezzi_eur_t"].keys())
     prices = {c: economics.prezzo_coltura(p, c) for c in crops}
-    other = economics.costi_predefiniti(p, crops)
+    defaults = economics.costi_predefiniti(p, crops)
+    other = {**defaults, **(overrides or {})}
     n_price = float(params.get(p, "economia.azoto_eur_kg_n"))
     water = float(params.get(p, "economia.irrigazione_eur_mm"))
     fmt = lambda d: ", ".join(f"{CROPS_EN.get(c, c)} {d[c]:,.0f}" for c in crops)
@@ -423,10 +449,175 @@ def _economics_assumptions() -> dict:
         "cultivated hectare (seed, crop protection, field operations, sowing, harvest, drying and transport: "
         + fmt(other) + " EUR/ha), averaged per year over the evaluated cycle. Land rent, depreciation and CAP "
         "payments are not included (equal for all rotations, they cancel out in the difference from today). "
-        "Default values from params/economia.yaml, not farm-specific; not a profit forecast.")
+        + ("Farmer-adjusted other crop costs were used; all other prices remain model defaults. "
+           if overrides else "Default values from params/economia.yaml, not farm-specific. ")
+        + "This is not a profit forecast.")
     return {"source": "params/economia.yaml", "marginDefinition": definition,
             "cropPricesEurT": prices, "nitrogenEurKgN": n_price, "irrigationEurMm": water,
-            "otherCropCostsEurHa": other}
+            "otherCropCostsEurHa": other, "defaultOtherCropCostsEurHa": defaults,
+            "farmerAdjusted": bool(overrides)}
+
+
+def _future_under_selected_rules(future_payload: dict | None, summary, regime: str,
+                                 other_cost_overrides: dict[str, float], current_rotation: str,
+                                 model_point: tuple[float, float]) -> dict | None:
+    """Use matching input costs for displayed future margins and reject unsafe precomputed picks.
+
+    Precomputed future rankings were calculated with fixed priorities, so a valid candidate
+    is labelled *illustrative*, not an optimal recommendation under the user's weights.
+    """
+    if not future_payload:
+        return future_payload
+    f = dict(future_payload)
+    eco = _economics_assumptions(other_cost_overrides)
+    crop_costs = eco["otherCropCostsEurHa"]
+    default_costs = eco["defaultOtherCropCostsEurHa"]
+
+    def per_year(label: str, costs: dict[str, float]) -> float:
+        crops = [step.split("+")[0].strip() for step in label.split(">")]
+        return sum(costs.get(c, 0.0) for c in crops) / len(crops) if crops else 0.0
+
+    for prefix in ("baseline", "future"):
+        default = per_year(current_rotation, default_costs)
+        actual = per_year(current_rotation, crop_costs)
+        if f.get(f"{prefix}_margine_eur_ha") is not None:
+            f[f"{prefix}_margine_eur_ha"] = round(f[f"{prefix}_margine_eur_ha"] + default - actual, 1)
+        if f.get(f"{prefix}_costo_eur_ha") is not None:
+            f[f"{prefix}_costo_eur_ha"] = round(f[f"{prefix}_costo_eur_ha"] + actual, 1)
+    if f.get("future_margine_p10_eur_ha") is not None:
+        f["future_margine_p10_eur_ha"] = round(
+            f["future_margine_p10_eur_ha"] + per_year(current_rotation, default_costs)
+            - per_year(current_rotation, crop_costs), 1)
+    if f.get("future_margine_eur_ha") is not None and f.get("baseline_margine_eur_ha") is not None:
+        f["delta_margine_eur_ha"] = round(f["future_margine_eur_ha"] - f["baseline_margine_eur_ha"], 1)
+    if f.get("future_costo_eur_ha") is not None and f.get("baseline_costo_eur_ha") is not None:
+        f["delta_costo_eur_ha"] = round(f["future_costo_eur_ha"] - f["baseline_costo_eur_ha"], 1)
+
+    # Existing future calculations contain multiple simulated rotations. Read their
+    # archived ranking only when it matches the model point, climate scenario, and
+    # irrigation regime; never mix a pilot ranking with a field-local scenario.
+    raw_candidates = f.get("candidateRotations")  # fresh, on-demand simulation
+    ranking_source = f.get("candidateRankingSource", "fresh")
+    matching_point = (
+        math.isclose(float(f.get("lon", float("nan"))), model_point[0], abs_tol=0.00001)
+        and math.isclose(float(f.get("lat", float("nan"))), model_point[1], abs_tol=0.00001)
+    )
+    if raw_candidates is None and matching_point:
+        try:
+            from fieldwise import future as fw_future
+            table = fw_future.load_future_ranking(lat=f["lat"], lon=f["lon"])
+            table = table.loc[(table["ssp_code"] == f["ssp_code"])
+                              & (table["horizon_years"] == f["horizon_years"])]
+            raw_candidates = table.to_dict("records")
+            ranking_source = "precomputed"
+        except (CacheMiss, KeyError, OSError, ValueError):
+            raw_candidates = []
+    if raw_candidates is None:
+        raw_candidates = []
+
+    # The archived ranking belongs to one irrigation configuration; data from
+    # different configurations must not be advertised as applicable to this run.
+    if f.get("irrigation_regime") != f.get("requestedIrrigationRegime", f.get("irrigation_regime")) or not matching_point:
+        raw_candidates = []
+
+    canonical = ensemble.classe_rotazione_attuale(current_rotation, params.load_params())
+    reference_matches = (
+        ensemble.classe_rotazione_attuale(str(f.get("current_rotation", "")), params.load_params()) == canonical
+        and f.get("irrigation_regime") == f.get("requestedIrrigationRegime", f.get("irrigation_regime"))
+    )
+    f["referenceMatchesRequestedRotation"] = reference_matches
+    compliance_col = f"conformita_{regime}"
+    # Strictly require all records of a cyclic class to be compliant; never
+    # admit a rotation because only one row/scenario happened to be eligible.
+    allowed = (set(summary.groupby("classe")[compliance_col]
+                   .agg(lambda states: (states == "conforme").all()).loc[lambda ok: ok].index)
+               if compliance_col in summary.columns else set())
+    new_candidates = []
+    seen = set()
+    for row in sorted(raw_candidates, key=lambda r: float(r.get("posizione", 999))):
+        rotation = str(row.get("classe", ""))
+        if not rotation or rotation == canonical or rotation in seen or rotation not in allowed:
+            continue
+        seen.add(rotation)
+        def _number(key):
+            try:
+                n = float(row[key])
+                return n if math.isfinite(n) else None
+            except (KeyError, TypeError, ValueError):
+                return None
+        margin = _number("margine_lordo_eur_ha")
+        if margin is not None:
+            margin = round(margin + per_year(rotation, default_costs) - per_year(rotation, crop_costs), 1)
+        baseline_comparable = reference_matches
+        new_candidates.append({
+            "rotation": rotation,
+            "precomputedRank": int(_number("posizione")) if _number("posizione") is not None else None,
+            "relativeYieldPct": round(_number("resa_rel_mediana") * 100, 1) if _number("resa_rel_mediana") is not None else None,
+            "yieldP10Pct": round(_number("resa_rel_p10") * 100, 1) if _number("resa_rel_p10") is not None else None,
+            "marginEurHa": margin,
+            "marginDeltaVsCurrentEurHa": (round(margin - f["future_margine_eur_ha"], 1)
+                                         if baseline_comparable and margin is not None and f.get("future_margine_eur_ha") is not None else None),
+            "irrigationMm": _number("irrigazione_mm"),
+            "fertilizerKgN": _number("concime_kg_n_ha"),
+            "nitrogenLeachingKgN": _number("n_lisciviato_kg_n_ha"),
+            "humusChangeTonsHa": _number("humus_t_ha"),
+            "nonDominated": row.get("non_dominata") is True,
+        })
+    f["candidateRotations"] = new_candidates
+    if new_candidates:
+        mismatch_notice = (
+            " The simulated reference rotation differs from the current rotation you entered; "
+            "margin differences versus your entered rotation are therefore unavailable."
+            if not reference_matches else ""
+        )
+        if ranking_source == "precomputed":
+            provenance = "the archived Cremona future ranking"
+            ranking_notice = "The archived ordering does not reflect your priority weights or custom crop costs."
+        else:
+            provenance = "a new simulation of representative rotations for the selected point and irrigation regime"
+            ranking_notice = (
+                "Ordering uses your priorities but is not recalculated after regulatory filtering or custom crop costs. "
+                "Only the model's representative rotation subset was simulated, not every possible sequence."
+            )
+        f["candidateRotationsNote"] = (
+            f"{len(new_candidates)} eligible alternatives from {provenance}, "
+            "filtered by the selected regional rules. " + ranking_notice +
+            " Results are exploratory, not validated field-level forecasts." + mismatch_notice
+        )
+    else:
+        f["candidateRotationsNote"] = (
+            "No additional future alternatives from the matching simulation dataset could be "
+            "verified as compliant with the selected regional rules."
+        )
+
+    candidate = str(f.get("best_rotation") or "")
+    column = f"conformita_{regime}"
+    matches = (summary[summary["classe"] == candidate]
+               if candidate and column in summary.columns and reference_matches else summary.iloc[0:0])
+    if matches.empty or not (matches[column] == "conforme").all():
+        f["best_rotation"] = ""   # UI/exports must NOT propose this rotation.
+        f["adaptationNotice"] = (
+            "The highlighted candidate is ineligible, cannot be verified, or uses a "
+            "different reference rotation. No future rotation is recommended automatically. "
+            "Other compliant simulated options, if available, appear below for comparison."
+        )
+    else:
+        f["best_conformita"] = "conforme"
+        f["adaptationNotice"] = (
+            "Illustrative compliant candidate; future ranking has not been "
+            "re-optimized for your selected costs and priorities."
+        )
+        default = per_year(candidate, default_costs)
+        actual = per_year(candidate, crop_costs)
+        if f.get("best_margine_eur_ha") is not None:
+            f["best_margine_eur_ha"] = round(f["best_margine_eur_ha"] + default - actual, 1)
+        if f.get("best_costo_eur_ha") is not None:
+            f["best_costo_eur_ha"] = round(f["best_costo_eur_ha"] + actual, 1)
+        if f.get("best_margine_eur_ha") is not None and f.get("future_margine_eur_ha") is not None:
+            f["delta_guadagno_eur_ha"] = round(f["best_margine_eur_ha"] - f["future_margine_eur_ha"], 1)
+        if f.get("best_costo_eur_ha") is not None and f.get("future_costo_eur_ha") is not None:
+            f["delta_costo_best_eur_ha"] = round(f["best_costo_eur_ha"] - f["future_costo_eur_ha"], 1)
+    return f
 
 
 # =============================================================================
@@ -544,6 +735,12 @@ def health():
             "pilotPoint": PILOT, "maxDistanceKm": MAX_DISTANCE_KM, "priorities": PRIORITIES}
 
 
+@app.get("/api/v1/economics/defaults")
+def get_economics_defaults():
+    """Read the actual engine YAML; the browser never hardcodes assumed crop costs."""
+    return _economics_assumptions()
+
+
 @app.get("/api/v1/limitations")
 def get_limitations(scenario: Literal["solo_pioggia", "tetto_irriguo", "irrigazione_libera"] = "tetto_irriguo"):
     return limitations(scenario, applies_to_pilot_data=True)
@@ -610,9 +807,13 @@ def analyze(request: AnalyzeRequest):
                 "or explicitly choose the Cremona pilot reference data."})
     else:
         model_point = PILOT
-    regime = None if local_rec else PILOT_REGIME
+    # User-selected rules apply to local AND pilot analysis, never silently disabled.
+    regime = request.regulatory_regime
     try:
         detail_table, summary = ensemble.load_ensemble(lat=model_point[1], lon=model_point[0])
+        # Keep the original physical/economic default values for future simulations.
+        # Custom costs are applied exactly once by _future_under_selected_rules.
+        future_historical_summary = summary
         meta = summary.attrs.get("meta", {})
         if not _cache_is_current(meta):
             raise HTTPException(status_code=409, detail={"code": "STALE_ENSEMBLE", "message": "Cached simulations no longer match the current parameter files. Regenerate and validate the ensemble before using them."})
@@ -621,10 +822,25 @@ def analyze(request: AnalyzeRequest):
         canonical = ensemble.classe_rotazione_attuale(request.rotation)
         if not bool((summary["classe"] == canonical).any()):
             raise HTTPException(status_code=422, detail={"code": "ROTATION_NOT_CACHED", "message": "This crop rotation has no saved pilot ensemble result."})
+        # Adjust the cached economic components, not the climate/agronomic model.
+        # This changes scores, margins and evidence consistently without rerunning simulation.
+        if request.other_crop_costs_eur_ha:
+            effective = _economics_assumptions(request.other_crop_costs_eur_ha)["otherCropCostsEurHa"]
+            try:
+                summary = economics.ricalcola_margine(summary, effective)
+                detail_table = economics.ricalcola_margine(detail_table, effective)
+            except KeyError as error:
+                raise HTTPException(status_code=409, detail={
+                    "code": "ECONOMIC_COMPONENTS_UNAVAILABLE",
+                    "message": "This older simulation cache has no cost-breakdown columns. "
+                    "Reprepare the field with the current engine before using custom costs.",
+                }) from error
         summary = summary.copy()
         summary["attuale"] = summary["classe"] == canonical
         weights = {key: request.priorities.get(key, 0) for key in PRIORITIES}
-        common = dict(solo_conformi=not bool(local_rec), regime=regime, ammetti_deroga=False)
+        # Exclude all non-compliant/derogation-only/unknown alternatives BEFORE ranking.
+        # The current rotation may remain for historical comparison, never as a proposal.
+        common = dict(solo_conformi=True, regime=regime, ammetti_deroga=False)
         warning = ranking.score(summary, weights, request.scenario, **common).attrs.get("avviso")
         conf = ranking.confronta(summary, weights, request.scenario, n_alternative=2, **common)
     except CacheMiss:
@@ -652,40 +868,58 @@ def analyze(request: AnalyzeRequest):
     alternatives = conf.get("alternative", [])
     same_cycle = request.rotation.strip() != canonical
     compliance_note = (
-        "Alternatives are not filtered by regional rules at this location. Compliance shown in the risks is the least "
-        "favourable status across the regional rule sets in the engine "
-        f"({', '.join(REGIMES_EN.get(c[len('conformita_'):], c) for c in summary.columns if c.startswith('conformita_'))}); "
-        "verify the rules that apply to this field." if local_rec else
-        "Alternatives are filtered for compliance with the Lombardy five-year integrated-production rotation rules; "
-        "the current rotation remains visible and its own compliance is reported among its risks.")
+        f"Alternatives are strictly filtered for compliance with {REGIMES_EN[regime]} "
+        "as encoded in the engine; derogations and unassessable rotations are excluded. "
+        "The current rotation remains visible only as a baseline even if it is non-compliant. "
+        "This model check is not an official legal certification."
+    )
     data_period = _data_period(meta)
     pilot_data = not bool(local_rec)
     future_payload = None
+    future_unavailable_note = None
     if request.include_future:
-        try:
-            from fieldwise import future as fw_future
+        # Archived pilot future data were calculated for ONE irrigation regime
+        # and ONE reference rotation. Use them only for that exact configuration.
+        # All other combinations must run a real scenario-conditioned simulation.
+        from fieldwise import future as fw_future
+        key = f"{request.future_ssp}_{request.future_horizon}a"
+        cached = None
+        if model_point == PILOT:
             try:
-                precalc = fw_future.load_future_payload(lat=model_point[1], lon=model_point[0])
-                key = f"{request.future_ssp}_{request.future_horizon}a"
-                future_payload = precalc.get(key)
-            except Exception:
-                future_payload = fw_future.get_future_simulation_payload(
-                    lat=model_point[1],
-                    lon=model_point[0],
+                cached = fw_future.load_future_payload(lat=PILOT[1], lon=PILOT[0]).get(key)
+            except (CacheMiss, OSError, ValueError, KeyError):
+                pass
+        cached_matches = (
+            cached is not None
+            and cached.get("irrigation_regime") == request.scenario
+            and ensemble.classe_rotazione_attuale(str(cached.get("current_rotation", ""))) == canonical
+        )
+        if cached_matches:
+            future_payload = cached
+        else:
+            try:
+                from future_alternatives import get_future_comparison_payload
+                future_payload = get_future_comparison_payload(
+                    lat=model_point[1], lon=model_point[0],
                     horizon_years=request.future_horizon,
                     ssp_code=request.future_ssp,
-                    current_rotation=request.rotation.strip(),
+                    current_rotation=request.rotation,
                     irrigation_regime=request.scenario,
                     weights=weights,
+                    historical_summary=future_historical_summary,
+                    model_revision=str(meta.get("hash_parametri", "")) + ":" + str(meta.get("calcolato_il", "")),
                 )
-        except Exception:
-            try:
-                from fieldwise import future as fw_future
-                precalc = fw_future.load_future_payload(lat=PILOT[1], lon=PILOT[0])
-                key = f"{request.future_ssp}_{request.future_horizon}a"
-                future_payload = precalc.get(key)
-            except Exception:
+            except (CacheMiss, OSError, ValueError) as exc:
+                # Keep the historical analysis, but do not pretend pilot data
+                # were simulated for a different point or irrigation regime.
                 future_payload = None
+                future_unavailable_note = f"Future rotation simulations unavailable for these settings: {exc}"
+    if future_payload:
+        future_payload = {**future_payload, "requestedIrrigationRegime": request.scenario}
+    future_payload = _future_under_selected_rules(
+        future_payload, summary, regime, request.other_crop_costs_eur_ha, request.rotation, model_point)
+    if future_payload:
+        future_payload.pop("requestedIrrigationRegime", None)
     return {
         "schemaVersion": 1,
         "engine": {"version": __version__, "codeHash": ENGINE_CODE_HASH,
@@ -697,7 +931,9 @@ def analyze(request: AnalyzeRequest):
                    "ensembleCalculatedAt": meta.get("calcolato_il"),
                    "cacheCodeVersionRecorded": bool(local_rec),
                    "localData": local_rec["details"] if local_rec else None,
-                   "economics": _economics_assumptions(),
+                   "economics": _economics_assumptions(request.other_crop_costs_eur_ha),
+                   "regulatoryRegime": regime,
+                   "regulatoryRegimeLabel": REGIMES_EN[regime],
                    "future": {
                        "enabled": True,
                        "horizonYears": request.future_horizon,
@@ -709,12 +945,14 @@ def analyze(request: AnalyzeRequest):
                     "current": _outcome(current, current, regime, label=request.rotation.strip()),
                     "alternatives": [_outcome(x, current, regime) for x in alternatives],
                     "comparedRotations": conf.get("n_confrontate"),
-                    "recommendation": _recommendation(conf, warning),
+                    "recommendation": _recommendation(
+                        conf, warning, _state(current["valori"], regime)),
                     "rotationOrderNote": (f"Entered as {request.rotation.strip()}; compared as the cyclic rotation "
                                           f"{canonical} (same sequence, different starting year).") if same_cycle else None,
                     "historicalWindows": _historical_windows(detail_table, request.scenario, current, alternatives),
                     "future": future_payload,
                     "notes": [note, compliance_note,
+                              *([future_unavailable_note] if future_unavailable_note else []),
                               "Ranking scores are relative to the compared set and to the chosen priorities.",
                               *([] if local_rec else [
                                   "The pilot ensemble cache records parameter-file hashes but not the engine code version: "

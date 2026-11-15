@@ -18,6 +18,7 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
   const econ = includesEconomics(report);
   const future = includesFuture(report);
   const rotations = [report.results.current, ...report.results.alternatives];
+  const futureAlternatives = report.results.future?.candidateRotations ?? [];
   const labels = rotations.map((r,i) => i === 0 ? "Current" : `Alternative ${i}`);
   const recommendation = getRecommendation(report);
   const metrics = REPORT_METRICS.filter((m) => econ || m.key !== "grossMarginEurHa");
@@ -78,7 +79,7 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
     ["Climate projections requested",future?"Yes":"No"],
     ...(future && report.results.future ? [
       ["Future scenario", `${FUTURE_SSP_LABELS[report.results.future.ssp_code].title} (+${report.results.future.horizon_years} years)`],
-      ["Future adaptation recommendation", labelRotation(report.results.future.best_rotation)],
+      ["Future adaptation candidate", report.results.future.best_rotation ? labelRotation(report.results.future.best_rotation) : "No compliant candidate available"],
     ] : []),
     ["Note","Values are historical simulation indicators, not predictions. See provenance sheet."],
   ];
@@ -130,7 +131,7 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
         ["Parameter / Projection", "Value", "Unit", "Interpretation"],
         ["IPCC Scenario", FUTURE_SSP_LABELS[report.results.future.ssp_code].title, report.results.future.ssp_code.toUpperCase(), FUTURE_SSP_LABELS[report.results.future.ssp_code].description],
         ["Time horizon", report.results.future.horizon_years, "years", "CMIP6 linear scaled delta-change"],
-        ["Current crop rotation", labelRotation(report.results.future.current_rotation), "", "Baseline rotation under evaluation"],
+        ["Future reference rotation", labelRotation(report.results.future.current_rotation), "", report.results.future.referenceMatchesRequestedRotation === false ? "Archived reference differs from the selected current rotation" : "Current rotation under evaluation"],
         ["Historical baseline relative yield", report.results.future.baseline_resa_rel_pct, "%", "Historical median yield index"],
         ["Future projected relative yield", report.results.future.future_resa_rel_pct, "%", "Future median yield under scenario"],
         ["Yield delta", report.results.future.delta_resa_rel_pct, "pp", "Future minus baseline yield"],
@@ -139,11 +140,12 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
         ["Historical baseline margin", report.results.future.baseline_margine_eur_ha, "EUR/ha/year", "Historical gross margin"],
         ["Future projected margin", report.results.future.future_margine_eur_ha, "EUR/ha/year", "Future gross margin"],
         ["Margin delta", report.results.future.delta_margine_eur_ha, "EUR/ha/year", "Future minus baseline margin"],
-        ["Future variable costs", report.results.future.future_costo_eur_ha, "EUR/ha/year", "Projected water and fertilizer costs"],
+        ["Future variable costs", report.results.future.future_costo_eur_ha, "EUR/ha/year", "Projected water, fertilizer and other crop costs"],
         ["Cost delta", report.results.future.delta_costo_eur_ha, "EUR/ha/year", "Future minus baseline costs"],
         ["Future extreme heat days (Tmax > 35°C)", report.results.future.future_hot_days_ann, "days/year", "Extreme thermal stress frequency"],
         ["Future reference ET0", report.results.future.future_et0_ann_mm, "mm/year", "Recalculated Penman-Monteith ET0"],
-        ["Recommended adaptation rotation", labelRotation(report.results.future.best_rotation), "", "Top-scoring rotation in future climate"],
+        ["Precomputed adaptation candidate", report.results.future.best_rotation ? labelRotation(report.results.future.best_rotation) : "None compliant/verified", "", report.results.future.adaptationNotice ?? "Candidate is not optimized for custom priorities"],
+        ...(report.results.future.best_rotation ? ([
         ["Additional gain vs current", report.results.future.delta_guadagno_eur_ha, "EUR/ha/year", "Extra margin by switching to adaptation strategy"],
         ["Adaptation yield boost", report.results.future.delta_resa_best_pct, "pp", "Yield increase vs future current rotation"],
         ["Adaptation projected yield", report.results.future.best_resa_rel_pct, "%", "Relative yield index of best rotation"],
@@ -151,6 +153,22 @@ function sheetsForReport(report: CompletedReport, demo=false): Sheet[] {
         ["Adaptation irrigation demand", report.results.future.best_irrigazione_mm, "mm/year", "Annual water requirement"],
         ["Adaptation nitrogen fertilizer", report.results.future.best_concime_kg_n_ha, "kg N/ha", "Annual fertilizer application"],
         ["Regulatory compliance", translateFutureCompliance(report.results.future.best_conformita), "", "Regional integrated production rules"],
+        ] as Cell[][]) : []),
+      ] as Cell[][],
+    }] : []),
+    ...(future && futureAlternatives.length ? [{
+      name: "Future alternatives",
+      widths: [18, 46, 22, 22, 26, 21, 24, 27, 25],
+      rows: [
+        ["Rank (archived)", "Crop rotation", "Relative yield (%)", "Margin (EUR/ha/year)",
+         "Delta vs reference (EUR/ha/year)", "Irrigation (mm/year)", "Fertilizer (kg N/ha/year)",
+         "N leaching (kg N/ha/year)", "Humus change (t/ha/year)"],
+        ...futureAlternatives.map(c => [
+          c.precomputedRank, labelRotation(c.rotation), c.relativeYieldPct, c.marginEurHa,
+          c.marginDeltaVsCurrentEurHa, c.irrigationMm, c.fertilizerKgN,
+          c.nitrogenLeachingKgN, c.humusChangeTonsHa,
+        ]),
+        ["Methodology", report.results.future?.candidateRotationsNote ?? "Future scenario subset; no personalized reranking"],
       ] as Cell[][],
     }] : []),
     {name:"Provenance",rows:notes,widths:[43,110]},

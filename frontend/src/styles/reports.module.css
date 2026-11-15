@@ -73,6 +73,8 @@
 .muted{color:#738979;font-size:13px;line-height:1.65}
 .textButton{justify-self:start;font-family:inherit;border:0;background:transparent;color:#25734c;font-weight:750;font-size:13px;padding:7px 0;cursor:pointer}
 .sectionIntro{padding:9px 0 4px}
+.futureLabelRow{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.experimentalTag{display:inline-flex;align-items:center;border:1px solid #e7c899;border-radius:999px;padding:4px 9px;background:#fff4dc;color:#805a22;font-size:10px;font-weight:800;letter-spacing:.045em;line-height:1}
 .sectionIntro h2{font-size:clamp(24px,3vw,31px);letter-spacing:-.04em;line-height:1.2;margin:10px 0 6px}
 .sectionIntro p{font-size:14px;line-height:1.6;margin:0;color:#6f8474}
 .outcomeGrid,.insightGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -809,3 +811,18 @@
   .processingSpinner { animation: none; }
 }
 html[data-fw-motion="reduced"] .processingSpinner { animation: none; }
+
+/* Future projections: the current rotation and all eligible precomputed alternatives. */
+.futureAlternativesPanel{margin-top:28px;border:1px solid #dcebdd;border-radius:19px;background:#fff;padding:21px 23px}
+.futureAlternativesScroll{max-width:100%;overflow-x:auto;margin-top:17px;border:1px solid #dcebdd;border-radius:13px}
+.futureAlternativesTable{width:100%;min-width:920px;border-collapse:collapse;font-size:12px;color:#2a5339;font-variant-numeric:tabular-nums}
+.futureAlternativesTable thead{background:#eef6eb;color:#3f704d}
+.futureAlternativesTable th,.futureAlternativesTable td{padding:13px 12px;text-align:right;border-bottom:1px solid #e8efe6;vertical-align:middle;white-space:nowrap}
+.futureAlternativesTable th:first-child,.futureAlternativesTable td:first-child{text-align:left}
+.futureAlternativesTable tbody tr:last-child th,.futureAlternativesTable tbody tr:last-child td{border-bottom:0}
+.futureAlternativesTable tbody th{font-weight:700;white-space:normal;min-width:195px;line-height:1.5}
+.futureCurrentRow{background:#f3f8f0}
+.futureRowTag{display:block;color:#729276;font-size:10px;font-weight:650;margin-bottom:3px}
+.futureShowMore{margin-top:13px;display:inline-flex;align-items:center;justify-content:center;background:#e8f4e5;border:1px solid #bedbc0;color:#235e40;padding:10px 15px;border-radius:10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.futureShowMore:hover{background:#d5e9d1}
+@media(max-width:700px){.futureAlternativesPanel{padding:16px}.futureAlternativesTable{font-size:11px}}

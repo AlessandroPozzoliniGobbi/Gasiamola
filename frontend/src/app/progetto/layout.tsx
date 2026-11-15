@@ -17,6 +17,18 @@ export default function ProjectLayout({ children }: { children: ReactNode }) {
               From Earth observation data to more informed agricultural decisions.
             </p>
           </div>
+          <div className={styles.reportDownloadGroup}>
+            <a
+              className={styles.reportDownloadButton}
+              href="/project/fieldwise-technical-report.pdf"
+              download="FIELDWISE_Technical_Report_2026.pdf"
+              type="application/pdf"
+              aria-label="Download the FIELDWISE technical report PDF"
+            >
+              <span aria-hidden="true">↓</span> Download report <span className={styles.reportDownloadFormat}>PDF</span>
+            </a>
+            <span className={styles.reportDownloadNote}>Technical report · Draft · 16 pages</span>
+          </div>
         </header>
 
         <ProjectSectionNav />

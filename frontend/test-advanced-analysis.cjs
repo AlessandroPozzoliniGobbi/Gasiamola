@@ -49,3 +49,23 @@ test('advanced opt-in is stored per field and does not transfer to a new ID', ()
   assert.equal(loadedFresh.advancedEconomics, false);
   assert.equal(loadedFresh.includeFuture, false);
 });
+
+test('regional rules and custom crop expenses survive save/load per field', () => {
+  saved.clear();
+  const selected = { ...a.defaultAnalysisDraft(), advancedEconomics: true,
+    regulatoryRegime: 'emilia_romagna_impegno_quinquennale',
+    otherCropCostsEurHa: { mais: 2250, soia: 1450 } };
+  assert.equal(a.isAnalysisDraft(selected), true);
+  a.saveAnalysisDraft('field-costs', selected);
+  const read = a.loadAnalysisDraft('field-costs');
+  assert.equal(read.regulatoryRegime, 'emilia_romagna_impegno_quinquennale');
+  assert.equal(read.otherCropCostsEurHa.mais, 2250);
+  assert.equal(read.otherCropCostsEurHa.soia, 1450);
+  assert.deepEqual(Object.keys(a.loadAnalysisDraft('field-new').otherCropCostsEurHa), []);
+});
+
+test('invalid cost keys, negative values and unknown regimes are rejected', () => {
+  assert.equal(a.isAnalysisDraft({ ...a.defaultAnalysisDraft(), regulatoryRegime: 'some-other-regime' }), false);
+  assert.equal(a.isAnalysisDraft({ ...a.defaultAnalysisDraft(), otherCropCostsEurHa: { mais: -1 } }), false);
+  assert.equal(a.isAnalysisDraft({ ...a.defaultAnalysisDraft(), otherCropCostsEurHa: { wheat: 50 } }), false);
+});

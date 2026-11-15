@@ -71,6 +71,8 @@ export async function analyzeField(field: FieldSnapshot, draft: AnalysisDraft,
         include_future: draft.includeFuture === true,
         future_horizon: draft.futureHorizon ?? 10,
         future_ssp: draft.futureSsp ?? "ssp245",
+        regulatory_regime: draft.regulatoryRegime ?? "lombardia_impegno_quinquennale",
+        other_crop_costs_eur_ha: draft.advancedEconomics ? (draft.otherCropCostsEurHa ?? {}) : {},
       }),
       signal: controller.signal,
     });
@@ -106,6 +108,21 @@ export async function analyzeField(field: FieldSnapshot, draft: AnalysisDraft,
   }
 }
 
+
+export type EconomicDefaults = {
+  otherCropCostsEurHa: Record<"mais" | "soia" | "frumento", number>;
+};
+export async function loadEconomicDefaults(): Promise<EconomicDefaults> {
+  if (!BASE) throw new Error("Analysis API is not configured.");
+  const response = await fetch(`${BASE}/api/v1/economics/defaults`, { cache: "no-store" });
+  if (!response.ok) throw new Error(`Cannot load engine cost defaults (HTTP ${response.status}).`);
+  const value = await response.json() as EconomicDefaults;
+  if (!value.otherCropCostsEurHa || ["mais", "soia", "frumento"].some((key) =>
+    !Number.isFinite(value.otherCropCostsEurHa[key as "mais" | "soia" | "frumento"]))) {
+    throw new Error("Engine defaults response is invalid.");
+  }
+  return value;
+}
 
 type PreparationResponse = {
   jobId?: string;

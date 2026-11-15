@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { CROP_LABELS, IRRIGATION_LABELS, PRIORITY_KEYS, PRIORITY_LABELS, FUTURE_SSP_LABELS } from "../../lib/analysisStorage";
 import { REPORT_METRICS, formatMetric, getRecommendation, labelRotation, marginDefinition,
-  sourceModeText, visibleStatements, type CompletedReport, type RotationMetrics, type RotationResult } from "../../lib/reportTypes";
+  sourceModeText, visibleStatements, type CompletedReport, type RotationMetrics, type RotationResult, type FutureProjectionResult } from "../../lib/reportTypes";
 import styles from "../../styles/reports.module.css";
 import { downloadPdfReport } from "../../lib/reportPrint";
 import { downloadExcelReport } from "../../lib/reportExcel";
@@ -54,6 +54,68 @@ function OutcomeCard({ result, title, highlight = false }: {
         <span>Irrigation <strong><Value name="irrigationMm" value={result.metrics.irrigationMm} /></strong></span>
       </div>
     </article>
+  );
+}
+
+/** Compare the actual future simulation records, not today's historical alternatives. */
+function FutureRotationAlternatives({ future: f }: { future: FutureProjectionResult }) {
+  const [showAll, setShowAll] = useState(false);
+  const candidates = f.candidateRotations ?? [];
+  const displayed = showAll ? candidates : candidates.slice(0, 5);
+  const value = (v: number | null | undefined, digits = 1) =>
+    typeof v === "number" && Number.isFinite(v) ? v.toLocaleString("en-GB", { maximumFractionDigits: digits, minimumFractionDigits: digits }) : "—";
+  return (
+    <section className={styles.futureAlternativesPanel} aria-label="Future simulated crop rotation alternatives">
+      <div className={styles.sectionIntro}>
+        <div className={styles.futureLabelRow}>
+          <span className={styles.smallCaps}>ADDITIONAL SIMULATED ROTATIONS</span>
+          <span className={styles.experimentalTag} title="Illustrative CMIP6 scenario results, not field forecasts">Experimental</span>
+        </div>
+        <h2>Explore other crop rotations</h2>
+        <p>Compare available simulated options under the selected climate scenario and regional rules.</p>
+      </div>
+      {candidates.length ? <>
+        <div className={styles.futureAlternativesScroll} role="region" aria-label="Future rotation comparison table" tabIndex={0}>
+          <table className={styles.futureAlternativesTable}>
+            <thead><tr>
+              <th scope="col">Rotation</th><th scope="col">Relative yield</th>
+              <th scope="col">Margin<br/>€/ha/year</th><th scope="col">vs current<br/>€/ha/year</th>
+              <th scope="col">Irrigation<br/>mm/year</th><th scope="col">Fertilizer<br/>kg N/ha/year</th>
+              <th scope="col">N leaching<br/>kg N/ha/year</th><th scope="col">Humus change<br/>t/ha/year</th>
+            </tr></thead>
+            <tbody>
+              <tr className={styles.futureCurrentRow}>
+                <th scope="row"><span className={styles.futureRowTag}>{f.referenceMatchesRequestedRotation === false ? "Archived reference (not selected current rotation)" : "Current / reference"}</span>{labelRotation(f.current_rotation)}</th>
+                <td>{value(f.future_resa_rel_pct)}%</td><td>{value(f.future_margine_eur_ha, 0)}</td>
+                <td>—</td><td>{value(f.future_irrigazione_mm, 0)}</td><td>{value(f.future_concime_kg_n_ha, 0)}</td>
+                <td>{value(f.future_n_lisciviato_kg_n_ha)}</td><td>{value(f.future_humus_t_ha, 3)}</td>
+              </tr>
+              {displayed.map((c) => <tr key={c.rotation}>
+                <th scope="row">
+                  <span className={styles.futureRowTag}>#{c.precomputedRank ?? "—"} · Compliant</span>
+                  {labelRotation(c.rotation)}
+                </th>
+                <td>{value(c.relativeYieldPct)}%</td>
+                <td>{value(c.marginEurHa, 0)}</td>
+                <td>{c.marginDeltaVsCurrentEurHa === null ? "—" :
+                  <strong className={c.marginDeltaVsCurrentEurHa >= 0 ? styles.economicPositive : styles.economicNegative}>
+                    {c.marginDeltaVsCurrentEurHa > 0 ? "+" : ""}{value(c.marginDeltaVsCurrentEurHa, 0)}
+                  </strong>}
+                </td>
+                <td>{value(c.irrigationMm, 0)}</td><td>{value(c.fertilizerKgN, 0)}</td>
+                <td>{value(c.nitrogenLeachingKgN)}</td><td>{value(c.humusChangeTonsHa, 3)}</td>
+              </tr>)}
+            </tbody>
+          </table>
+        </div>
+        {candidates.length > 5 && <button type="button" className={styles.futureShowMore}
+          onClick={() => setShowAll(v => !v)} aria-expanded={showAll}>
+          {showAll ? "Show fewer rotations" : `Show all ${candidates.length} eligible alternatives`}
+        </button>}
+      </> : <p className={styles.footnote}>No additional verified future rotation records are available for this point, irrigation setting and regional rule.</p>}
+      <p className={styles.footnote}>{f.candidateRotationsNote ?? "Older reports may not include the additional simulation rankings. Run the analysis again with the updated backend."}</p>
+      <p className={styles.footnote}>Rank numbers preserve the underlying simulation ordering; regional filtering and crop-cost overrides do not trigger a new ranking. This comparison does not certify farm suitability.</p>
+    </section>
   );
 }
 
@@ -185,9 +247,12 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
   const limitations = report.engine.limitations;
   const recommendationTitle = recommendation.recommended ? "Recommended rotation" :
     recommendation.status === "priorities_do_not_discriminate" ? "No clear winner" :
-    recommendation.status === "no_alternative" ? "No alternative available" : "Keep your current rotation";
+    recommendation.status === "no_alternative" || recommendation.status === "current_not_compliant"
+      ? "No compliant alternative available" : "Keep your current rotation";
   const recommendationSummary = recommendation.recommended
-    ? "This option scores higher under your selected priorities. Check its risks before making a decision."
+    ? recommendation.status === "current_not_compliant"
+      ? "The current rotation fails the selected regional rules. This alternative is compliant, even if its weighted score is lower. Check its risks."
+      : "This option scores higher under your selected priorities. Check its risks before making a decision."
     : recommendation.status === "priorities_do_not_discriminate"
       ? "These priorities do not distinguish between the compared rotations. Review the comparison before deciding."
       : recommendation.status === "no_alternative"
@@ -287,7 +352,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
 
         {tab === "compare" && <div className={styles.content}>
           <div className={styles.sectionIntro}><span className={styles.smallCaps}>02 / ROTATION COMPARISON</span><h2>Different paths, clearer trade-offs.</h2>
-            <p>Compare your current rotation with the model&apos;s alternatives. The highlighted option is recommended only when it scores higher.</p></div>
+            <p>Compare your current rotation with compliant alternatives. A compliant alternative may be proposed even if the current, non-compliant rotation scores higher.</p></div>
           <div className={styles.outcomeGrid}>
             {outcomes.map((item, index) => <OutcomeCard key={`${item.label}-${index}`} result={item}
               title={outcomeTitle(index)} highlight={index > 0 && item === recommendation.recommended} />)}
@@ -386,14 +451,17 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
             return (
               <>
                 <div className={styles.sectionIntro}>
-                  <span className={styles.smallCaps}>{futureNum} / FUTURE CLIMATE PROJECTIONS (CMIP6)</span>
+                  <div className={styles.futureLabelRow}>
+                    <span className={styles.smallCaps}>{futureNum} / FUTURE CLIMATE PROJECTIONS (CMIP6)</span>
+                    <span className={styles.experimentalTag} title="Exploratory climate scenarios, not validated field-level forecasts">Experimental</span>
+                  </div>
                   <h2>{futureScenario.title} · Horizon +{f.horizon_years} years</h2>
                   <p>{futureScenario.description}</p>
                 </div>
 
                 <div className={styles.outcomeGrid}>
                   <article className={styles.outcomeCard}>
-                    <span className={styles.smallCaps}>Yield impact (Current rotation)</span>
+                    <span className={styles.smallCaps}>Yield impact ({f.referenceMatchesRequestedRotation === false ? "archived reference" : "current rotation"})</span>
                     <h3>{labelRotation(f.current_rotation)}</h3>
                     <span className={`${styles.economicDifference} ${f.delta_resa_rel_pct >= 0 ? styles.economicPositive : styles.economicNegative}`}>
                       {f.delta_resa_rel_pct >= 0 ? "+" : ""}{f.delta_resa_rel_pct.toFixed(1)} pp
@@ -404,7 +472,7 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
                   </article>
 
                   <article className={styles.outcomeCard}>
-                    <span className={styles.smallCaps}>Economic impact (Current rotation)</span>
+                    <span className={styles.smallCaps}>Economic impact ({f.referenceMatchesRequestedRotation === false ? "archived reference" : "current rotation"})</span>
                     <h3>Net margin variation</h3>
                     <span className={`${styles.economicDifference} ${f.delta_margine_eur_ha >= 0 ? styles.economicPositive : styles.economicNegative}`}>
                       {f.delta_margine_eur_ha >= 0 ? "+" : ""}{f.delta_margine_eur_ha.toFixed(1)} €/ha/year
@@ -426,18 +494,18 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
                   </article>
                 </div>
 
-                <div className={styles.sectionIntro} style={{ marginTop: 32 }}>
-                  <span className={styles.smallCaps}>CLIMATE ADAPTATION OPPORTUNITY</span>
-                  <h2>Best performing rotation in the future.</h2>
-                  <p>Multicriteria ranking under {futureScenario.title} conditions identifies adaptive crop rotations with higher thermal and drought resilience.</p>
+                {f.best_rotation ? <><div className={styles.sectionIntro} style={{ marginTop: 32 }}>
+                  <span className={styles.smallCaps}>ILLUSTRATIVE CLIMATE ADAPTATION CANDIDATE</span>
+                  <h2>Precomputed climate adaptation candidate.</h2>
+                  <p>This candidate is from a precomputed future scenario and passes the selected engine compliance rule; it has not been re-ranked with your custom expenses or priorities.</p>
                 </div>
 
                 <article className={`${styles.outcomeCard} ${styles.outcomeHighlight}`} style={{ marginTop: 12 }}>
-                  <span className={styles.smallCaps}>Recommended Adaptation Strategy</span>
+                  <span className={styles.smallCaps}>Compliant precomputed candidate — not re-ranked for custom priorities</span>
                   <h3>{labelRotation(f.best_rotation)}</h3>
-                  <p className={styles.footnote}>Rank 1 in the future multicriteria evaluation · Pareto optimal</p>
+                  <p className={styles.footnote}>{f.adaptationNotice ?? "Precomputed candidate — verify applicability."}</p>
                   <div className={styles.outcomeFigures}>
-                    <span>Additional gain vs current rotation: <strong className={styles.economicPositive}>+{f.delta_guadagno_eur_ha.toFixed(1)} €/ha/year</strong></span>
+                    <span>Margin difference vs current rotation: <strong className={f.delta_guadagno_eur_ha >= 0 ? styles.economicPositive : styles.economicNegative}>{f.delta_guadagno_eur_ha >= 0 ? "+" : ""}{f.delta_guadagno_eur_ha.toFixed(1)} €/ha/year</strong></span>
                     <span>Yield boost: <strong className={f.delta_resa_best_pct >= 0 ? styles.economicPositive : ""}>{f.delta_resa_best_pct >= 0 ? "+" : ""}{f.delta_resa_best_pct.toFixed(1)} pp</strong></span>
                     <span>Future yield: <strong>{f.best_resa_rel_pct.toFixed(1)}% ({f.best_resa_t_ha.toFixed(1)} t/ha)</strong></span>
                     <span>Irrigation requirement: <strong>{f.best_irrigazione_mm.toFixed(0)} mm/year</strong></span>
@@ -453,7 +521,9 @@ export default function ReportDashboard({ report, demo = false }: { report: Comp
                       </ul>
                     </div>
                   )}
-                </article>
+                </article></> : <p className={styles.footnote}>{f.adaptationNotice ?? "No verifiably compliant precomputed future candidate is available."} The historical alternatives remain filtered by your selected rule set.</p>}
+
+                <FutureRotationAlternatives future={f} />
 
                 <div className={styles.panel} style={{ marginTop: 24 }}>
                   <h3>CMIP6 Delta Change Scientific Methodology</h3>

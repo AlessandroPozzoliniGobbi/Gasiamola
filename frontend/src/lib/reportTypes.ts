@@ -38,7 +38,7 @@ export type RotationResult = {
 
 export type RecommendationStatus =
   | "alternative_ranks_higher" | "current_is_best" | "priorities_do_not_discriminate"
-  | "no_alternative_ranks_higher" | "no_alternative";
+  | "no_alternative_ranks_higher" | "no_alternative" | "current_not_compliant";
 
 export type Recommendation = {
   status: RecommendationStatus;
@@ -58,9 +58,29 @@ export type EconomicsInfo = {
   nitrogenEurKgN: number;
   irrigationEurMm: number;
   otherCropCostsEurHa: Record<string, number>;
+  defaultOtherCropCostsEurHa?: Record<string, number>;
+  farmerAdjusted?: boolean;
+};
+
+/** Future figures for actual simulated rotations (never extrapolated from the current rotation). */
+export type FutureCandidateRotation = {
+  rotation: string;
+  precomputedRank: number | null;
+  relativeYieldPct: number | null;
+  yieldP10Pct: number | null;
+  marginEurHa: number | null;
+  marginDeltaVsCurrentEurHa: number | null;
+  irrigationMm: number | null;
+  fertilizerKgN: number | null;
+  nitrogenLeachingKgN: number | null;
+  humusChangeTonsHa: number | null;
+  nonDominated: boolean;
 };
 
 export type FutureProjectionResult = {
+  candidateRotations?: FutureCandidateRotation[];
+  candidateRotationsNote?: string;
+  referenceMatchesRequestedRotation?: boolean;
   lat: number;
   lon: number;
   horizon_years: number;
@@ -118,6 +138,7 @@ export type FutureProjectionResult = {
   best_non_dominata: boolean;
   best_conformita: string;
   best_rischi: string[];
+  adaptationNotice?: string;
 };
 
 export type Limitations = {
@@ -190,6 +211,8 @@ export type CompletedReport = {
     codeHash?: string;
     cacheCodeVersionRecorded?: boolean;
     economics?: EconomicsInfo;
+    regulatoryRegime?: string;
+    regulatoryRegimeLabel?: string;
     future?: {
       enabled: boolean;
       horizonYears?: number | null;
@@ -307,6 +330,7 @@ export function recommendationHeadline(report: CompletedReport): string {
   const r = getRecommendation(report);
   if (r.recommended) return labelRotation(r.recommended.label);
   if (r.status === "priorities_do_not_discriminate") return "No rotation stands out for these priorities";
+  if (r.status === "current_not_compliant") return "No compliant alternative available";
   if (r.status === "no_alternative") return "No alternative available";
   return "Keep the current rotation";
 }

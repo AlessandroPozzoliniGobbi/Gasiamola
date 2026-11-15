@@ -12,11 +12,12 @@ import {
   PRIORITY_LABELS, defaultAnalysisDraft, loadAnalysisDraft, saveAnalysisDraft,
   rotationBackendLabel, FUTURE_HORIZONS, FUTURE_SSPS, FUTURE_SSP_LABELS,
   type AnalysisDraft, type CropId, type IrrigationScenario, type PriorityId,
+  REGULATORY_REGIMES, DEFAULT_REGULATORY_REGIME, type RegulatoryRegime,
   type FutureHorizon, type FutureSsp,
 } from "../lib/analysisStorage";
 import AnalysisFieldMap from "../components/map/AnalysisFieldMap";
 import AnalysisProcessing from "../components/reports/AnalysisProcessing";
-import { analyzeField, canOfferPilotReference, prepareLocalField } from "../lib/engineApi";
+import { analyzeField, canOfferPilotReference, prepareLocalField, loadEconomicDefaults, type EconomicDefaults } from "../lib/engineApi";
 import { MAP_CONFIG } from "../lib/mapConfig";
 import { listRecentCompletedReports, saveCompletedReport } from "../lib/reportStorage";
 import { findReusableFieldReport } from "../lib/reuseFieldReport";
@@ -43,6 +44,8 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
   const [draft, setDraft] = useState<AnalysisDraft | null>(null);
   const [saveStatus, setSaveStatus] = useState<DraftSaveStatus>("saved");
   const [draftLoadWarning, setDraftLoadWarning] = useState<string | null>(null);
+  const [economicDefaults, setEconomicDefaults] = useState<EconomicDefaults | null>(null);
+  const [costLoadError, setCostLoadError] = useState<string | null>(null);
   const [savedReports, setSavedReports] = useState<CompletedReport[]>([]);
 
   useEffect(() => {
@@ -71,6 +74,17 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
     });
     return () => { active = false; };
   }, [fieldId]);
+
+  // Prices and cultivation-cost defaults come directly from the Python engine YAML.
+  useEffect(() => {
+    let active = true;
+    void loadEconomicDefaults().then((defaults) => {
+      if (active) { setEconomicDefaults(defaults); setCostLoadError(null); }
+    }).catch((error) => {
+      if (active) setCostLoadError(error instanceof Error ? error.message : "Cost defaults unavailable");
+    });
+    return () => { active = false; };
+  }, []);
 
   // A completed local report can be reopened instantly without rerunning the engine.
   // The user must explicitly choose it; Run analysis always requests fresh results.
@@ -131,6 +145,18 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
   };
   const changeIrrigation = (irrigation: IrrigationScenario) => {
     updateDraft((old) => ({ ...old, irrigation }));
+  };
+  const changeRegulatoryRegime = (regulatoryRegime: RegulatoryRegime) => {
+    updateDraft((old) => ({ ...old, regulatoryRegime }));
+  };
+  const changeOtherCropCost = (crop: CropId, cost: number) => {
+    updateDraft((old) => ({
+      ...old, advancedEconomics: true,
+      otherCropCostsEurHa: { ...(old.otherCropCostsEurHa ?? {}), [crop]: cost },
+    }));
+  };
+  const resetOtherCropCosts = () => {
+    updateDraft((old) => ({ ...old, otherCropCostsEurHa: {} }));
   };
   const changeAdvancedEconomics = (enabled: boolean) => {
     updateDraft((old) => ({ ...old, advancedEconomics: enabled }));
@@ -284,10 +310,27 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
                   </div>
                   <p className={styles.helper}>These are model scenarios, not measured water availability at your farm. The exact limits will come from the backend.</p>
                 </section>
+                <section id="analysis-regulations" className={styles.formCard} aria-labelledby="regulations-heading">
+                  <div className={styles.cardHeading}>
+                    <div>
+                      <p className={styles.cardEyebrow}>04 / COMPLIANCE</p>
+                      <h2 id="regulations-heading">Regional crop-rotation rules</h2>
+                    </div>
+                  </div>
+                  <label htmlFor="regional-regime" className={styles.inputLabel}>Apply rules from</label>
+                  <select id="regional-regime" className={styles.select}
+                    value={draft.regulatoryRegime ?? DEFAULT_REGULATORY_REGIME}
+                    onChange={(event) => changeRegulatoryRegime(event.target.value as RegulatoryRegime)}>
+                    {Object.entries(REGULATORY_REGIMES).map(([code, label]) =>
+                      <option key={code} value={code}>{label}</option>)}
+                  </select>
+                  <p className={styles.helper}>Only rotations classified as compliant under the selected engine rules can be proposed. Derogations and unassessable rotations are excluded. Your existing rotation stays in the report as a comparison, even if it does not comply.</p>
+                  <p className={styles.regulatoryWarning}>Model-based check of the encoded rules, not official certification. Verify the applicable version and your farm&apos;s eligibility.</p>
+                </section>
                 <section id="analysis-priorities" className={styles.formCard} aria-labelledby="priorities-heading">
                   <div className={styles.cardHeading}>
                     <div>
-                      <p className={styles.cardEyebrow}>04 / YOUR GOALS</p>
+                      <p className={styles.cardEyebrow}>05 / YOUR GOALS</p>
                       <h2 id="priorities-heading">Set your priorities</h2>
                     </div>
                   </div>
@@ -308,7 +351,7 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
                 <section id="analysis-economics" className={`${styles.formCard} ${styles.optionalFeatureCard}`} aria-labelledby="advanced-economics-heading">
                   <div className={styles.optionalFeatureHeader}>
                     <div className={styles.optionalSummaryMain}>
-                      <span className={styles.cardEyebrow}>05 / OPTIONAL</span>
+                      <span className={styles.cardEyebrow}>06 / OPTIONAL</span>
                       <h2 id="advanced-economics-heading">Economic analysis</h2>
                       <p className={styles.optionalSubtitle}>Adjust economic priority · selecting a value enables the analysis</p>
                     </div>
@@ -330,16 +373,47 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
                       </div>
                     </div>
                     <details className={styles.optionalTechnicalDetails}>
-                      <summary>Economic assumptions</summary>
-                      <p>Margins use the engine&apos;s default crop prices and costs, including fertilizer, irrigation, seeds and operations. Custom prices and costs are not currently supported.</p>
+                      <summary>Advanced costs — adjust farm-specific expenses</summary>
+                      <p>These costs cover seed, crop protection, machinery and field operations (including sowing and harvest), drying and transport. Enter their <strong>total EUR/ha for each crop</strong>, excluding nitrogen fertilizer and irrigation: those are already calculated separately. Do not add them twice.</p>
+                      {economicDefaults ? (
+                        <>
+                          <div className={styles.costInputGrid}>
+                            {CROP_KEYS.map((crop) => {
+                              const standard = economicDefaults.otherCropCostsEurHa[crop];
+                              const entered = draft.otherCropCostsEurHa?.[crop];
+                              return (
+                                <div className={styles.costInputGroup} key={crop}>
+                                  <label htmlFor={`crop-cost-${crop}`}>{CROP_LABELS[crop]} — €/ha</label>
+                                  <input id={`crop-cost-${crop}`} type="number" min="0" max="100000" step="10"
+                                    value={entered ?? standard}
+                                    onChange={(event) => {
+                                      const value = Number(event.target.value);
+                                      if (event.target.value !== "" && Number.isFinite(value) && value >= 0 && value <= 100000) {
+                                        changeOtherCropCost(crop, value);
+                                      }
+                                    }} />
+                                  <small>Engine default: {standard.toLocaleString("en-GB")} €/ha</small>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className={styles.costActions}>
+                            <span>{Object.keys(draft.otherCropCostsEurHa ?? {}).length ? "Custom farm expenses in use" : "Standard engine expenses in use"}</span>
+                            <button type="button" onClick={resetOtherCropCosts} className={styles.resetButton}>Restore standard costs</button>
+                          </div>
+                        </>
+                      ) : <p className={styles.alert} role="status">{costLoadError ?? "Loading standard costs from the engine…"} Custom costs are unavailable until this connection succeeds.</p>}
                     </details>
                   </div>
                 </section>
                 <section id="analysis-climate" className={`${styles.formCard} ${styles.optionalFeatureCard}`} aria-labelledby="future-projections-heading">
                   <div className={styles.optionalFeatureHeader}>
                     <div className={styles.optionalSummaryMain}>
-                      <span className={styles.cardEyebrow}>06 / OPTIONAL</span>
-                      <h2 id="future-projections-heading">Future climate projections</h2>
+                      <span className={styles.cardEyebrow}>07 / OPTIONAL</span>
+                      <div className={styles.optionalTitleRow}>
+                        <h2 id="future-projections-heading">Future climate projections</h2>
+                        <span className={styles.experimentalTag} title="Exploratory climate scenarios, not validated field-level forecasts">Experimental</span>
+                      </div>
                       <p className={styles.optionalSubtitle}>Choose a scenario and a time horizon · 5–20 years</p>
                     </div>
                     <label className={styles.optionalFeatureToggle}>
@@ -381,12 +455,12 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
                 </section>
                 <section id="analysis-run" className={styles.submitCard} aria-labelledby="ready-heading">
                   <div>
-                    <p className={styles.cardEyebrow}>07 / RUN ANALYSIS</p>
+                    <p className={styles.cardEyebrow}>08 / RUN ANALYSIS</p>
                     <h2 id="ready-heading">Your configuration is ready</h2>
                     <p>These settings are saved locally for this field. You can edit them anytime.</p>
                   </div>
                   <div className={styles.summaryChips}>
-                    <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>{draft.advancedEconomics ? "Advanced economics" : "Standard analysis"}</span>
+                    <span>3-year rotation</span><span>{IRRIGATION_LABELS[draft.irrigation]}</span><span>{REGULATORY_REGIMES[draft.regulatoryRegime ?? DEFAULT_REGULATORY_REGIME]}</span><span>{draft.advancedEconomics ? "Advanced economics" : "Standard analysis"}</span>
                     {draft.includeFuture && <span>{`Future ${draft.futureHorizon ?? 10}y (${(draft.futureSsp ?? "ssp245").toUpperCase()})`}</span>}
                   </div>
                   {reusableReport && (
@@ -422,6 +496,7 @@ export default function Analysis({ fieldId, returnToMultipleHref }: Props) {
                     <summary>Backend-ready identifiers (for integration)</summary>
                     <p>Crop rotation: <code>{rotationBackendLabel(draft.rotation)}</code></p>
                     <p>Irrigation scenario: <code>{draft.irrigation}</code></p>
+                    <p>Regulatory rules: <code>{draft.regulatoryRegime ?? DEFAULT_REGULATORY_REGIME}</code></p>
                     <p>Field ID: <code>{field.id}</code></p>
                   </details>
                 </section>

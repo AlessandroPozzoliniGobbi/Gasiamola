@@ -14,7 +14,7 @@ export const projectSections: readonly ProjectSection[] = [
     title: "Analytical Framework",
     navLabel: "Framework",
     number: "02",
-    description: "How we turn an agricultural question into a structured comparison of possible decisions.",
+    description: "How crop-rotation choices are compared across yields, risks, resources, soil and economics.",
     topics: ["Research questions", "Decision criteria and indicators", "Comparing crop rotations"],
   },
   {
@@ -22,7 +22,7 @@ export const projectSections: readonly ProjectSection[] = [
     title: "Data & Processing",
     navLabel: "Data",
     number: "03",
-    description: "Our data sources, preparation workflow, quality checks, and approach to reproducibility.",
+    description: "The environmental data behind the model, how sources are checked and what they can measure.",
     topics: ["Data sources", "Cleaning and preparation", "Quality control and traceability"],
   },
   {
@@ -30,7 +30,7 @@ export const projectSections: readonly ProjectSection[] = [
     title: "Methodology & Engine",
     navLabel: "Engine",
     number: "04",
-    description: "The scientific methodology behind the model and the way the simulation engine is organized.",
+    description: "How daily crop, water, nitrogen and soil simulations lead to comparative recommendations.",
     topics: ["Water, nitrogen, and soil organic matter", "Simulation scenarios", "Engine architecture and assumptions"],
   },
   {

@@ -8,6 +8,18 @@ export type CropStep = {
   coverAfter: boolean;
 };
 
+export type RegulatoryRegime =
+  | "lombardia_impegno_quinquennale" | "lombardia_impegno_triennale_SRA01_2026"
+  | "emilia_romagna_impegno_quinquennale" | "emilia_romagna_adesione_singola_coltura";
+export const REGULATORY_REGIMES: Record<RegulatoryRegime, string> = {
+  lombardia_impegno_quinquennale: "Lombardy — five-year commitment",
+  lombardia_impegno_triennale_SRA01_2026: "Lombardy — three-year commitment (SRA01 2026)",
+  emilia_romagna_impegno_quinquennale: "Emilia-Romagna — five-year commitment",
+  emilia_romagna_adesione_singola_coltura: "Emilia-Romagna — single-crop membership",
+};
+export const DEFAULT_REGULATORY_REGIME: RegulatoryRegime = "lombardia_impegno_quinquennale";
+export type OtherCropCostOverrides = Partial<Record<CropId, number>>;
+
 export type FutureHorizon = 5 | 10 | 15 | 20;
 export type FutureSsp = "ssp126" | "ssp245" | "ssp585";
 
@@ -39,6 +51,9 @@ export type AnalysisDraft = {
   priorities: Record<PriorityId, number>;
   /** Opt-in for the current engine's fixed-assumption economic analysis. */
   advancedEconomics?: boolean;
+  regulatoryRegime?: RegulatoryRegime;
+  /** EUR per cultivated hectare; omitted entries use values from params/economia.yaml. */
+  otherCropCostsEurHa?: OtherCropCostOverrides;
   /** Opt-in for IPCC CMIP6 future climate projections. */
   includeFuture?: boolean;
   futureHorizon?: FutureHorizon;
@@ -86,6 +101,8 @@ export function defaultAnalysisDraft(): AnalysisDraft {
     irrigation: "tetto_irriguo",
     priorities: { resa: 5, rischio: 5, acqua: 5, concime: 5, suolo: 5, profitto: 5 },
     advancedEconomics: false,
+    regulatoryRegime: DEFAULT_REGULATORY_REGIME,
+    otherCropCostsEurHa: {},
     includeFuture: false,
     futureHorizon: 10,
     futureSsp: "ssp245",
@@ -96,6 +113,9 @@ function normalizeAnalysisDraft(draft: AnalysisDraft): AnalysisDraft {
   return {
     ...draft,
     advancedEconomics: draft.advancedEconomics === true,
+    regulatoryRegime: draft.regulatoryRegime && draft.regulatoryRegime in REGULATORY_REGIMES
+      ? draft.regulatoryRegime : DEFAULT_REGULATORY_REGIME,
+    otherCropCostsEurHa: draft.otherCropCostsEurHa ?? {},
     includeFuture: draft.includeFuture === true,
     futureHorizon: (draft.futureHorizon && FUTURE_HORIZONS.includes(draft.futureHorizon)) ? draft.futureHorizon : 10,
     futureSsp: (draft.futureSsp && FUTURE_SSPS.includes(draft.futureSsp)) ? draft.futureSsp : "ssp245",
@@ -114,6 +134,14 @@ export function isAnalysisDraft(value: unknown): value is AnalysisDraft {
     });
   return draft.version === 1 && validSteps &&
     (draft.advancedEconomics === undefined || typeof draft.advancedEconomics === "boolean") &&
+    (draft.regulatoryRegime === undefined || Object.hasOwn(REGULATORY_REGIMES, draft.regulatoryRegime)) &&
+    (draft.otherCropCostsEurHa === undefined || (
+      typeof draft.otherCropCostsEurHa === "object" && draft.otherCropCostsEurHa !== null &&
+      !Array.isArray(draft.otherCropCostsEurHa) &&
+      Object.entries(draft.otherCropCostsEurHa).every(([crop, value]) =>
+        CROP_KEYS.includes(crop as CropId) && typeof value === "number" &&
+        Number.isFinite(value) && value >= 0 && value <= 100000)
+    )) &&
     (draft.includeFuture === undefined || typeof draft.includeFuture === "boolean") &&
     (draft.futureHorizon === undefined || FUTURE_HORIZONS.includes(draft.futureHorizon as FutureHorizon)) &&
     (draft.futureSsp === undefined || FUTURE_SSPS.includes(draft.futureSsp as FutureSsp)) &&

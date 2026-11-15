@@ -421,6 +421,21 @@
   gap: 5px;
 }
 .page .optionalSummaryMain .cardEyebrow { margin: 0; font-size: 11px; }
+.page .optionalTitleRow { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.page .experimentalTag {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border: 1px solid #e7c899;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: #fff4dc;
+  color: #805a22;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .045em;
+  line-height: 1;
+}
 .page .optionalSummaryMain h2 {
   margin: 0;
   color: #193f2c;
@@ -610,3 +625,16 @@
   .page .mapPreview .mapShell { height: 250px; }
   .page .optionalConfigGrid { grid-template-columns: minmax(0,1fr); }
 }
+
+/* Farm-specific cost controls are tucked into an optional, always-reachable detail. */
+.costInputGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 16px 0; }
+.costInputGroup { display: flex; flex-direction: column; min-width: 0; gap: 6px; }
+.costInputGroup label { font-size: 12px; font-weight: 750; color: #28553e; }
+.costInputGroup input { width: 100%; min-width: 0; min-height: 42px; padding: 9px 10px; border: 1px solid #c8dccb; border-radius: 9px; color: #193d2b; background: white; font: inherit; }
+.costInputGroup input:focus-visible { outline: 2px solid #2f8b5b; outline-offset: 2px; }
+.costInputGroup small { font-size: 11px; line-height: 1.4; color: #627d69; }
+.costActions { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 15px; }
+.costActions span { font-size: 12px; color: #456b52; }
+.costActions .resetButton { min-height: 36px; padding: 7px 11px; }
+.regulatoryWarning { color: #90682c; background: #fffaee; border: 1px solid #e9dcbf; border-radius: 10px; padding: 10px 13px; font-size: 12px; line-height: 1.5; margin: 13px 0 0; }
+@media (max-width: 700px) { .costInputGrid { grid-template-columns: 1fr; } }

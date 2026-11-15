@@ -473,3 +473,152 @@
   .projectShell .chapterLinks { flex-direction: row; }
   .projectShell .chapterLink { justify-content: center; padding-inline: 13px; font-size: 13px; }
 }
+
+/* Project editorial chapters, sourced from the NASA Space Apps technical report. */
+.reportDownloadGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.reportDownloadButton {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 15px;
+  border: 1px solid #2b6e4c;
+  border-radius: 14px;
+  background: #245e41;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 6px 17px rgba(23, 77, 46, .15);
+  transition: background .18s ease, transform .18s ease;
+}
+.reportDownloadButton:hover { background: #184a32; transform: translateY(-1px); }
+.reportDownloadFormat {
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 6px;
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+.reportDownloadNote { color: #42624b; font-size: 11px; }
+.projectEditorial { display: grid; gap: 26px; margin-top: 29px; }
+.projectKicker {
+  display: inline-block;
+  color: #347153;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.5;
+  letter-spacing: .13em;
+}
+.projectTextSection { max-width: 1040px; }
+.projectTextSection h2 {
+  margin: 8px 0 12px;
+  font-size: clamp(23px, 2.6vw, 34px);
+  line-height: 1.2;
+  letter-spacing: -.035em;
+}
+.projectTextSection > p {
+  max-width: 950px;
+  margin: 0 0 12px;
+  color: #375543;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.projectTextSection > p:last-child { margin-bottom: 0; }
+.projectTextSection strong { color: #1b5134; }
+.overviewSecondary {
+  max-width: 760px;
+  color: #385b45;
+  font-size: 15px;
+  line-height: 1.73;
+  margin: 16px 0 0;
+}
+.overviewSecondary strong { color: #215d3e; }
+.overviewMission {
+  max-width: 1000px;
+  padding-top: 22px;
+  margin-top: 21px;
+  border-top: 1px solid #dbe8d9;
+}
+.overviewMission p {
+  margin: 7px 0 0;
+  color: #355642;
+  font-size: 15px;
+  line-height: 1.72;
+}
+.projectFeatureBand {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 14px 0 18px;
+}
+.projectFeatureBand > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 21px;
+  border: 1px solid #c8ddc9;
+  border-radius: 17px;
+  background: #ecf5eb;
+}
+.projectFeatureBand strong { color: #1a5d3b; font-size: clamp(27px, 3vw, 38px); line-height: 1.1; letter-spacing: -.035em; }
+.projectFeatureBand span { color: #254f34; font-size: 14px; font-weight: 800; }
+.projectFeatureBand small { color: #50735c; font-size: 12px; line-height: 1.5; }
+.projectCriteriaGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin-top: 18px; }
+.projectCriterion { padding: 18px; border: 1px solid #d1e0ce; border-radius: 16px; background: #f8fbf6; }
+.projectCriterionNumber { color: #7ca78b; font-size: 11px; font-weight: 800; }
+.projectCriterion h3 { margin: 8px 0 3px; font-size: 18px; }
+.projectCriterion strong { display: block; color: #235d40; font-size: 13px; }
+.projectCriterion p { color: #45634f; margin: 8px 0 0; font-size: 13px; line-height: 1.6; }
+.projectNotice { padding: 19px 22px; border-left: 4px solid #aa864b; border-radius: 12px; background: #fff8e9; }
+.projectNotice strong { display: block; color: #755223; font-size: 15px; }
+.projectNotice p { margin: 7px 0 0; color: #66523c; font-size: 14px; line-height: 1.72; }
+.projectDataGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.projectDataCard { padding: 20px; border: 1px solid #c4dbc8; border-radius: 17px; background: #f3f8f1; }
+.projectDataCard h3 { font-size: 22px; color: #205438; margin: 9px 0; }
+.projectDataCard p { min-height: 98px; margin: 0 0 13px; color: #3a5844; font-size: 14px; line-height: 1.66; }
+.projectDataCard small { display: block; padding-top: 11px; border-top: 1px solid #d2e4d2; color: #55715b; line-height: 1.4; }
+.projectChecksGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.projectCheck { padding: 15px 17px; border: 1px solid #d4e3d3; border-radius: 13px; background: #fbfdf9; }
+.projectCheck h3 { margin: 0 0 6px; color: #275c41; font-size: 16px; }
+.projectCheck p { margin: 0; color: #47634f; font-size: 13px; line-height: 1.6; }
+.projectSteps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.projectStep { display: flex; gap: 16px; padding: 20px; border: 1px solid #cbdcca; border-radius: 17px; background: #f4f9f2; }
+.projectStep > span { flex: 0 0 auto; color: #468364; font-size: 24px; font-weight: 850; line-height: 1; }
+.projectStep h3 { margin: 0 0 8px; color: #1d5235; font-size: 17px; }
+.projectStep p { margin: 0; color: #42604b; font-size: 13px; line-height: 1.66; }
+.projectMethodGrid, .projectScenarioGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.projectMethodGrid article, .projectScenarioGrid > div { padding: 18px; border: 1px solid #d3e2d1; border-radius: 15px; background: #fbfdf9; }
+.projectMethodGrid h3 { margin: 0 0 8px; color: #225739; font-size: 17px; }
+.projectMethodGrid p, .projectScenarioGrid p { margin: 0; color: #47634f; font-size: 13px; line-height: 1.65; }
+.projectScenarioGrid strong { display: block; color: #20573a; margin-bottom: 8px; font-size: 16px; }
+.projectEquation { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px 23px; margin: 18px 0; border-radius: 16px; border: 1px solid #b8d2bd; background: #eaf4e9; }
+.projectEquation > span { color: #517c5b; font-size: 10px; font-weight: 850; letter-spacing: .13em; }
+.projectEquation strong { color: #1a5638; font-size: clamp(18px, 2.3vw, 25px); line-height: 1.35; overflow-wrap: anywhere; }
+.projectEquation small { color: #4d6c55; font-size: 12px; line-height: 1.5; }
+@media (max-width: 960px) {
+  .projectCriteriaGrid, .projectDataGrid, .projectMethodGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .projectDataCard p { min-height: 0; }
+}
+@media (max-width: 700px) {
+  .reportDownloadGroup { align-items: flex-start; }
+  .projectEditorial { gap: 23px; margin-top: 22px; }
+  .projectTextSection > p { font-size: 15px; }
+  .projectFeatureBand, .projectCriteriaGrid, .projectDataGrid, .projectChecksGrid, .projectSteps, .projectMethodGrid, .projectScenarioGrid { grid-template-columns: 1fr; }
+  .projectFeatureBand > div { padding: 17px; }
+  .projectStep { padding: 17px; }
+  .projectEquation { padding: 16px; }
+  .overviewSecondary { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reportDownloadButton { transition: none; }
+  .reportDownloadButton:hover { transform: none; }
+}

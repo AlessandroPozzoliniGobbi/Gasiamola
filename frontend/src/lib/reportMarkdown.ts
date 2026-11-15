@@ -67,7 +67,9 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
   const components = (r: RotationResult) => r.marginComponents;
   let n = 5;
   const next = () => n++;
-  const summaryText = recommendation.recommended
+  const summaryText = recommendation.status === "current_not_compliant"
+    ? "The current rotation fails the selected rule set. The proposed alternative is compliant under the engine's encoded rules; compliance takes precedence over its weighted score. Verify the actual applicable regulations independently."
+    : recommendation.recommended
     ? "The recommended alternative scores higher than the current rotation under the recorded priorities and irrigation scenario, but it should not be interpreted as universally optimal. Differences between rotations can reflect trade-offs: for example, a change that improves relative yield can also raise water or fertilizer demand. The comparison is conditional on model assumptions, data coverage, scenario definitions and the alternatives that were actually evaluated."
     : "No alternative is recommended over the current rotation. The alternatives in this report are shown for comparison only: the first is the best-scoring non-dominated rotation other than the current one, the second the best in the worst year among the others.";
   const md = [
@@ -82,6 +84,7 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
     `**Recommendation:** ${recommendationHeadline(report)}\n\n` +
     `${recommendation.message}${recommendation.priorityWarning ? ` ${recommendation.priorityWarning}` : ""}\n\n` +
     `**Irrigation scenario:** ${IRRIGATION_LABELS[report.inputs.irrigation]}\n\n` +
+    `**Regional rules:** ${mdCell(report.engine.regulatoryRegimeLabel ?? report.inputs.regulatoryRegime ?? "Lombardy (five-year default)")}\n\n` +
     `**Rotations compared:** ${report.results.comparedRotations ?? "Not supplied"}\n\n` +
     `The purpose of this analysis is to support a comparison of management strategies using a consistent set of historical climate scenarios. The model evaluates the current crop rotation against alternative sequences and ranks the resulting outcomes according to the priorities recorded below.\n\n` +
     summaryText,
@@ -92,6 +95,7 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
     `| Field representative point | ${fmtPoint(report.field.representativePoint)} |\n` +
     `| Model input point | ${fmtPoint(report.engine.modelPoint)} |\n` +
     `| Irrigation scenario | ${IRRIGATION_LABELS[report.inputs.irrigation]} |\n` +
+    `| Regulatory filter | ${mdCell(report.engine.regulatoryRegimeLabel ?? report.inputs.regulatoryRegime ?? "Lombardy (five-year default)")} |\n` +
     `| Crop sequence (as entered) | ${mdCell(rotationText)} |\n` +
     `| Analysis reference mode | ${mdCell(modeText)} |\n\n` +
     `### Priority weights\n\n| Criterion | Weight |\n| --- | --- |\n${priorities}`,
@@ -126,7 +130,7 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
       return `## ${next()}. Future climate projections (CMIP6 Delta Change)\n\n` +
         `**Scenario:** ${FUTURE_SSP_LABELS[f.ssp_code].title} · **Horizon:** +${f.horizon_years} years\n\n` +
         `${FUTURE_SSP_LABELS[f.ssp_code].description}\n\n` +
-        `### Current rotation under climate change\n\n` +
+        `### ${f.referenceMatchesRequestedRotation === false ? "Archived reference rotation" : "Current rotation"} under climate change\n\n` +
         `| Indicator | Historical baseline | Future projected | Delta |\n| --- | --- | --- | --- |\n` +
         `| Relative yield (%) | ${f.baseline_resa_rel_pct.toFixed(1)}% | ${f.future_resa_rel_pct.toFixed(1)}% | ${f.delta_resa_rel_pct >= 0 ? "+" : ""}${f.delta_resa_rel_pct.toFixed(1)} pp |\n` +
         `| Average yield (t/ha) | ${f.baseline_resa_t_ha.toFixed(2)} t/ha | ${f.future_resa_t_ha.toFixed(2)} t/ha | ${(f.future_resa_t_ha - f.baseline_resa_t_ha).toFixed(2)} t/ha |\n` +
@@ -136,13 +140,22 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
         `| Extreme heat days (Tmax > 35°C) | Historical baseline | ${f.future_hot_days_ann.toFixed(1)} days/year | Heat stress increase |\n` +
         `| Reference ET0 (mm/year) | ${f.baseline_et0_ann_mm.toFixed(0)} mm | ${f.future_et0_ann_mm.toFixed(0)} mm | +${(f.future_et0_ann_mm - f.baseline_et0_ann_mm).toFixed(0)} mm |\n\n` +
         `### Climate adaptation opportunity\n\n` +
-        `**Recommended adaptation strategy:** ${labelRotation(f.best_rotation)}\n\n` +
-        `- Additional margin vs current rotation: +${f.delta_guadagno_eur_ha.toFixed(1)} EUR/ha/year\n` +
+        (f.best_rotation ? `**Illustrative compliant adaptation candidate:** ${labelRotation(f.best_rotation)}\n\n${f.adaptationNotice ?? ""}\n\n` :
+          `${f.adaptationNotice ?? "No verifiably compliant candidate can be proposed."}\n\n`) +
+        (f.best_rotation ? `- Additional margin vs current rotation: ${f.delta_guadagno_eur_ha >= 0 ? "+" : ""}${f.delta_guadagno_eur_ha.toFixed(1)} EUR/ha/year\n` +
         `- Yield boost vs current rotation: ${f.delta_resa_best_pct >= 0 ? "+" : ""}${f.delta_resa_best_pct.toFixed(1)} pp (projected: ${f.best_resa_rel_pct.toFixed(1)}%, ${f.best_resa_t_ha.toFixed(1)} t/ha)\n` +
         `- Future irrigation demand: ${f.best_irrigazione_mm.toFixed(0)} mm/year\n` +
         `- Nitrogen fertilizer demand: ${f.best_concime_kg_n_ha.toFixed(0)} kg N/ha\n` +
         `- Regulatory compliance: ${translateFutureCompliance(f.best_conformita)}\n` +
-        (f.best_rischi && f.best_rischi.length ? `\n**Adaptation notices and risks:**\n\n` + f.best_rischi.map((r) => `- ${translateFutureNotice(r)}`).join("\n") : "");
+        (f.best_rischi && f.best_rischi.length ? `\n**Adaptation notices and risks:**\n\n` + f.best_rischi.map((r) => `- ${translateFutureNotice(r)}`).join("\n") : "") : "") +
+        `\n\n### Other simulated future rotations\n\n` +
+        `${f.candidateRotationsNote ?? "No additional future ranking was included in this saved report."}\n\n` +
+        (f.candidateRotations?.length ?
+          `| Precomputed rank | Rotation | Relative yield (%) | Margin (EUR/ha/year) | Delta vs reference (EUR/ha/year) | Irrigation (mm/year) | Fertilizer (kg N/ha/year) | N leaching (kg N/ha/year) | Humus change (t/ha/year) |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n` +
+          f.candidateRotations.map(c => {
+            const n = (v: number | null | undefined, digits = 1) => v === null || v === undefined || !Number.isFinite(v) ? "N/A" : v.toFixed(digits);
+            return `| ${c.precomputedRank ?? "N/A"} | ${mdCell(labelRotation(c.rotation))} | ${n(c.relativeYieldPct)} | ${n(c.marginEurHa, 0)} | ${n(c.marginDeltaVsCurrentEurHa, 0)} | ${n(c.irrigationMm, 0)} | ${n(c.fertilizerKgN, 0)} | ${n(c.nitrogenLeachingKgN)} | ${n(c.humusChangeTonsHa, 3)} |`;
+          }).join("\n") : "No additional verifiably compliant rotations were available.");
     })()] : []),
     `## ${next()}. Soil and geographic data\n\n` +
     (soil ? `| Parameter | Model input |\n| --- | --- |\n` +
@@ -174,7 +187,7 @@ export function renderReportMarkdown(report: CompletedReport, demo = false): str
     `${modeText} ${report.engine.methodologyNote ?? "Detailed methodological notes were not provided."}\n\n` +
     `The analysis uses a representative geographic point; it does not resolve spatial variability throughout the entire polygon. NASA POWER and SoilGrids represent gridded climate data and modeled soil properties rather than direct measurements on this field. The effect of groundwater and local management may not be fully represented.\n\n` +
     `Ranking scores are relative to the compared rotations and selected priorities, and they are not confidence or sustainability percentages. Ranking stability and validation results are listed in the limitations section above.` +
-    (economics ? ` The economic margin uses default prices and costs; it is not net farm profit.` : "") + `\n\n` +
+    (economics ? ` The economic margin uses ${report.engine.economics?.farmerAdjusted ? "farmer-adjusted crop expenses and default unit prices" : "default prices and costs"}; it is not net farm profit.` : "") + `\n\n` +
     `Only fields transmitted to the browser are included here. Daily simulation states, raw satellite imagery and other unpublished diagnostics have not been inferred. For professional use, verify assumptions, local regulatory compliance and field measurements independently.`,
   ];
   return md.join("\n\n") + "\n";
